@@ -1,7 +1,7 @@
 
 import cv2
 import numpy as np
-import time
+# import time
 import utlis
 
 # Camera settings
