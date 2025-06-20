@@ -168,9 +168,12 @@ def signal_detection(image, signal_size, weight, object_size, focal_distance, px
         # (np.array([100, 100, 100]), np.array([135, 255, 255]), "Blue", 2)
 
         # Green (more flexible range)
-        (np.array([35, 50, 50]), np.array([85, 255, 255]), "Green", 1),
+        (np.array([35, 100, 50]), np.array([85, 255, 255]), "Green", 1),
+        # (np.array([35, 100, 50]), np.array([85, 255, 255]), "Green", 1),
         # Red (split into two ranges because red wraps around 0 in HSV)
-        (np.array([160, 100, 100]), np.array([180, 255, 255]), "Red", 0)  # Upper red
+        (np.array([160, 100, 80]), np.array([180, 255, 255]), "Red", 0)  # Upper red
+        # (np.array([160, 100, 60]), np.array([180, 255, 255]), "Red", 0)  # Upper red
+
     ]
 
     for lower, upper, color_name, color_id in color_params:
