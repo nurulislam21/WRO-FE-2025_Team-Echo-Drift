@@ -210,24 +210,22 @@
 # if __name__ == '__main__':
 #     main()
 
-
-
 import cv2
 import numpy as np
 import serial
-from time import sleep
 import time
-import os
+from picamera2 import Picamera2
 
-# CAM SETTINGS
+# Simulated camera settings
 CAM_WIDTH = 640
 CAM_HEIGHT = 480
 
-# ROI and COLOR RANGES (unchanged)
+# Region of Interest coordinates
 ROI1 = [20, 170, 240, 220]
 ROI2 = [400, 170, 620, 220]
 ROI3 = [200, 300, 440, 350]
 
+# Color ranges
 LOWER_BLACK = np.array([0, 0, 0])
 UPPER_BLACK = np.array([180, 255, 50])
 LOWER_ORANGE = np.array([5, 50, 50])
@@ -235,7 +233,7 @@ UPPER_ORANGE = np.array([25, 255, 255])
 LOWER_BLUE = np.array([90, 50, 50])
 UPPER_BLUE = np.array([130, 255, 255])
 
-# CONTROL PARAMETERS
+# Control parameters
 kp = 0.02
 kd = 0.006
 straightConst = 92
@@ -247,6 +245,10 @@ sharpLeft = straightConst + tDeviation
 maxRight = straightConst - 50
 maxLeft = straightConst + 50
 
+# Serial communication
+arduino = serial.Serial(port='/dev/ttyUSB0', baudrate=115200, timeout=0.05)
+time.sleep(2)
+arduino.write(b'Hello Arduino\n')
 
 def find_contours(frame, lower_color, upper_color, roi):
     x1, y1, x2, y2 = roi
@@ -263,8 +265,7 @@ def max_contour(contours):
     if len(contours) == 0:
         return (0, None)
     largest = max(contours, key=cv2.contourArea)
-    area = cv2.contourArea(largest)
-    return (area, largest)
+    return (cv2.contourArea(largest), largest)
 
 def display_roi(frame, rois, color):
     for roi in rois:
@@ -272,53 +273,26 @@ def display_roi(frame, rois, color):
         cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
     return frame
 
-# ----- SERIAL SETUP -----
-def setup_serial():
-    try:
-        return serial.Serial(port='/dev/ttyUSB0', baudrate=115200, timeout=0.05)
-    except serial.SerialException:
-        try:
-            return serial.Serial(port='/dev/ttyACM0', baudrate=115200, timeout=0.05)
-        except:
-            print("⚠️ Arduino not connected.")
-            return None
-
-arduino = setup_serial()
-if arduino:
-    time.sleep(2)
-    arduino.write(b'Hello Arduino\n')
-
-
 def main():
-    # CAMERA SETUP
-    cap = cv2.VideoCapture(0)  # Use USB camera
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, CAM_WIDTH)
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, CAM_HEIGHT)
+    # Initialize PiCamera2
+    picam2 = Picamera2()
+    picam2.preview_configuration.main.size = (CAM_WIDTH, CAM_HEIGHT)
+    picam2.preview_configuration.main.format = "RGB888"
+    picam2.configure("preview")
+    picam2.start()
+    time.sleep(2)  # Allow camera to warm up
 
-    if not cap.isOpened():
-        print("❌ Failed to open camera.")
-        return
-
-    # CONTROL STATE
-    lTurn = False
-    rTurn = False
-    t = 0
-    angle = straightConst
-    prevAngle = angle
-    aDiff = 0
-    prevDiff = 0
-    lDetected = False
-    debug = True
-    start = False
+    # State variables
+    lTurn = rTurn = lDetected = False
+    t = angle = prevAngle = aDiff = prevDiff = 0
     turnDir = "none"
+    debug = True
 
     while True:
-        ret, frame = cap.read()
-        if not ret:
-            break
-
+        frame = picam2.capture_array()
         frame = cv2.flip(frame, 1)
 
+        # Contour detection
         cListLeft = find_contours(frame, LOWER_BLACK, UPPER_BLACK, ROI1)
         cListRight = find_contours(frame, LOWER_BLACK, UPPER_BLACK, ROI2)
         cListOrange = find_contours(frame, LOWER_ORANGE, UPPER_ORANGE, ROI3)
@@ -330,33 +304,34 @@ def main():
         blueArea, _ = max_contour(cListBlue)
 
         # Marker detection
-        if orangeArea > 100 and turnDir == "none":
+        if orangeArea > 100:
             lDetected = True
-            turnDir = "right"
-            print(turnDir)
-        elif blueArea > 100 and turnDir == "none":
+            if turnDir == "none":
+                turnDir = "right"
+                print(turnDir)
+        elif blueArea > 100:
             lDetected = True
-            turnDir = "left"
-            print(turnDir)
+            if turnDir == "none":
+                turnDir = "left"
+                print(turnDir)
 
+        # PD controller
         aDiff = rightArea - leftArea
         angle = int(max(straightConst + aDiff * kp + (aDiff - prevDiff) * kd, 0))
 
-        # Turn logic
         if leftArea <= turnThresh and not rTurn:
             lTurn = True
         elif rightArea <= turnThresh and not lTurn:
             rTurn = True
 
         if (rightArea > exitThresh and rTurn) or (leftArea > exitThresh and lTurn):
-            lTurn = False
-            rTurn = False
+            lTurn = rTurn = False
             prevDiff = 0
             if lDetected:
                 t += 1
                 lDetected = False
 
-        # Clamp steering
+        # Clamp angle
         if lTurn:
             angle = min(max(angle, sharpLeft), maxLeft)
         elif rTurn:
@@ -364,36 +339,30 @@ def main():
         else:
             angle = max(min(angle, sharpLeft), sharpRight)
 
-        # DEBUG INFO
         if debug:
             debug_frame = frame.copy()
             debug_frame = display_roi(debug_frame, [ROI1, ROI2, ROI3], (255, 0, 255))
-            cv2.drawContours(debug_frame[ROI3[1]:ROI3[3], ROI3[0]:ROI3[2]], cListOrange, -1, (0, 255, 0), 2)
             cv2.drawContours(debug_frame[ROI1[1]:ROI1[3], ROI1[0]:ROI1[2]], cListLeft, -1, (0, 255, 0), 2)
             cv2.drawContours(debug_frame[ROI2[1]:ROI2[3], ROI2[0]:ROI2[2]], cListRight, -1, (0, 255, 0), 2)
+            cv2.drawContours(debug_frame[ROI3[1]:ROI3[3], ROI3[0]:ROI3[2]], cListOrange, -1, (0, 165, 255), 2)
             status = f"Angle: {angle} | Turns: {t} | L: {leftArea} | R: {rightArea}"
-            cv2.putText(debug_frame, status, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+            cv2.putText(debug_frame, status, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
             cv2.imshow("Debug View", debug_frame)
 
-        if arduino:
-            try:
-                arduino.write(f"{angle}\n".encode())
-            except:
-                print("⚠️ Error writing to Arduino.")
+        # Send to Arduino
+        arduino.write(f"{angle}\n".encode())
 
         prevDiff = aDiff
         prevAngle = angle
 
         if t >= 12 and abs(angle - straightConst) <= 20:
-            print("✅ Lap completed!")
+            print("Lap completed!")
             break
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
-    cap.release()
     cv2.destroyAllWindows()
-
 
 if __name__ == '__main__':
     main()
