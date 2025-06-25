@@ -1,156 +1,77 @@
 #include <Arduino.h>
 #include <Servo.h>
-#include <NewPing.h>
-
-// Ultrasonic Sensor Pins
-#include <NewPing.h>
-
-#define SONAR_NUM 3      // Number of sensors.
-#define MAX_DISTANCE 200 // Maximum distance (in cm) to ping.
-
-NewPing sonar[SONAR_NUM] = {     // Sensor object array.
-    NewPing(9, 9, MAX_DISTANCE), // Each sensor's trigger pin, echo pin, and max distance to ping.
-    NewPing(5, 5, MAX_DISTANCE),
-    NewPing(11, 11, MAX_DISTANCE)};
-
-// Servo Pin
-#define SERVO_PIN 6
-
-// Target distance from each wall (in cm)
-#define TARGET_DISTANCE 200
 
 Servo steeringServo;
-// PID Variables
-float errors = 0, PID_output = 0, integral = 0, derivative = 0, previous_errors = 0, present_position = 0;
 
-// Servo center position (may need adjustment)
-int servoCenter = 90;
-
-int error_F();
+unsigned long lastReceivedTime = 0;  // Time of last valid serial input
+const unsigned long timeout = 1000;  // 1 second timeout
+int currentAngle = 95;               // Default to 90
+#define BUTTON_PIN 2  // D2
 void motor(int speedPercent);
-void setup()
-{
-  Serial.begin(115200); // Initialize serial communication at 115200 baud rate
-
-  // Initialize servo
-  steeringServo.attach(SERVO_PIN);
-  steeringServo.write(servoCenter);
-
-  delay(1000); // Initial delay for stabilization
+void sw();
+void setup() {
+  Serial.begin(115200);
+  steeringServo.attach(5);
+  steeringServo.write(currentAngle);  // Initialize to 90
+  pinMode(6, OUTPUT);
+  pinMode(BUTTON_PIN, INPUT_PULLUP);  // Enable internal pull-up resistor
+  digitalWrite(6, HIGH);
+  sw();
 }
+void loop() {
+  static char input[6];
+  static byte pos = 0;
 
-int commandToCode(const String &cmd)
-{
-  if (cmd == "right")
-    return 1;
-  if (cmd == "left")
-    return 2;
-  if (cmd == "centered")
-    return 3;
-  if (cmd == "stop")
-    return 4;
-  if (cmd == "park")
-    return 5;
-  return 0; // Default: PID control
-}
+  // Read serial input if available
+  while (Serial.available()) {
+    char c = Serial.read();
 
-void loop()
-{
-  if (Serial.available())
-  {
-    String command = Serial.readStringUntil('\n');
-    command.trim();
-
-    switch (commandToCode(command))
-    {
-    case 1: // right
-      steeringServo.write(130);
-      motor(100);
-      break;
-
-    case 2: // left
-      steeringServo.write(50);
-      motor(100);
-      break;
-
-    case 3: // centered
-      steeringServo.write(90);
-      motor(100);
-      break;
-
-    case 4: // stop
-      steeringServo.write(90);
-      motor(0);
-      while (true)
-        ; // Halt
-      break;
-
-    case 5: // park
-      // parking logic
-      break;
-
-    default: // PID auto steering
-      PID_output = (3 * error_F()) + (30 * derivative);
-      int servoPosition = constrain(servoCenter + PID_output, 0, 180);
-      steeringServo.write(servoPosition);
-      motor(100);
-      // Serial.print(" | Servo: ");
-      // Serial.println(servoPosition);
-      break;
+    if (c == '\n') {
+      input[pos] = '\0';
+      int angle = atoi(input);
+      currentAngle = angle;  // Update current angle
+      steeringServo.write(currentAngle);
+      Serial.print("Got angle: ");
+      Serial.println(currentAngle);
+      pos = 0;
+      lastReceivedTime = millis();  // Reset timeout timer
+    } else if (pos < sizeof(input) - 1) {
+      input[pos++] = c;
     }
-  }
-  else
-  {
-    PID_output = (3 * error_F()) + (30 * derivative);
-    int servoPosition = constrain(servoCenter + PID_output, 0, 180);
-    steeringServo.write(servoPosition);
     motor(100);
   }
+
+  // Timeout logic: no data received recently
+  if (millis() - lastReceivedTime > timeout) {
+    if (currentAngle != 95) {
+      currentAngle = 95;
+      steeringServo.write(currentAngle);
+      Serial.println("No serial input — resetting to 95°");
+    }
+    motor(0);
+  }
 }
 
-float getDistance(int trigPin, int echoPin)
-{
-  digitalWrite(trigPin, LOW);
-  delayMicroseconds(2);
-  digitalWrite(trigPin, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(trigPin, LOW);
-
-  long duration = pulseIn(echoPin, HIGH);
-  float distance = duration * 0.034 / 2; // Convert to cm
-
-  // Filter out unrealistic values
-  if (distance < 2 || distance > 200)
-  {
-    distance = TARGET_DISTANCE; // Return target if reading is invalid
+void sw() {
+  // Wait for the button to be pressed (goes LOW)
+  while (digitalRead(BUTTON_PIN) == HIGH) {
+    delay(10); // Small delay to reduce CPU load
   }
 
-  return distance;
+  // Debounce delay to register the button press
+  delay(50);
+
+  // Wait for the button to be released (goes HIGH)
+  while (digitalRead(BUTTON_PIN) == LOW) {
+    delay(10); // Small delay to reduce CPU load
+  }
+
+  // Final debounce delay to ensure clean button release
+  delay(50);
 }
-int error_F()
-{
-  // Read distances from both sensors
-  float leftDistance = sonar[1].ping_cm();
-  if (leftDistance == 0)
-  {
-    leftDistance = TARGET_DISTANCE; // Default to target distance if reading is invalid
-  }
-  float rightDistance = sonar[3].ping_cm();
-  if (rightDistance == 0)
-  {
-    rightDistance = TARGET_DISTANCE; // Default to target distance if reading is invalid
-  }
-  // Calculate error (difference from target)
-  errors = rightDistance - leftDistance;
-  integral = integral + errors;
-  derivative = errors - previous_errors;
-  previous_errors = errors;
-  return errors;
-}
-
-#define PWML 10
-#define IN1L 9
-#define IN2L 8
+#define PWML 9
+#define IN1L 8
+#define IN2L 7
 
 void motor(int speedPercent)
 {
