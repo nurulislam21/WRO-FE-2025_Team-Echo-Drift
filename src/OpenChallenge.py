@@ -7,7 +7,7 @@ import time
 # from picamera2 import Picamera2
 # import serial
 
-# Simulated camera settings
+# Simulated camera setting
 CAM_WIDTH = 640
 CAM_HEIGHT = 480
 
@@ -117,6 +117,7 @@ def main():
 
     while True:
         ret, frame = cap.read()
+        frame = cv2.flip(frame, 1)
         if not ret:
             break
 
@@ -167,12 +168,12 @@ def main():
                 lDetected = False
 
         # Steering angle clamping
-        if lTurn:
-            angle = min(max(angle, sharpLeft), maxLeft)
-        elif rTurn:
-            angle = max(min(angle, sharpRight), maxRight)
-        else:
-            angle = max(min(angle, sharpLeft), sharpRight)
+        # if lTurn:
+        #     angle = min(max(angle, sharpLeft), maxLeft)
+        # elif rTurn:
+        #     angle = max(min(angle, sharpRight), maxRight)
+        # else:
+        #     angle = max(min(angle, sharpLeft), sharpRight)
 
         # Display debug info
         if debug:

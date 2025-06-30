@@ -99,12 +99,15 @@ def process_signal_data(data):
     #     return "INVALID DATA"
 
     if data[0] == 1:
-        if data[4] < 15:
+        if data[4] < -5:
             # ser.write(b"left\n")
-            return "left"
+            # return "left"
+            return "centered"
         else:
             # ser.write(b"centered\n")
-            return "centered"
+            # print(data[4])
+            # return "centered"
+            return "left"
 
     elif data[0] == 0:
         if data[4] < 15:
@@ -212,8 +215,8 @@ def main():
                 print(f"Completed turns: {t}")
 
         # Angle clamping
-        angle = np.clip(angle, maxRight, maxLeft) if rTurn or lTurn else \
-            np.clip(angle, sharpRight, sharpLeft)
+        angle = np.clip(angle, maxRight, maxLeft)# if rTurn or lTurn else \
+            # np.clip(angle, sharpRight, sharpLeft)
 
         # Debug display
         if debug:
@@ -266,7 +269,6 @@ def main():
 if __name__ == '__main__':
     main()
 
-#
 # import cv2
 # import numpy as np
 # import serial
@@ -282,7 +284,7 @@ if __name__ == '__main__':
 # ROI1 = [20, 170, 240, 220]
 # ROI2 = [400, 170, 620, 220]
 # ROI3 = [200, 300, 440, 350]
-# ROI4 = [0, 160, 640, 480]
+# ROI4 = [60, 180, 580, 380]
 #
 # # Color ranges
 # LOWER_BLACK = np.array([0, 0, 0])
@@ -299,10 +301,10 @@ if __name__ == '__main__':
 # turnThresh = 150
 # exitThresh = 1500
 # tDeviation = 25
-# sharpRight = straightConst - tDeviation
-# sharpLeft = straightConst + tDeviation
-# maxRight = straightConst - 50
-# maxLeft = straightConst + 50
+# sharpRight = straightConst + tDeviation
+# sharpLeft = straightConst - tDeviation
+# maxRight = straightConst + 50
+# maxLeft = straightConst - 50
 #
 # # Signal detection
 # PX_TO_CM = 0.00264583333
@@ -312,6 +314,7 @@ if __name__ == '__main__':
 # OBJECT_SIZE = 30
 # FRAME_WIDTH = CAM_WIDTH
 # FRAME_HEIGHT = CAM_HEIGHT
+#
 #
 # def find_contours(frame, lower_color, upper_color, roi):
 #     x1, y1, x2, y2 = roi
@@ -325,11 +328,13 @@ if __name__ == '__main__':
 #     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 #     return contours
 #
+#
 # def max_contour(contours):
 #     if not contours:
 #         return (0, None)
 #     largest = max(contours, key=cv2.contourArea)
 #     return (cv2.contourArea(largest), largest)
+#
 #
 # def display_roi(frame, rois, color):
 #     for roi in rois:
@@ -337,16 +342,19 @@ if __name__ == '__main__':
 #         cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
 #     return frame
 #
+#
 # def process_signal_data(data):
 #     if data[0] == 1:
-#         return "left" if data[4] < 15 else "centered"
+#         return "centered" if data[4] < -5 else "left"
 #     elif data[0] == 0:
 #         return "right" if data[4] < 15 else "centered"
 #     return "WALL FOLLOW"
 #
+#
 # # Serial setup
 # arduino = serial.Serial('/dev/ttyUSB0', 115200, timeout=0.05)
 # time.sleep(2)
+#
 #
 # def main():
 #     # Initialize PiCamera
@@ -366,7 +374,7 @@ if __name__ == '__main__':
 #
 #     while True:
 #         frame = picam2.capture_array()
-#         frame = cv2.flip(frame, 1)
+#         # frame = cv2.flip(frame, 1)
 #
 #         x1, y1, x2, y2 = ROI4
 #         roi4_frame = frame[y1:y2, x1:x2].copy()
@@ -397,6 +405,9 @@ if __name__ == '__main__':
 #             lDetected = True
 #             if turnDir == "none": turnDir = "left"
 #
+#         # Process signal data
+#         print(f"Action: {action}")
+#
 #         # PD control
 #         aDiff = rightArea - leftArea
 #         angle = int(max(straightConst + aDiff * kp + (aDiff - prevDiff) * kd, 0))
@@ -416,7 +427,7 @@ if __name__ == '__main__':
 #
 #         # Clamp angle
 #         angle = np.clip(angle, maxRight, maxLeft) if rTurn or lTurn else \
-#                 np.clip(angle, sharpRight, sharpLeft)
+#             np.clip(angle, sharpRight, sharpLeft)
 #
 #         # Debug visualization
 #         if debug:
@@ -435,11 +446,11 @@ if __name__ == '__main__':
 #
 #         # Write to Arduino
 #         if action == "left":
-#             arduino.write(f"42\n".encode())
+#             arduino.write(f"45\n".encode())
 #         elif action == "right":
-#             arduino.write(f"142\n".encode())
+#             arduino.write(f"145\n".encode())
 #         elif action == "centered":
-#             arduino.write(f"92\n".encode())
+#             arduino.write(f"95\n".encode())
 #         else:
 #             arduino.write(f"{angle}\n".encode())
 #
