@@ -70,8 +70,8 @@ void sw() {
   delay(50);
 }
 #define PWML 9
-#define IN1L 8
-#define IN2L 7
+#define IN1L 7
+#define IN2L 8
 
 void motor(int speedPercent)
 {
