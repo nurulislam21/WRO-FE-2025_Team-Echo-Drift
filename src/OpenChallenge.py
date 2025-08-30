@@ -4,15 +4,12 @@ import serial
 import time
 from picamera2 import Picamera2
 from datetime import datetime
-import argparse
+import sys
 
 
 # debug flag parsing
-parser = argparse.ArgumentParser()
-parser.add_argument("--debug", action="store_true", help="Enable debug mode")
-args = parser.parse_args()
+#DEBUG = True if len(sys.argv) > 1 else False
 DEBUG = True
-#DEBUG = True if args.debug else False
 print("DEBUG MODE" if DEBUG else "PRODUCTION")
 
 # Simulated camera settings
@@ -43,13 +40,21 @@ exitThresh = 1500
 tDeviation = 25
 sharpRight = straightConst + tDeviation
 sharpLeft = straightConst - tDeviation
+
 maxRight = straightConst + 30
 maxLeft = straightConst - 30
+
+slightRight = straightConst + 20
+slightLeft = straightConst - 20
+
 # Stopping logic
 stopFlag = False
 stopTime = 0
-IntersectionTurningDuration = 2000
+
+# Intersection turning
+IntersectionTurningDuration = 1700
 IntersectionTurningStart = 0
+IntersectionDetected = False
 
 # Serial communication
 arduino = serial.Serial(port='/dev/ttyUSB0', baudrate=115200, dsrdtr=True)
@@ -67,12 +72,12 @@ def find_contours(frame, lower_color, upper_color, roi):
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     # shift contours back to original image coordinates
-    shifted_contours = []
-    for cnt in contours:
-        cnt = cnt + [x1, y1]   # add ROI offset
-        shifted_contours.append(cnt)
+    # shifted_contours = []
+    # for cnt in contours:
+    #     cnt = cnt + [x1, y1]   # add ROI offset
+    #     shifted_contours.append(cnt)
 
-    return shifted_contours
+    return contours
 
 def max_contour(contours):
     if len(contours) == 0:
@@ -89,6 +94,8 @@ def display_roi(frame, rois, color):
 def main():
     global stopFlag
     global stopTime
+    global IntersectionDetected
+    global IntersectionTurningStart
     # Initialize PiCamera2
     picam2 = Picamera2()
     config = picam2.create_preview_configuration(main={"format": "BGR888", "size": (640, 480)})
@@ -122,20 +129,20 @@ def main():
         blueArea, _ = max_contour(cListBlue)
 
         # Marker detection
-        if orangeArea > 100:
-            lDetected = True
-            if turnDir == "none":
-                turnDir = "right"
-                print(turnDir)
-        elif blueArea > 100:
-            lDetected = True
-            if turnDir == "none":
-                turnDir = "left"
-                print(turnDir)
+        if not IntersectionDetected:
+            if orangeArea > 100:
+                lDetected = True
+                if turnDir == "none":
+                    turnDir = "right"
+                    print(turnDir)
+            elif blueArea > 100:
+                lDetected = True
+                if turnDir == "none":
+                    turnDir = "left"
+                    print(turnDir)
 
         # PD controller
-        aDiff = leftArea - rightArea
-        angle = int(max(straightConst + aDiff * kp + (aDiff - prevDiff) * kd, 0))
+        aDiff = leftArea - rightArea        
 
         if leftArea <= turnThresh and not rTurn:
             lTurn = True
@@ -151,18 +158,20 @@ def main():
 
         # Intersection turning
         if turnDir == "left":
-            angle = maxLeft
+            angle = slightLeft
         elif turnDir == "right":
-            angle = maxRight
+            angle = slightRight
+        else:
+            angle = int(max(straightConst + aDiff * kp + (aDiff - prevDiff) * kd, 0))
 
-        if turnDir == "left" or turnDir == "right":
-            turnDir = "none"
+        # trigger only once when intersection detected
+        if (turnDir == "left" or turnDir == "right") and not IntersectionDetected:
+            IntersectionDetected = True
             IntersectionTurningStart = datetime.now().timestamp() * 1000  # current time in milliseconds
 
-            while True:
-                arduino.write(f"{angle}\n".encode())
-                if (datetime.now().timestamp() * 1000 - IntersectionTurningStart) > IntersectionTurningDuration:
-                    break
+        if (datetime.now().timestamp() * 1000 - IntersectionTurningStart) > IntersectionTurningDuration and IntersectionDetected:
+            turnDir = "none"
+            IntersectionDetected = False
 
         # Clamp angle
         # if lTurn:
