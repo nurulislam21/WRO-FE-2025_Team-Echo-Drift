@@ -11,7 +11,7 @@ volatile long encoderValue = 0; // Raw encoder value
 unsigned long lastReceivedTime = 0; // Time of last valid serial input
 const unsigned long timeout = 1000; // 1 second timeout
 int currentAngle = 95;              // Default to 90
-#define BUTTON_PIN 4                // D2
+#define BUTTON_PIN 4                // D4
 void motor(int speedPercent);
 void sw();
 void updateEncoder();
