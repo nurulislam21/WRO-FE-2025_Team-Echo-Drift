@@ -3,58 +3,99 @@
 
 Servo steeringServo;
 
-unsigned long lastReceivedTime = 0;  // Time of last valid serial input
-const unsigned long timeout = 1000;  // 1 second timeout
-int currentAngle = 95;               // Default to 90
-#define BUTTON_PIN 2  // D2
+int encoderPin1 = 2;            // Encoder Output 'A' must connected with intreput pin of arduino.
+int encoderPin2 = 3;            // Encoder Otput 'B' must connected with intreput pin of arduino.
+volatile int lastEncoded = 0;   // Here updated value of encoder store.
+volatile long encoderValue = 0; // Raw encoder value
+
+unsigned long lastReceivedTime = 0; // Time of last valid serial input
+const unsigned long timeout = 1000; // 1 second timeout
+int currentAngle = 95;              // Default to 90
+#define BUTTON_PIN 4                // D2
 void motor(int speedPercent);
 void sw();
-void setup() {
+void updateEncoder();
+void setup()
+{
   Serial.begin(115200);
   steeringServo.attach(5);
-  steeringServo.write(currentAngle);  // Initialize to 90
+  steeringServo.write(currentAngle); // Initialize to 90
   pinMode(6, OUTPUT);
-  pinMode(BUTTON_PIN, INPUT_PULLUP);  // Enable internal pull-up resistor
+  pinMode(BUTTON_PIN, INPUT_PULLUP); // Enable internal pull-up resistor
   digitalWrite(6, HIGH);
+  pinMode(encoderPin1, INPUT_PULLUP);
+  pinMode(encoderPin2, INPUT_PULLUP);
+
+  digitalWrite(encoderPin1, HIGH); // turn pullup resistor on
+  digitalWrite(encoderPin2, HIGH); // turn pullup resistor on
+
+  // call updateEncoder() when any high/low changed seen
+  // on interrupt 0 (pin 2), or interrupt 1 (pin 3)
+  attachInterrupt(0, updateEncoder, CHANGE);
+  attachInterrupt(1, updateEncoder, CHANGE);
   sw();
 }
-void loop() {
+void loop()
+{
   static char input[6];
   static byte pos = 0;
 
   // Read serial input if available
-  while (Serial.available()) {
+  while (Serial.available())
+  {
     char c = Serial.read();
 
-    if (c == '\n') {
+    if (c == '\n')
+    {
       input[pos] = '\0';
       int angle = atoi(input);
-      currentAngle = angle;  // Update current angle
+      if (angle > 140)
+      {
+        angle = 140;
+      }
+      if (angle < 50)
+      {
+        angle = 50;
+      }
+
+      currentAngle = angle; // Update current angle
       steeringServo.write(currentAngle);
       Serial.print("Got angle: ");
       Serial.println(currentAngle);
       pos = 0;
-      lastReceivedTime = millis();  // Reset timeout timer
-    } else if (pos < sizeof(input) - 1) {
+      lastReceivedTime = millis(); // Reset timeout timer
+    }
+    else if (pos < sizeof(input) - 1)
+    {
       input[pos++] = c;
     }
-    motor(100);
+    motor(60);
   }
 
   // Timeout logic: no data received recently
-  if (millis() - lastReceivedTime > timeout) {
-    if (currentAngle != 95) {
+  if (millis() - lastReceivedTime > timeout)
+  {
+    if (currentAngle != 95)
+    {
       currentAngle = 95;
       steeringServo.write(currentAngle);
       Serial.println("No serial input — resetting to 95°");
     }
+    motor(-50);
+    delay(100);
     motor(0);
+    delay(100);
+    while (1)
+    {
+    }
   }
 }
 
-void sw() {
+void sw()
+{
   // Wait for the button to be pressed (goes LOW)
-  while (digitalRead(BUTTON_PIN) == HIGH) {
+  while (digitalRead(BUTTON_PIN) == HIGH)
+  {
     delay(10); // Small delay to reduce CPU load
   }
 
@@ -62,16 +103,17 @@ void sw() {
   delay(50);
 
   // Wait for the button to be released (goes HIGH)
-  while (digitalRead(BUTTON_PIN) == LOW) {
+  while (digitalRead(BUTTON_PIN) == LOW)
+  {
     delay(10); // Small delay to reduce CPU load
   }
 
   // Final debounce delay to ensure clean button release
   delay(50);
 }
-#define PWML 9
-#define IN1L 7
-#define IN2L 8
+#define PWML 10
+#define IN1L 6
+#define IN2L 7
 
 void motor(int speedPercent)
 {
@@ -99,4 +141,18 @@ void motor(int speedPercent)
     digitalWrite(IN2L, LOW);
     analogWrite(PWML, 255); // Brake mode, or stop
   }
+}
+
+void updateEncoder(){
+  int MSB = digitalRead(encoderPin1); //MSB = most significant bit
+  int LSB = digitalRead(encoderPin2); //LSB = least significant bit
+
+  int encoded = (MSB << 1) |LSB; //converting the 2 pin value to single number
+  int sum  = (lastEncoded << 2) | encoded; //adding it to the previous encoded value
+
+  if(sum == 0b1101 || sum == 0b0100 || sum == 0b0010 || sum == 0b1011) encoderValue --;
+  if(sum == 0b1110 || sum == 0b0111 || sum == 0b0001 || sum == 0b1000) encoderValue ++;
+
+  lastEncoded = encoded; //store this value for next time
+
 }
