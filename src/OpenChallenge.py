@@ -62,23 +62,23 @@ arduino = serial.Serial(port='/dev/ttyUSB0', baudrate=115200, dsrdtr=True)
 time.sleep(3)
 arduino.write(b'Hello Arduino\n')
 
-# Threading variables
-frame_queue = Queue(maxsize=2)  # Small queue to prevent lag
-result_queue = Queue(maxsize=2)
-processing_thread = None
+# Threading variables - separate queues for each detection task
+frame_queue_left = Queue(maxsize=2)
+frame_queue_right = Queue(maxsize=2)
+frame_queue_orange = Queue(maxsize=2)
+frame_queue_blue = Queue(maxsize=2)
+
+result_queue_left = Queue(maxsize=2)
+result_queue_right = Queue(maxsize=2)
+result_queue_orange = Queue(maxsize=2)
+result_queue_blue = Queue(maxsize=2)
+
 stop_processing = threading.Event()
 
-class ProcessingResult:
-    def __init__(self, leftArea=0, rightArea=0, orangeArea=0, blueArea=0, 
-                 contours_left=None, contours_right=None, contours_orange=None, contours_blue=None):
-        self.leftArea = leftArea
-        self.rightArea = rightArea
-        self.orangeArea = orangeArea
-        self.blueArea = blueArea
-        self.contours_left = contours_left or []
-        self.contours_right = contours_right or []
-        self.contours_orange = contours_orange or []
-        self.contours_blue = contours_blue or []
+class ContourResult:
+    def __init__(self, area=0, contours=None):
+        self.area = area
+        self.contours = contours or []
 
 def find_contours(frame, lower_color, upper_color, roi):
     x1, y1, x2, y2 = roi
@@ -98,48 +98,104 @@ def max_contour(contours):
     largest = max(contours, key=cv2.contourArea)
     return (cv2.contourArea(largest), largest)
 
-def processing_worker():
-    """Worker thread for processing frames"""
+def left_contour_worker():
+    """Worker thread for left ROI black line detection"""
     while not stop_processing.is_set():
         try:
-            # Get frame from queue with timeout
-            frame = frame_queue.get(timeout=0.1)
+            frame = frame_queue_left.get(timeout=0.1)
+            contours = find_contours(frame, LOWER_BLACK, UPPER_BLACK, ROI1)
+            area, _ = max_contour(contours)
+            result = ContourResult(area, contours)
             
-            # Process contours
-            cListLeft = find_contours(frame, LOWER_BLACK, UPPER_BLACK, ROI1)
-            cListRight = find_contours(frame, LOWER_BLACK, UPPER_BLACK, ROI2)
-            cListOrange = find_contours(frame, LOWER_ORANGE, UPPER_ORANGE, ROI3)
-            cListBlue = find_contours(frame, LOWER_BLUE, UPPER_BLUE, ROI3)
-
-            leftArea, _ = max_contour(cListLeft)
-            rightArea, _ = max_contour(cListRight)
-            orangeArea, _ = max_contour(cListOrange)
-            blueArea, _ = max_contour(cListBlue)
-
-            # Create result object
-            result = ProcessingResult(
-                leftArea, rightArea, orangeArea, blueArea,
-                cListLeft, cListRight, cListOrange, cListBlue
-            )
-
-            # Put result in queue (non-blocking, drop old results if queue is full)
             try:
-                result_queue.put_nowait(result)
+                result_queue_left.put_nowait(result)
             except:
-                # Queue is full, remove old result and add new one
                 try:
-                    result_queue.get_nowait()
-                    result_queue.put_nowait(result)
+                    result_queue_left.get_nowait()
+                    result_queue_left.put_nowait(result)
                 except Empty:
                     pass
-
-            frame_queue.task_done()
-
+            
+            frame_queue_left.task_done()
         except Empty:
-            # No frame available, continue
             continue
         except Exception as e:
-            print(f"Processing error: {e}")
+            print(f"Left processing error: {e}")
+            continue
+
+def right_contour_worker():
+    """Worker thread for right ROI black line detection"""
+    while not stop_processing.is_set():
+        try:
+            frame = frame_queue_right.get(timeout=0.1)
+            contours = find_contours(frame, LOWER_BLACK, UPPER_BLACK, ROI2)
+            area, _ = max_contour(contours)
+            result = ContourResult(area, contours)
+            
+            try:
+                result_queue_right.put_nowait(result)
+            except:
+                try:
+                    result_queue_right.get_nowait()
+                    result_queue_right.put_nowait(result)
+                except Empty:
+                    pass
+            
+            frame_queue_right.task_done()
+        except Empty:
+            continue
+        except Exception as e:
+            print(f"Right processing error: {e}")
+            continue
+
+def orange_contour_worker():
+    """Worker thread for orange marker detection"""
+    while not stop_processing.is_set():
+        try:
+            frame = frame_queue_orange.get(timeout=0.1)
+            contours = find_contours(frame, LOWER_ORANGE, UPPER_ORANGE, ROI3)
+            area, _ = max_contour(contours)
+            result = ContourResult(area, contours)
+            
+            try:
+                result_queue_orange.put_nowait(result)
+            except:
+                try:
+                    result_queue_orange.get_nowait()
+                    result_queue_orange.put_nowait(result)
+                except Empty:
+                    pass
+            
+            frame_queue_orange.task_done()
+        except Empty:
+            continue
+        except Exception as e:
+            print(f"Orange processing error: {e}")
+            continue
+
+def blue_contour_worker():
+    """Worker thread for blue marker detection"""
+    while not stop_processing.is_set():
+        try:
+            frame = frame_queue_blue.get(timeout=0.1)
+            contours = find_contours(frame, LOWER_BLUE, UPPER_BLUE, ROI3)
+            area, _ = max_contour(contours)
+            result = ContourResult(area, contours)
+            
+            try:
+                result_queue_blue.put_nowait(result)
+            except:
+                try:
+                    result_queue_blue.get_nowait()
+                    result_queue_blue.put_nowait(result)
+                except Empty:
+                    pass
+            
+            frame_queue_blue.task_done()
+        except Empty:
+            continue
+        except Exception as e:
+            print(f"Blue processing error: {e}")
             continue
 
 def display_roi(frame, rois, color):
@@ -153,7 +209,6 @@ def main():
     global stopTime
     global IntersectionDetected
     global IntersectionTurningStart
-    global processing_thread
 
     # Initialize PiCamera2
     picam2 = Picamera2()
@@ -168,9 +223,21 @@ def main():
     })
     picam2.start()
 
-    # Start processing thread
-    processing_thread = threading.Thread(target=processing_worker, daemon=True)
-    processing_thread.start()
+    # Start all processing threads
+    threads = []
+    workers = [
+        left_contour_worker,
+        right_contour_worker,
+        orange_contour_worker,
+        blue_contour_worker
+    ]
+    
+    for worker in workers:
+        thread = threading.Thread(target=worker, daemon=True)
+        thread.start()
+        threads.append(thread)
+    
+    print(f"Started {len(threads)} processing threads")
 
     time.sleep(2)  # Allow camera to warm up
 
@@ -180,32 +247,69 @@ def main():
     turnDir = "none"
     
     # Initialize with default values
-    current_result = ProcessingResult()
+    left_result = ContourResult()
+    right_result = ContourResult()
+    orange_result = ContourResult()
+    blue_result = ContourResult()
 
     try:
         while True:
             # Capture frame
             frame = picam2.capture_array()
 
-            # Add frame to processing queue (non-blocking)
+            # Distribute frame to all processing threads (non-blocking)
+            frame_copy = copy.deepcopy(frame)
+            
             try:
-                frame_queue.put_nowait(copy.deepcopy(frame))
+                frame_queue_left.put_nowait(frame_copy)
             except:
-                # Queue is full, skip this frame
+                pass  # Skip if queue full
+            
+            try:
+                frame_queue_right.put_nowait(frame_copy)
+            except:
+                pass
+            
+            try:
+                frame_queue_orange.put_nowait(frame_copy)
+            except:
+                pass
+            
+            try:
+                frame_queue_blue.put_nowait(frame_copy)
+            except:
                 pass
 
-            # Get latest processing result (non-blocking)
+            # Collect latest results from all threads (non-blocking)
             try:
-                while not result_queue.empty():
-                    current_result = result_queue.get_nowait()
+                while not result_queue_left.empty():
+                    left_result = result_queue_left.get_nowait()
+            except Empty:
+                pass
+
+            try:
+                while not result_queue_right.empty():
+                    right_result = result_queue_right.get_nowait()
+            except Empty:
+                pass
+
+            try:
+                while not result_queue_orange.empty():
+                    orange_result = result_queue_orange.get_nowait()
+            except Empty:
+                pass
+
+            try:
+                while not result_queue_blue.empty():
+                    blue_result = result_queue_blue.get_nowait()
             except Empty:
                 pass
 
             # Use the latest processing results
-            leftArea = current_result.leftArea
-            rightArea = current_result.rightArea
-            orangeArea = current_result.orangeArea
-            blueArea = current_result.blueArea
+            leftArea = left_result.area
+            rightArea = right_result.area
+            orangeArea = orange_result.area
+            blueArea = blue_result.area
 
             # Marker detection
             if not IntersectionDetected:
@@ -257,14 +361,14 @@ def main():
                 debug_frame = display_roi(debug_frame, [ROI1, ROI2, ROI3], (255, 0, 255))
                 
                 # Draw contours using the latest results
-                if current_result.contours_left:
-                    cv2.drawContours(debug_frame[ROI1[1]:ROI1[3], ROI1[0]:ROI1[2]], current_result.contours_left, -1, (0, 255, 0), 2)
-                if current_result.contours_right:
-                    cv2.drawContours(debug_frame[ROI2[1]:ROI2[3], ROI2[0]:ROI2[2]], current_result.contours_right, -1, (0, 255, 0), 2)
-                if current_result.contours_orange:
-                    cv2.drawContours(debug_frame[ROI3[1]:ROI3[3], ROI3[0]:ROI3[2]], current_result.contours_orange, -1, (0, 165, 255), 2)
-                if current_result.contours_blue:
-                    cv2.drawContours(debug_frame[ROI3[1]:ROI3[3], ROI3[0]:ROI3[2]], current_result.contours_blue, -1, (0, 165, 255), 2)
+                if left_result.contours:
+                    cv2.drawContours(debug_frame[ROI1[1]:ROI1[3], ROI1[0]:ROI1[2]], left_result.contours, -1, (0, 255, 0), 2)
+                if right_result.contours:
+                    cv2.drawContours(debug_frame[ROI2[1]:ROI2[3], ROI2[0]:ROI2[2]], right_result.contours, -1, (0, 255, 0), 2)
+                if orange_result.contours:
+                    cv2.drawContours(debug_frame[ROI3[1]:ROI3[3], ROI3[0]:ROI3[2]], orange_result.contours, -1, (0, 165, 255), 2)
+                if blue_result.contours:
+                    cv2.drawContours(debug_frame[ROI3[1]:ROI3[3], ROI3[0]:ROI3[2]], blue_result.contours, -1, (0, 165, 255), 2)
                 
                 status = f"Angle: {angle} | Turns: {t} | L: {leftArea} | R: {rightArea}"
                 cv2.putText(debug_frame, status, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
@@ -293,8 +397,8 @@ def main():
     finally:
         # Cleanup
         stop_processing.set()
-        if processing_thread:
-            processing_thread.join(timeout=1.0)
+        for thread in threads:
+            thread.join(timeout=1.0)
         picam2.stop()
         arduino.close()
         cv2.destroyAllWindows()
