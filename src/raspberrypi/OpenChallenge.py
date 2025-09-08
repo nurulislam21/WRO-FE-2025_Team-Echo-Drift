@@ -68,6 +68,9 @@ maxLeft = straightConst - 30
 slightRight = straightConst + 20
 slightLeft = straightConst - 20
 
+startProcessing = False
+stopProcessing = False
+
 # Stopping logic
 stopFlag = False
 stopTime = 0
@@ -80,11 +83,9 @@ IntersectionDetected = False
 # Serial communication
 arduino = serial.Serial(port="/dev/ttyUSB0", baudrate=115200, dsrdtr=True)
 time.sleep(3)
-arduino.write(b"Hello Arduino\n")
+arduino.write(b"0,95\n")
 
 # Threading variables - separate queues for each detection task
-
-
 def main():
     global stopFlag
     global stopTime
@@ -139,11 +140,13 @@ def main():
 
     try:
         while True:
-            # receive serial data from arduino
-            if arduino.in_waiting > 0:
+            # dont start until start button pressed
+            if arduino.in_waiting > 0 and not startProcessing:
                 line = arduino.readline().decode("utf-8").rstrip()
                 print(f"Arduino: {line}")
-
+                if not line == "START":
+                    startProcessing = True
+                    continue
 
             # Capture frame
             frame = picam2.capture_array()
@@ -304,7 +307,7 @@ def main():
                 cv2.imshow("Debug View", debug_frame)
 
             # Send to Arduino
-            arduino.write(f"{angle}\n".encode())
+            arduino.write(f"60,{angle}\n".encode())
 
             prevDiff = aDiff
             prevAngle = angle
