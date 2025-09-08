@@ -20,9 +20,7 @@ void setup()
   Serial.begin(115200);
   steeringServo.attach(5);
   steeringServo.write(currentAngle); // Initialize to 90
-  pinMode(6, OUTPUT);
   pinMode(BUTTON_PIN, INPUT_PULLUP); // Enable internal pull-up resistor
-  digitalWrite(6, HIGH);
   pinMode(encoderPin1, INPUT_PULLUP);
   pinMode(encoderPin2, INPUT_PULLUP);
 
@@ -33,6 +31,18 @@ void setup()
   // on interrupt 0 (pin 2), or interrupt 1 (pin 3)
   attachInterrupt(0, updateEncoder, CHANGE);
   attachInterrupt(1, updateEncoder, CHANGE);
+  // Wait for serial data
+  while (!Serial.available()) {
+    delay(10);
+  }
+  
+  // Once serial is available, perform the servo movement
+  steeringServo.write(120);
+  delay(500);
+  steeringServo.write(60);
+  delay(500);
+  steeringServo.write(95);
+  delay(50);
   sw();
 }
 void loop()
@@ -111,7 +121,7 @@ void sw()
   // Final debounce delay to ensure clean button release
   delay(50);
 }
-#define PWML 10
+#define PWML 11
 #define IN1L 6
 #define IN2L 7
 
