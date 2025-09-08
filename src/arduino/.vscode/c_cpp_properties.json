@@ -1,0 +1,62 @@
+//
+// !!! WARNING !!! AUTO-GENERATED FILE!
+// PLEASE DO NOT MODIFY IT AND USE "platformio.ini":
+// https://docs.platformio.org/page/projectconf/section_env_build.html#build-flags
+//
+{
+    "configurations": [
+        {
+            "name": "PlatformIO",
+            "includePath": [
+                "/Users/ghost/Programming/Robotics/WRO-FE-2025_Team-Echo-Drift-/src/arduino/include",
+                "/Users/ghost/Programming/Robotics/WRO-FE-2025_Team-Echo-Drift-/src/arduino/src",
+                "/Users/ghost/Programming/Robotics/WRO-FE-2025_Team-Echo-Drift-/src/arduino/.pio/libdeps/nanoatmega328/SparkMotor/include",
+                "/Users/ghost/Programming/Robotics/WRO-FE-2025_Team-Echo-Drift-/src/arduino/.pio/libdeps/nanoatmega328/SparkMotor/src",
+                "/Users/ghost/Programming/Robotics/WRO-FE-2025_Team-Echo-Drift-/src/arduino/.pio/libdeps/nanoatmega328/Servo/src",
+                "/Users/ghost/.platformio/packages/framework-arduino-avr/libraries/Wire/src",
+                "/Users/ghost/.platformio/packages/framework-arduino-avr/cores/arduino",
+                "/Users/ghost/.platformio/packages/framework-arduino-avr/variants/eightanaloginputs",
+                "/Users/ghost/.platformio/packages/framework-arduino-avr/libraries/EEPROM/src",
+                "/Users/ghost/.platformio/packages/framework-arduino-avr/libraries/HID/src",
+                "/Users/ghost/.platformio/packages/framework-arduino-avr/libraries/SPI/src",
+                "/Users/ghost/.platformio/packages/framework-arduino-avr/libraries/SoftwareSerial/src",
+                ""
+            ],
+            "browse": {
+                "limitSymbolsToIncludedHeaders": true,
+                "path": [
+                    "/Users/ghost/Programming/Robotics/WRO-FE-2025_Team-Echo-Drift-/src/arduino/include",
+                    "/Users/ghost/Programming/Robotics/WRO-FE-2025_Team-Echo-Drift-/src/arduino/src",
+                    "/Users/ghost/Programming/Robotics/WRO-FE-2025_Team-Echo-Drift-/src/arduino/.pio/libdeps/nanoatmega328/SparkMotor/include",
+                    "/Users/ghost/Programming/Robotics/WRO-FE-2025_Team-Echo-Drift-/src/arduino/.pio/libdeps/nanoatmega328/SparkMotor/src",
+                    "/Users/ghost/Programming/Robotics/WRO-FE-2025_Team-Echo-Drift-/src/arduino/.pio/libdeps/nanoatmega328/Servo/src",
+                    "/Users/ghost/.platformio/packages/framework-arduino-avr/libraries/Wire/src",
+                    "/Users/ghost/.platformio/packages/framework-arduino-avr/cores/arduino",
+                    "/Users/ghost/.platformio/packages/framework-arduino-avr/variants/eightanaloginputs",
+                    "/Users/ghost/.platformio/packages/framework-arduino-avr/libraries/EEPROM/src",
+                    "/Users/ghost/.platformio/packages/framework-arduino-avr/libraries/HID/src",
+                    "/Users/ghost/.platformio/packages/framework-arduino-avr/libraries/SPI/src",
+                    "/Users/ghost/.platformio/packages/framework-arduino-avr/libraries/SoftwareSerial/src",
+                    ""
+                ]
+            },
+            "defines": [
+                "PLATFORMIO=60118",
+                "ARDUINO_AVR_NANO",
+                "F_CPU=16000000L",
+                "ARDUINO_ARCH_AVR",
+                "ARDUINO=10808",
+                "__AVR_ATmega328P__",
+                ""
+            ],
+            "cStandard": "gnu11",
+            "cppStandard": "gnu++11",
+            "compilerPath": "/Users/ghost/.platformio/packages/toolchain-atmelavr/bin/avr-gcc",
+            "compilerArgs": [
+                "-mmcu=atmega328p",
+                ""
+            ]
+        }
+    ],
+    "version": 4
+}
