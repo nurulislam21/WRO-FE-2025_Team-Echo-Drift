@@ -29,6 +29,7 @@ CAM_HEIGHT = 480
 ROI1 = [20, 220, 240, 260]
 ROI2 = [400, 220, 620, 260]
 ROI3 = [200, 300, 440, 350]
+ROI4 = [0, 0, CAM_WIDTH, CAM_HEIGHT]  # full frame for obstacle detection
 
 # Color ranges
 LOWER_BLACK = np.array([21, 109, 112])
@@ -40,6 +41,13 @@ UPPER_ORANGE = np.array([185, 165, 127])
 LOWER_BLUE = np.array([92, 150, 166])
 UPPER_BLUE = np.array([152, 190, 206])
 
+# obstacle color ranges
+LOWER_RED = np.array([53, 162, 33])
+UPPER_RED = np.array([113, 202, 73])
+
+LOWER_GREEN = np.array([113, 76, 167])
+UPPER_GREEN = np.array([173, 116, 207])
+
 contour_workers = ContourWorkers(
     lower_blue=LOWER_BLUE,
     upper_blue=UPPER_BLUE,
@@ -47,9 +55,14 @@ contour_workers = ContourWorkers(
     upper_black=UPPER_BLACK,
     lower_orange=LOWER_ORANGE,
     upper_orange=UPPER_ORANGE,
+    lower_red=LOWER_RED,
+    upper_red=UPPER_RED,
+    lower_green=LOWER_GREEN,
+    upper_green=UPPER_GREEN,
     roi1=ROI1,
     roi2=ROI2,
     roi3=ROI3,
+    roi4=ROI4,
 )
 
 # Control parameters
@@ -85,6 +98,7 @@ arduino = serial.Serial(port="/dev/ttyUSB0", baudrate=115200, dsrdtr=True)
 time.sleep(3)
 arduino.write(b"0,95\n")
 
+
 # Threading variables - separate queues for each detection task
 def main():
     global stopFlag
@@ -116,6 +130,8 @@ def main():
         contour_workers.right_contour_worker,
         contour_workers.orange_contour_worker,
         contour_workers.blue_contour_worker,
+        contour_workers.green_contour_worker,
+        contour_workers.red_contour_worker,
     ]
 
     for worker in workers:
@@ -131,12 +147,6 @@ def main():
     lTurn = rTurn = lDetected = False
     t = angle = prevAngle = aDiff = prevDiff = 0
     turnDir = "none"
-
-    # Initialize with default values
-    left_result = ContourResult()
-    right_result = ContourResult()
-    orange_result = ContourResult()
-    blue_result = ContourResult()
 
     try:
         while True:
@@ -154,56 +164,24 @@ def main():
             # Distribute frame to all processing threads (non-blocking)
             frame_copy = copy.deepcopy(frame)
 
-            try:
-                contour_workers.frame_queue_left.put_nowait(frame_copy)
-            except:
-                pass  # Skip if queue full
-
-            try:
-                contour_workers.frame_queue_right.put_nowait(frame_copy)
-            except:
-                pass
-
-            try:
-                contour_workers.frame_queue_orange.put_nowait(frame_copy)
-            except:
-                pass
-
-            try:
-                contour_workers.frame_queue_blue.put_nowait(frame_copy)
-            except:
-                pass
-
-            # Collect latest results from all threads (non-blocking)
-            try:
-                while not contour_workers.result_queue_left.empty():
-                    left_result = contour_workers.result_queue_left.get_nowait()
-            except Empty:
-                pass
-
-            try:
-                while not contour_workers.result_queue_right.empty():
-                    right_result = contour_workers.result_queue_right.get_nowait()
-            except Empty:
-                pass
-
-            try:
-                while not contour_workers.result_queue_orange.empty():
-                    orange_result = contour_workers.result_queue_orange.get_nowait()
-            except Empty:
-                pass
-
-            try:
-                while not contour_workers.result_queue_blue.empty():
-                    blue_result = contour_workers.result_queue_blue.get_nowait()
-            except Empty:
-                pass
+            contour_workers.put_frames_in_queues(frame_copy)
+            # Retrieve all results from queues (non-blocking)
+            (
+                left_result,
+                right_result,
+                orange_result,
+                blue_result,
+                green_result,
+                red_result,
+            ) = contour_workers.collect_results()
 
             # Use the latest processing results
             leftArea = left_result.area
             rightArea = right_result.area
             orangeArea = orange_result.area
             blueArea = blue_result.area
+            greenArea = green_result.area
+            redArea = red_result.area
 
             # Marker detection
             if not IntersectionDetected:
@@ -294,7 +272,24 @@ def main():
                         2,
                     )
 
-                status = f"Angle: {angle} | Turns: {t} | L: {leftArea} | R: {rightArea}"
+                if green_result.contours:
+                    cv2.drawContours(
+                        debug_frame[ROI4[1] : ROI4[3], ROI4[0] : ROI4[2]],
+                        green_result.contours,
+                        -1,
+                        (0, 255, 0),
+                        2,
+                    )
+                if red_result.contours:
+                    cv2.drawContours(
+                        debug_frame[ROI4[1] : ROI4[3], ROI4[0] : ROI4[2]],
+                        red_result.contours,
+                        -1,
+                        (0, 0, 255),
+                        2,
+                    )
+
+                status = f"Angle: {angle} | Turns: {t} | L: {leftArea} | R: {rightArea} | G: {greenArea} | R: {redArea}"
                 cv2.putText(
                     debug_frame,
                     status,
