@@ -29,7 +29,7 @@ CAM_HEIGHT = 480
 ROI1 = [20, 220, 240, 260]
 ROI2 = [400, 220, 620, 260]
 ROI3 = [200, 300, 440, 350]
-ROI4 = [0, 0, CAM_WIDTH, CAM_HEIGHT]  # full frame for obstacle detection
+ROI4 = [20, 220, 100, 100]  # full frame for obstacle detection
 
 # Color ranges
 LOWER_BLACK = np.array([21, 109, 112])
@@ -295,7 +295,7 @@ def main():
                     status,
                     (10, 30),
                     cv2.FONT_HERSHEY_SIMPLEX,
-                    0.7,
+                    0.6,
                     (0, 255, 255),
                     2,
                 )
