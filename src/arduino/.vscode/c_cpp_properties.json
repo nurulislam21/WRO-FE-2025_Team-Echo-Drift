@@ -8,11 +8,11 @@
         {
             "name": "PlatformIO",
             "includePath": [
-                "/Users/ghost/Programming/Robotics/WRO-FE-2025_Team-Echo-Drift-/src/arduino/include",
-                "/Users/ghost/Programming/Robotics/WRO-FE-2025_Team-Echo-Drift-/src/arduino/src",
-                "/Users/ghost/Programming/Robotics/WRO-FE-2025_Team-Echo-Drift-/src/arduino/.pio/libdeps/nanoatmega328/SparkMotor/include",
-                "/Users/ghost/Programming/Robotics/WRO-FE-2025_Team-Echo-Drift-/src/arduino/.pio/libdeps/nanoatmega328/SparkMotor/src",
-                "/Users/ghost/Programming/Robotics/WRO-FE-2025_Team-Echo-Drift-/src/arduino/.pio/libdeps/nanoatmega328/Servo/src",
+                "/Users/ghost/Programming/Robotics/WRO-FE-2025_Team-Echo-Drift/src/arduino/include",
+                "/Users/ghost/Programming/Robotics/WRO-FE-2025_Team-Echo-Drift/src/arduino/src",
+                "/Users/ghost/Programming/Robotics/WRO-FE-2025_Team-Echo-Drift/src/arduino/.pio/libdeps/nanoatmega328/SparkMotor/include",
+                "/Users/ghost/Programming/Robotics/WRO-FE-2025_Team-Echo-Drift/src/arduino/.pio/libdeps/nanoatmega328/SparkMotor/src",
+                "/Users/ghost/Programming/Robotics/WRO-FE-2025_Team-Echo-Drift/src/arduino/.pio/libdeps/nanoatmega328/Servo/src",
                 "/Users/ghost/.platformio/packages/framework-arduino-avr/libraries/Wire/src",
                 "/Users/ghost/.platformio/packages/framework-arduino-avr/cores/arduino",
                 "/Users/ghost/.platformio/packages/framework-arduino-avr/variants/eightanaloginputs",
@@ -25,11 +25,11 @@
             "browse": {
                 "limitSymbolsToIncludedHeaders": true,
                 "path": [
-                    "/Users/ghost/Programming/Robotics/WRO-FE-2025_Team-Echo-Drift-/src/arduino/include",
-                    "/Users/ghost/Programming/Robotics/WRO-FE-2025_Team-Echo-Drift-/src/arduino/src",
-                    "/Users/ghost/Programming/Robotics/WRO-FE-2025_Team-Echo-Drift-/src/arduino/.pio/libdeps/nanoatmega328/SparkMotor/include",
-                    "/Users/ghost/Programming/Robotics/WRO-FE-2025_Team-Echo-Drift-/src/arduino/.pio/libdeps/nanoatmega328/SparkMotor/src",
-                    "/Users/ghost/Programming/Robotics/WRO-FE-2025_Team-Echo-Drift-/src/arduino/.pio/libdeps/nanoatmega328/Servo/src",
+                    "/Users/ghost/Programming/Robotics/WRO-FE-2025_Team-Echo-Drift/src/arduino/include",
+                    "/Users/ghost/Programming/Robotics/WRO-FE-2025_Team-Echo-Drift/src/arduino/src",
+                    "/Users/ghost/Programming/Robotics/WRO-FE-2025_Team-Echo-Drift/src/arduino/.pio/libdeps/nanoatmega328/SparkMotor/include",
+                    "/Users/ghost/Programming/Robotics/WRO-FE-2025_Team-Echo-Drift/src/arduino/.pio/libdeps/nanoatmega328/SparkMotor/src",
+                    "/Users/ghost/Programming/Robotics/WRO-FE-2025_Team-Echo-Drift/src/arduino/.pio/libdeps/nanoatmega328/Servo/src",
                     "/Users/ghost/.platformio/packages/framework-arduino-avr/libraries/Wire/src",
                     "/Users/ghost/.platformio/packages/framework-arduino-avr/cores/arduino",
                     "/Users/ghost/.platformio/packages/framework-arduino-avr/variants/eightanaloginputs",
