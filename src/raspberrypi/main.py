@@ -26,10 +26,10 @@ CAM_WIDTH = 640
 CAM_HEIGHT = 480
 
 # Region of Interest coordinates
-ROI1 = [20, 220, 240, 260]
-ROI2 = [400, 220, 620, 260]
-ROI3 = [200, 300, 440, 350]
-ROI4 = [20, 220, 100, 100]  # full frame for obstacle detection
+ROI1 = [20, 220, 240, 260] # left
+ROI2 = [400, 220, 620, 260] # right
+ROI3 = [200, 300, 440, 350] # lap detection
+ROI4 = [70, 175, 540, 300]  # obstacle detection
 
 # Color ranges
 LOWER_BLACK = np.array([21, 109, 112])
@@ -42,11 +42,11 @@ LOWER_BLUE = np.array([92, 150, 166])
 UPPER_BLUE = np.array([152, 190, 206])
 
 # obstacle color ranges
-LOWER_RED = np.array([53, 162, 33])
-UPPER_RED = np.array([113, 202, 73])
+LOWER_RED = np.array([33, 137, 70])
+UPPER_RED = np.array([93, 177, 110])
 
-LOWER_GREEN = np.array([113, 76, 167])
-UPPER_GREEN = np.array([173, 116, 207])
+LOWER_GREEN = np.array([60, 88, 150])
+UPPER_GREEN = np.array([120, 128, 190])
 
 contour_workers = ContourWorkers(
     lower_blue=LOWER_BLUE,
@@ -235,7 +235,7 @@ def main():
             if DEBUG:
                 debug_frame = frame.copy()
                 debug_frame = display_roi(
-                    debug_frame, [ROI1, ROI2, ROI3], (255, 0, 255)
+                    debug_frame, [ROI1, ROI2, ROI3, ROI4], (255, 0, 255)
                 )
 
                 # Draw contours using the latest results
