@@ -29,9 +29,10 @@ def display_roi(frame, rois, color):
     return frame
 
 
-def get_min_y(contour):
-    print(contour)
-    return contour[:, :, 1].min()
+def get_min_y(contours):
+    all_points = np.vstack(contours).reshape(-1, 2)
+    min_y = all_points[:, 1].min()
+    return min_y
 
 
 def get_avg_x(contour):
