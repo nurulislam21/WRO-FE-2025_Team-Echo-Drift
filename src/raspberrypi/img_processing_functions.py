@@ -30,7 +30,7 @@ def display_roi(frame, rois, color):
 
 
 def get_min_y(contour):
-    return min(point[0][1] for point in contour)
+    return contour[:, :, 1].min()
 
 
 def get_avg_x(contour):
