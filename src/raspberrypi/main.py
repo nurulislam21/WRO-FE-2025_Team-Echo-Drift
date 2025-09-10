@@ -151,13 +151,13 @@ def main():
     try:
         while True:
             # dont start until start button pressed
+            if arduino.in_waiting > 0:
+                line = arduino.readline().decode("utf-8").rstrip()
+                print(f"Arduino: {line}")
+                if not line == "START":
+                    startProcessing = True
             if not startProcessing:
-                if arduino.in_waiting > 0:
-                    line = arduino.readline().decode("utf-8").rstrip()
-                    print(f"Arduino: {line}")
-                    if not line == "START":
-                        startProcessing = True
-                        continue
+                continue
 
             # Capture frame
             frame = picam2.capture_array()
@@ -203,8 +203,16 @@ def main():
                 green_piller_y_distance = get_min_y(green_result.contours)
                 red_piller_y_distance = get_min_y(red_result.contours)
 
-                green_piller_y_distance = float("inf") if green_piller_y_distance is None else green_piller_y_distance
-                red_piller_y_distance = float("inf") if red_piller_y_distance is None else red_piller_y_distance
+                green_piller_y_distance = (
+                    float("inf")
+                    if green_piller_y_distance is None
+                    else green_piller_y_distance
+                )
+                red_piller_y_distance = (
+                    float("inf")
+                    if red_piller_y_distance is None
+                    else red_piller_y_distance
+                )
 
                 if green_piller_y_distance < red_piller_y_distance:
                     print("green piller detected")
