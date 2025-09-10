@@ -6,9 +6,10 @@ import numpy as np
 
 
 class ContourResult:
-    def __init__(self, area=0, contours=None):
+    def __init__(self, area=0, contours=None, metadata=""):
         self.area = area
         self.contours = contours or []
+        self.metadata = metadata
 
 
 class ContourWorkers:
@@ -69,7 +70,7 @@ class ContourWorkers:
         self.blue_result = ContourResult()
         self.green_result = ContourResult()
         self.red_result = ContourResult()
-    
+
     def put_frames_in_queues(self, frame_copy):
         try:
             self.frame_queue_left.put_nowait(frame_copy)
@@ -100,7 +101,7 @@ class ContourWorkers:
             self.frame_queue_red.put_nowait(frame_copy)
         except:
             pass
-    
+
     def collect_results(self):
         try:
             while not self.result_queue_left.empty():
@@ -291,7 +292,7 @@ class ContourWorkers:
                     frame, self.LOWER_GREEN, self.UPPER_GREEN, self.ROI4
                 )
                 area, _ = max_contour(contours)
-                result = ContourResult(area, contours)
+                result = ContourResult(area, contours, "green_pillar")
 
                 try:
                     self.result_queue_green.put_nowait(result)
@@ -318,7 +319,7 @@ class ContourWorkers:
                     frame, self.LOWER_RED, self.UPPER_RED, self.ROI4
                 )
                 area, _ = max_contour(contours)
-                result = ContourResult(area, contours)
+                result = ContourResult(area, contours, "red_pillar")
 
                 try:
                     self.result_queue_red.put_nowait(result)

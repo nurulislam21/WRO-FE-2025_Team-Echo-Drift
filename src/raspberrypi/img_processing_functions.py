@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 
+
 def find_contours(frame, lower_color, upper_color, roi):
     x1, y1, x2, y2 = roi
     roi_frame = frame[y1:y2, x1:x2]
@@ -26,3 +27,16 @@ def display_roi(frame, rois, color):
         x1, y1, x2, y2 = roi
         cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
     return frame
+
+
+def get_min_y(contour):
+    return min(point[0][1] for point in contour)
+
+
+def get_avg_x(contour):
+    M = cv2.moments(contour)
+    if M["m00"] != 0:
+        cx = int(M["m10"] / M["m00"])
+    else:
+        cx = 0
+    return cx

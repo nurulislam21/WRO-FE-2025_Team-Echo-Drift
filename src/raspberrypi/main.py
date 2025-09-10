@@ -7,7 +7,7 @@ from datetime import datetime
 import sys
 import threading
 from queue import Queue, Empty
-from img_processing_functions import display_roi
+from img_processing_functions import display_roi, get_min_y, get_avg_x
 from contour_workers import ContourWorkers, ContourResult
 import copy
 
@@ -26,10 +26,10 @@ CAM_WIDTH = 640
 CAM_HEIGHT = 480
 
 # Region of Interest coordinates
-ROI1 = [20, 220, 240, 260] # left
-ROI2 = [400, 220, 620, 260] # right
-ROI3 = [200, 300, 440, 350] # lap detection
-ROI4 = [70, 175, 540, 300]  # obstacle detection
+ROI1 = [20, 220, 240, 260]  # left
+ROI2 = [400, 220, 620, 260]  # right
+ROI3 = [200, 300, 440, 350]  # lap detection
+ROI4 = [90, 175, 540, 280]  # obstacle detection
 
 # Color ranges
 LOWER_BLACK = np.array([21, 109, 112])
@@ -151,12 +151,13 @@ def main():
     try:
         while True:
             # dont start until start button pressed
-            if arduino.in_waiting > 0 and not startProcessing:
-                line = arduino.readline().decode("utf-8").rstrip()
-                print(f"Arduino: {line}")
-                if not line == "START":
-                    startProcessing = True
-                    continue
+            if not startProcessing:
+                if arduino.in_waiting > 0:
+                    line = arduino.readline().decode("utf-8").rstrip()
+                    print(f"Arduino: {line}")
+                    if not line == "START":
+                        startProcessing = True
+                        continue
 
             # Capture frame
             frame = picam2.capture_array()
@@ -185,16 +186,31 @@ def main():
 
             # Marker detection
             if not IntersectionDetected:
-                if orangeArea > 100:
+                if orangeArea > 80:
                     lDetected = True
                     if turnDir == "none":
                         turnDir = "right"
                         print(turnDir)
-                elif blueArea > 100:
+                elif blueArea > 80:
                     lDetected = True
                     if turnDir == "none":
                         turnDir = "left"
                         print(turnDir)
+
+            # overwrite leftArea/rightArea with obstacle areas if detected
+            if greenArea > 100 or redArea > 100:
+                # get the nearer obstacle
+                green_piller_y_distance = get_min_y(green_result.contours)
+                red_piller_y_distance = get_min_y(red_result.contours)
+
+                if green_piller_y_distance < red_piller_y_distance:
+                    print("green piller detected")
+                    rightArea = (
+                        (CAM_WIDTH - get_avg_x(green_result.contours)) * 2
+                    ) / CAM_WIDTH
+                elif red_piller_y_distance < green_piller_y_distance:
+                    print("red piller detected")
+                    leftArea = (get_avg_x(red_result.contours) * 2) / CAM_WIDTH
 
             # PD controller
             aDiff = leftArea - rightArea
