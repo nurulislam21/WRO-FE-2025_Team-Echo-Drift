@@ -36,10 +36,10 @@ def get_min_y(contours):
     return all_points[:, 1].min()
 
 
-def get_avg_x(contour):
-    M = cv2.moments(contour)
-    if M["m00"] != 0:
-        cx = int(M["m10"] / M["m00"])
-    else:
-        cx = 0
-    return cx
+def get_avg_x(contours):
+    if not contours:  # no contours
+        return None
+    # Merge all points
+    all_points = np.vstack(contours).reshape(-1, 2)  # Nx2 array
+    # Average X
+    return all_points[:, 0].mean()
