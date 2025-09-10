@@ -104,7 +104,7 @@ def main():
     global stopFlag
     global stopTime
     global IntersectionDetected
-    global IntersectionTurningStart
+    global IntersectionTurningStart, startProcessing
 
     # Initialize PiCamera2
     picam2 = Picamera2()
