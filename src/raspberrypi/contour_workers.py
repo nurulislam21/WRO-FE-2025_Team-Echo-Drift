@@ -3,6 +3,7 @@ import threading
 from queue import Queue, Empty
 import cv2
 import numpy as np
+from typing import Literal
 
 
 class ContourResult:
@@ -15,6 +16,7 @@ class ContourResult:
 class ContourWorkers:
     def __init__(
         self,
+        mode: Literal["OBSTACLE", "NO_OBSTACLE"],
         lower_blue: np.ndarray,
         upper_blue: np.ndarray,
         lower_black: np.ndarray,
@@ -30,6 +32,7 @@ class ContourWorkers:
         roi3: list,
         roi4: list,
     ):
+        self.mode = mode
         # colors
         self.LOWER_BLUE = lower_blue
         self.UPPER_BLUE = upper_blue
@@ -91,16 +94,17 @@ class ContourWorkers:
             self.frame_queue_blue.put_nowait(frame_copy)
         except:
             pass
+        
+        if self.mode == "OBSTACLE":
+            try:
+                self.frame_queue_green.put_nowait(frame_copy)
+            except:
+                pass
 
-        try:
-            self.frame_queue_green.put_nowait(frame_copy)
-        except:
-            pass
-
-        try:
-            self.frame_queue_red.put_nowait(frame_copy)
-        except:
-            pass
+            try:
+                self.frame_queue_red.put_nowait(frame_copy)
+            except:
+                pass
 
     def collect_results(self):
         try:

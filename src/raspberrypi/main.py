@@ -49,6 +49,7 @@ LOWER_GREEN = np.array([60, 88, 150])
 UPPER_GREEN = np.array([120, 128, 190])
 
 contour_workers = ContourWorkers(
+    mode="NO_OBSTACLE",
     lower_blue=LOWER_BLUE,
     upper_blue=UPPER_BLUE,
     lower_black=LOWER_BLACK,
@@ -198,7 +199,7 @@ def main():
                         print(turnDir)
 
             # overwrite leftArea/rightArea with obstacle areas if detected
-            if greenArea > 100 or redArea > 100:
+            if (green_result.contours or red_result.contours) and (greenArea > 100 or redArea > 100):
                 # get the nearer obstacle
                 green_piller_y_distance = get_min_y(green_result.contours)
                 red_piller_y_distance = get_min_y(red_result.contours)
@@ -329,7 +330,7 @@ def main():
                 cv2.imshow("Debug View", debug_frame)
 
             # Send to Arduino
-            arduino.write(f"60,{angle}\n".encode())
+            arduino.write(f"40,{angle}\n".encode())
 
             prevDiff = aDiff
             prevAngle = angle

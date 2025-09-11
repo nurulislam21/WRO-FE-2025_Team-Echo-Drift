@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <Servo.h>
+#include <avr/wdt.h>
 
 #define PWML 11
 #define IN1L 6
@@ -105,6 +106,9 @@ void loop()
         {
         }
     }
+
+    if (digitalRead(BUTTON_PIN) == HIGH)
+        restartBoard(); // Check if button is held for reset
 }
 
 void sw()
@@ -126,6 +130,19 @@ void sw()
     Serial.println("START");
     // Final debounce delay to ensure clean button release
     delay(50);
+}
+
+void restartBoard()
+{
+
+    delay(1000);
+    if (digitalRead(BUTTON_PIN) == HIGH)
+    {
+        wdt_enable(WDTO_15MS); // Set watchdog to 15ms
+        while (1)
+        {
+        } // Wait for watchdog reset
+    }
 }
 
 void motor(int speedPercent)
