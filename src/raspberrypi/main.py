@@ -24,6 +24,8 @@ print("DEBUG MODE" if DEBUG else "PRODUCTION")
 # Simulated camera settings
 CAM_WIDTH = 640
 CAM_HEIGHT = 480
+MAX_SPEED = 70
+MIN_SPEED = 40
 
 # Region of Interest coordinates
 ROI1 = [20, 220, 240, 260]  # left
@@ -199,7 +201,9 @@ def main():
                         print(turnDir)
 
             # overwrite leftArea/rightArea with obstacle areas if detected
-            if (green_result.contours or red_result.contours) and (greenArea > 100 or redArea > 100):
+            if (green_result.contours or red_result.contours) and (
+                greenArea > 100 or redArea > 100
+            ):
                 # get the nearer obstacle
                 green_piller_y_distance = get_min_y(green_result.contours)
                 red_piller_y_distance = get_min_y(red_result.contours)
@@ -240,14 +244,14 @@ def main():
                     lDetected = False
 
             # Intersection turning
-            if turnDir == "left":
-                angle = slightLeft
-            elif turnDir == "right":
-                angle = slightRight
-            else:
-                angle = int(
-                    max(straightConst + aDiff * kp + (aDiff - prevDiff) * kd, 0)
-                )
+            # if turnDir == "left":
+            #     angle = slightLeft
+            # elif turnDir == "right":
+            #     angle = slightRight
+            # else:
+            angle = int(max(straightConst + aDiff * kp + (aDiff - prevDiff) * kd, 0))
+            # map speed with angle
+            speed = np.interp(angle, [maxLeft, straightConst, maxRight], [MAX_SPEED, MIN_SPEED, MAX_SPEED])
 
             # trigger only once when intersection detected
             if (turnDir == "left" or turnDir == "right") and not IntersectionDetected:
@@ -330,7 +334,7 @@ def main():
                 cv2.imshow("Debug View", debug_frame)
 
             # Send to Arduino
-            arduino.write(f"40,{angle}\n".encode())
+            arduino.write(f"{speed},{angle}\n".encode())
 
             prevDiff = aDiff
             prevAngle = angle
