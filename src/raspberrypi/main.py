@@ -24,8 +24,8 @@ print("DEBUG MODE" if DEBUG else "PRODUCTION")
 # Simulated camera settings
 CAM_WIDTH = 640
 CAM_HEIGHT = 480
-MAX_SPEED = 70
-MIN_SPEED = 40
+MAX_SPEED = 110
+MIN_SPEED = 60
 
 # Region of Interest coordinates
 ROI1 = [20, 220, 240, 260]  # left
@@ -251,7 +251,7 @@ def main():
             # else:
             angle = int(max(straightConst + aDiff * kp + (aDiff - prevDiff) * kd, 0))
             # map speed with angle
-            speed = np.interp(angle, [maxLeft, straightConst, maxRight], [MAX_SPEED, MIN_SPEED, MAX_SPEED])
+            speed = np.interp(angle, [maxLeft, straightConst, maxRight], [MIN_SPEED, MAX_SPEED, MIN_SPEED])
 
             # trigger only once when intersection detected
             if (turnDir == "left" or turnDir == "right") and not IntersectionDetected:
