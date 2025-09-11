@@ -157,8 +157,8 @@ def main():
                 print(f"Arduino: {line}")
                 if not line == "START":
                     startProcessing = True
-            if not startProcessing:
-                continue
+            # if not startProcessing:
+            #     continue
 
             # Capture frame
             frame = picam2.capture_array()
