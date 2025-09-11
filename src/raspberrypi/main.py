@@ -28,8 +28,8 @@ MAX_SPEED = 110
 MIN_SPEED = 60
 
 # Region of Interest coordinates
-ROI1 = [20, 220, 240, 260]  # left
-ROI2 = [400, 220, 620, 260]  # right
+ROI1 = [20, 220, 240, 280]  # left
+ROI2 = [400, 220, 620, 280]  # right
 ROI3 = [200, 300, 440, 350]  # lap detection
 ROI4 = [90, 175, 540, 280]  # obstacle detection
 
@@ -69,8 +69,11 @@ contour_workers = ContourWorkers(
 )
 
 # Control parameters
-kp = 0.01
-kd = 0.0006
+kp = 0.02 # correction
+kd = 0.003 # damping
+ki = 0  # drift
+integral = 0
+
 straightConst = 95
 turnThresh = 150
 exitThresh = 1500
@@ -106,7 +109,7 @@ arduino.write(b"0,95\n")
 def main():
     global stopFlag
     global stopTime
-    global IntersectionDetected
+    global IntersectionDetected, integral
     global IntersectionTurningStart, startProcessing
 
     # Initialize PiCamera2
@@ -228,8 +231,6 @@ def main():
                     print("red piller detected")
                     leftArea = (get_avg_x(red_result.contours) * 2) / CAM_WIDTH
 
-            # PD controller
-            aDiff = leftArea - rightArea
 
             if leftArea <= turnThresh and not rTurn:
                 lTurn = True
@@ -243,13 +244,19 @@ def main():
                     t += 1
                     lDetected = False
 
+            # PID controller
+            aDiff = leftArea - rightArea
+            integral += aDiff
+            derivative = aDiff - prevDiff
+
             # Intersection turning
             # if turnDir == "left":
             #     angle = slightLeft
             # elif turnDir == "right":
             #     angle = slightRight
             # else:
-            angle = int(max(straightConst + aDiff * kp + (aDiff - prevDiff) * kd, 0))
+            angle = int(max(straightConst + aDiff * kp + derivative * kd + integral * ki, 0))
+
             # map speed with angle
             speed = np.interp(angle, [maxLeft, straightConst, maxRight], [MIN_SPEED, MAX_SPEED, MIN_SPEED])
 
