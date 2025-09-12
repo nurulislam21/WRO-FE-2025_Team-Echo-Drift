@@ -202,6 +202,8 @@ class CameraController:
                 self.add_settings_overlay(frame_bgr)
 
                 # Display the frame
+                # BGR to RGB conversion for correct color display
+                frame_bgr = cv2.cvtColor(frame_bgr, cv2.COLOR_RGB2BGR)
                 cv2.imshow("Camera Feed", frame_bgr)
 
                 # Handle key presses
