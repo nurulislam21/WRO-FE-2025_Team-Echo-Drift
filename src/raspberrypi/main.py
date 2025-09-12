@@ -199,7 +199,7 @@ def main():
 
             # intersection detection
             if not intersection_detected:
-                if orange_area > 10 or blue_area > 10:
+                if (orange_result.contours and orange_area > 10) or (blue_result.contours and blue_area > 10):
                     intersection_detected = True
                     intersection_crossing_start = int(time.time())
                     current_intersections += 1
@@ -322,7 +322,7 @@ def main():
                         2,
                     )
 
-                status = f"Angle: {angle} | Turns: {intersection_detected} | L: {left_area} | R: {right_area} | G: {green_area} | R: {red_area}"
+                status = f"Angle: {angle} | Turns: {intersection_detected} | L: {left_area} | R: {right_area} | OR: {orange_area} | BL: {blue_area}"
                 cv2.putText(
                     debug_frame,
                     status,
