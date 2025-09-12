@@ -63,20 +63,21 @@ STRAIGHT_CONST = 95
 turnThresh = 150
 exitThresh = 1500
 
-maxRight = STRAIGHT_CONST + 30
-maxLeft = STRAIGHT_CONST - 30
+MAX_OFFSET_DEGREE = 30
+maxRight = STRAIGHT_CONST + MAX_OFFSET_DEGREE
+maxLeft = STRAIGHT_CONST - MAX_OFFSET_DEGREE
 slightRight = STRAIGHT_CONST + 20
 slightLeft = STRAIGHT_CONST - 20
 
 wall_detector_boundary_area = (ROI1[2] - ROI1[0]) * (ROI1[3] - ROI1[1])
 
 # Initial PID values
-kp = 0.02
-kd = 0.003
-ki = 0.0
-pid = PID(Kp=kp, Ki=ki, Kd=kd, setpoint=STRAIGHT_CONST)
-pid.output_limits = (maxLeft, maxRight)
-
+kp = 1.2
+ki = 0.4
+kd = 0.06
+pid = PID(Kp=kp, Ki=ki, Kd=kd, setpoint=0)
+pid.output_limits = (-MAX_OFFSET_DEGREE, MAX_OFFSET_DEGREE)  # limit output to -30 to 30
+pid.sample_time = 0.02
 
 class PIDTuningGUI:
     def __init__(self):
@@ -371,21 +372,18 @@ def main():
                 left_area = left_result.area
                 right_area = right_result.area
 
-                area_diff = (
-                    (left_area - right_area) / wall_detector_boundary_area
-                ) * 500  # limit from 0 to 500/-500
-                area_mapped_angle = np.interp(
-                    area_diff, [-500, 500], [maxLeft, maxRight]
-                )
-                angle = pid(area_mapped_angle)
+                error = (left_area - right_area) / (left_area + right_area + 1e-6)
+                control_norm = pid(error)
+                angle = int(max(min(STRAIGHT_CONST + control_norm * MAX_OFFSET_DEGREE, maxRight), maxLeft))
+
 
                 # Create frame with overlay information
                 frame_with_info = draw_roi_and_info(
                     frame_bgr,
                     left_area,
                     right_area,
-                    area_diff,
-                    area_mapped_angle,
+                    left_area - right_area,
+                    0,
                     angle,
                     left_result,
                     right_result,
@@ -398,8 +396,8 @@ def main():
                             frame_with_info,
                             left_area,
                             right_area,
-                            area_diff,
-                            area_mapped_angle,
+                            left_area - right_area,
+                            0,
                             angle,
                         )
                     )
@@ -412,8 +410,8 @@ def main():
                                 frame_with_info,
                                 left_area,
                                 right_area,
-                                area_diff,
-                                area_mapped_angle,
+                                left_area - right_area,
+                                0,
                                 angle,
                             )
                         )
