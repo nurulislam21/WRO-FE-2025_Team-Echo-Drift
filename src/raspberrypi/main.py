@@ -5,7 +5,7 @@ import cv2
 import numpy as np
 import threading
 from picamera2 import Picamera2
-from datetime import datetime
+import time
 from collections import deque
 from img_processing_functions import display_roi, get_min_y, get_avg_x
 from contour_workers import ContourWorkers
@@ -28,6 +28,9 @@ CAM_WIDTH = 640
 CAM_HEIGHT = 480
 MAX_SPEED = 110
 MIN_SPEED = 60
+
+# Intersections
+TOTAL_INTERSECTIONS = 12
 
 # Region of Interest coordinates
 ROI1 = [20, 220, 240, 280]  # left
@@ -74,6 +77,7 @@ STRAIGHT_CONST = 95
 turnThresh = 150
 exitThresh = 1500
 
+
 MAX_OFFSET_DEGREE = 30
 maxRight = STRAIGHT_CONST + MAX_OFFSET_DEGREE
 maxLeft = STRAIGHT_CONST - MAX_OFFSET_DEGREE
@@ -96,10 +100,11 @@ startProcessing = False
 stopFlag = False
 stopTime = 0
 
-# Intersection turning
-IntersectionTurningDuration = 1700
-IntersectionTurningStart = 0
-IntersectionDetected = False
+# Intersection crossing
+current_intersections = 0
+intersection_crossing_duration = 1.5 # seconds
+intersection_crossing_start = 0
+intersection_detected = False
 
 # Serial communication
 arduino = serial.Serial(port="/dev/ttyUSB0", baudrate=115200, dsrdtr=True)
@@ -109,10 +114,9 @@ arduino.write(b"0,95\n")
 
 # Threading variables - separate queues for each detection task
 def main():
-    global stopFlag
-    global stopTime
-    global IntersectionDetected, integral
-    global IntersectionTurningStart, startProcessing
+    global stopFlag, stopTime
+    global current_intersections, intersection_detected, intersection_crossing_start
+    global startProcessing
 
     # Initialize PiCamera2
     picam2 = Picamera2()
@@ -152,9 +156,10 @@ def main():
     time.sleep(2)  # Allow camera to warm up
 
     # State variables
-    lTurn = rTurn = lDetected = False
-    t = angle = prevAngle = area_diff = prevDiff = 0
-    turnDir = "none"
+    # lTurn = rTurn = lDetected = False
+    # t = 0
+    # turnDir = "none"
+    angle = STRAIGHT_CONST
 
     try:
         while True:
@@ -187,27 +192,31 @@ def main():
             # Use the latest processing results
             left_area = left_result.area
             right_area = right_result.area
-            orangeArea = orange_result.area
-            blueArea = blue_result.area
-            greenArea = green_result.area
-            redArea = red_result.area
+            orange_area = orange_result.area
+            blue_area = blue_result.area
+            green_area = green_result.area
+            red_area = red_result.area
 
-            # Marker detection
-            if not IntersectionDetected:
-                if orangeArea > 80:
-                    lDetected = True
-                    if turnDir == "none":
-                        turnDir = "right"
-                        print(turnDir)
-                elif blueArea > 80:
-                    lDetected = True
-                    if turnDir == "none":
-                        turnDir = "left"
-                        print(turnDir)
+            # intersection detection
+            if not intersection_detected:
+                if orange_area > 10 or blue_area > 10:
+                    intersection_detected = True
+                    intersection_crossing_start = int(time.time())
+                    current_intersections += 1
+                    print(
+                        f"Intersection detected! Count: {current_intersections}/{TOTAL_INTERSECTIONS}"
+                    )
+            else:
+                if (
+                    int(time.time()) - intersection_crossing_start
+                    > intersection_crossing_duration
+                ):
+                    intersection_detected = False
+                    print("Intersection crossing ended.")
 
             # overwrite left_area/right_area with obstacle areas if detected
             if (green_result.contours or red_result.contours) and (
-                greenArea > 100 or redArea > 100
+                green_area > 100 or red_area > 100
             ):
                 # get the nearer obstacle
                 green_piller_y_distance = get_min_y(green_result.contours)
@@ -233,27 +242,6 @@ def main():
                     print("red piller detected")
                     left_area = (get_avg_x(red_result.contours) * 2) / CAM_WIDTH
 
-            if left_area <= turnThresh and not rTurn:
-                lTurn = True
-            elif right_area <= turnThresh and not lTurn:
-                rTurn = True
-
-            if (right_area > exitThresh and rTurn) or (
-                left_area > exitThresh and lTurn
-            ):
-                lTurn = rTurn = False
-                prevDiff = 0
-                if lDetected:
-                    t += 1
-                    lDetected = False
-
-            # Intersection turning
-            # if turnDir == "left":
-            #     angle = slightLeft
-            # elif turnDir == "right":
-            #     angle = slightRight
-            # else:
-
             # PID controller
             left_buf.append(left_area)
             right_buf.append(right_area)
@@ -276,17 +264,6 @@ def main():
                 [maxLeft, STRAIGHT_CONST, maxRight],
                 [MIN_SPEED, MAX_SPEED, MIN_SPEED],
             )
-
-            # trigger only once when intersection detected
-            if (turnDir == "left" or turnDir == "right") and not IntersectionDetected:
-                IntersectionDetected = True
-                IntersectionTurningStart = datetime.now().timestamp() * 1000
-
-            if (
-                datetime.now().timestamp() * 1000 - IntersectionTurningStart
-            ) > IntersectionTurningDuration and IntersectionDetected:
-                turnDir = "none"
-                IntersectionDetected = False
 
             if DEBUG:
                 debug_frame = frame.copy()
@@ -345,7 +322,7 @@ def main():
                         2,
                     )
 
-                status = f"Angle: {angle} | Turns: {t} | L: {left_area} | R: {right_area} | G: {greenArea} | R: {redArea}"
+                status = f"Angle: {angle} | Turns: {intersection_detected} | L: {left_area} | R: {right_area} | G: {green_area} | R: {red_area}"
                 cv2.putText(
                     debug_frame,
                     status,
@@ -360,17 +337,18 @@ def main():
             # Send to Arduino
             arduino.write(f"{speed},{angle}\n".encode())
 
-            prevDiff = area_diff
-            prevAngle = angle
-
-            if stopFlag and (datetime.now().microsecond - stopTime) > 50000:
+            if stopFlag and (int(time.time()) - stopTime) > 3:
                 print("Lap completed!")
                 print(angle)
                 break
 
-            if t >= 12 and abs(angle - STRAIGHT_CONST) <= 15 and not stopFlag:
+            if (
+                current_intersections >= 12
+                and abs(angle - STRAIGHT_CONST) <= 15
+                and not stopFlag
+            ):
                 stopFlag = True
-                stopTime = datetime.now().microsecond
+                stopTime = int(time.time())
 
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 break
