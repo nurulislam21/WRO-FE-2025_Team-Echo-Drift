@@ -251,10 +251,10 @@ def draw_roi_and_info(frame, left_area, right_area, area_diff, angle, pid_output
 
     # Draw ROI rectangles
     cv2.rectangle(
-        frame_copy, (ROI1[0], ROI1[1]), (ROI1[2], ROI1[3]), (0, 255, 0), 2
+        frame_copy, (ROI1[0], ROI1[1]), (ROI1[2], ROI1[3]), (255, 0, 0), 2
     )  # Left ROI - Green
     cv2.rectangle(
-        frame_copy, (ROI2[0], ROI2[1]), (ROI2[2], ROI2[3]), (0, 255, 0), 2
+        frame_copy, (ROI2[0], ROI2[1]), (ROI2[2], ROI2[3]), (255, 0, 0), 2
     )  # Right ROI - Green
     cv2.rectangle(
         frame_copy, (ROI3[0], ROI3[1]), (ROI3[2], ROI3[3]), (255, 0, 0), 2
