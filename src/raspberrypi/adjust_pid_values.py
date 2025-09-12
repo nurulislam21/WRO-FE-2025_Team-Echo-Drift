@@ -245,7 +245,7 @@ class PIDTuningGUI:
         self.root.mainloop()
 
 
-def draw_roi_and_info(frame, left_area, right_area, area_diff, angle, pid_output):
+def draw_roi_and_info(frame, left_area, right_area, area_diff, angle, pid_output, left_result=None, right_result=None):
     """Draw ROI rectangles and information overlay on frame"""
     frame_copy = frame.copy()
 
@@ -262,6 +262,23 @@ def draw_roi_and_info(frame, left_area, right_area, area_diff, angle, pid_output
     cv2.rectangle(
         frame_copy, (ROI4[0], ROI4[1]), (ROI4[2], ROI4[3]), (0, 0, 255), 2
     )  # Obstacle detection - Red
+
+    if left_result.contours:
+        cv2.drawContours(
+            frame_copy[ROI1[1] : ROI1[3], ROI1[0] : ROI1[2]],
+            left_result.contours,
+            -1,
+            (0, 255, 0),
+            2,
+        )
+    if right_result.contours:
+        cv2.drawContours(
+            frame_copy[ROI2[1] : ROI2[3], ROI2[0] : ROI2[2]],
+            right_result.contours,
+            -1,
+            (0, 255, 0),
+            2,
+        )
 
     # Add text overlay
     font = cv2.FONT_HERSHEY_SIMPLEX
@@ -370,6 +387,8 @@ def main():
                     area_diff,
                     area_mapped_angle,
                     angle,
+                    left_result,
+                    right_result,
                 )
 
                 # Send frame to GUI (non-blocking)
