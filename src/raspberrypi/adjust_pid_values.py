@@ -123,13 +123,13 @@ class PIDTuningGUI:
 
         # PID sliders
         self.create_pid_slider(
-            control_frame, "Kp (Proportional)", self.kp_var, 0, 0.5, 0.001, 0
+            control_frame, "Kp (Proportional)", self.kp_var, 0, 5, 0.005, 0
         )
         self.create_pid_slider(
-            control_frame, "Ki (Integral)", self.ki_var, 0, 0.1, 0.0001, 1
+            control_frame, "Ki (Integral)", self.ki_var, 0, 5, 0.005, 1
         )
         self.create_pid_slider(
-            control_frame, "Kd (Derivative)", self.kd_var, 0, 0.05, 0.0001, 2
+            control_frame, "Kd (Derivative)", self.kd_var, 0, 5, 0.005, 2
         )
 
         # Info display
