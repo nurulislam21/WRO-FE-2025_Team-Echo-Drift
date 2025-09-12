@@ -85,7 +85,7 @@ kp = 0.02  # correction
 kd = 0.003  # damping
 ki = 0  # drift
 integral = 0
-pid = PID(kp=kp, ki=ki, kd=kd, setpoint=STRAIGHT_CONST)
+pid = PID(Kp=kp, Ki=ki, Kd=kd, setpoint=STRAIGHT_CONST)
 pid.output_limits = (maxLeft, maxRight)
 
 # Start/Stopping logic
