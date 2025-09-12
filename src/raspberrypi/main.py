@@ -102,7 +102,7 @@ stopTime = 0
 
 # Intersection crossing
 current_intersections = 0
-intersection_crossing_duration = 1.5 # seconds
+intersection_crossing_duration = 1.1  # seconds
 intersection_crossing_start = 0
 intersection_detected = False
 
@@ -199,7 +199,9 @@ def main():
 
             # intersection detection
             if not intersection_detected:
-                if (orange_result.contours and orange_area > 10) or (blue_result.contours and blue_area > 10):
+                if (orange_result.contours and orange_area > 10) or (
+                    blue_result.contours and blue_area > 10
+                ):
                     intersection_detected = True
                     intersection_crossing_start = int(time.time())
                     current_intersections += 1
@@ -322,7 +324,7 @@ def main():
                         2,
                     )
 
-                status = f"Angle: {angle} | Turns: {intersection_detected} | L: {left_area} | R: {right_area} | OR: {orange_area} | BL: {blue_area}"
+                status = f"Angle: {angle} | Turns: {current_intersections/4} | L: {left_area} | R: {right_area} | OR: {orange_area} | BL: {blue_area}"
                 cv2.putText(
                     debug_frame,
                     status,
@@ -337,7 +339,7 @@ def main():
             # Send to Arduino
             arduino.write(f"{speed},{angle}\n".encode())
 
-            if stopFlag and (int(time.time()) - stopTime) > 3:
+            if stopFlag and (int(time.time()) - stopTime) > 1:
                 print("Lap completed!")
                 print(angle)
                 break
@@ -349,6 +351,7 @@ def main():
             ):
                 stopFlag = True
                 stopTime = int(time.time())
+                print("Preparing to stop...")
 
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 break
