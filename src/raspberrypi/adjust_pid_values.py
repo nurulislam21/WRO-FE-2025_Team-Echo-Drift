@@ -69,9 +69,9 @@ slightRight = STRAIGHT_CONST + 20
 slightLeft = STRAIGHT_CONST - 20
 
 # Initial PID values
-kp = 1.2
-ki = 0.4
-kd = 0.06
+kp = 1.5
+ki = 0.02
+kd = 0.07
 pid = PID(Kp=kp, Ki=ki, Kd=kd, setpoint=0)
 pid.output_limits = (-MAX_OFFSET_DEGREE, MAX_OFFSET_DEGREE)  # limit output to -30 to 30
 pid.sample_time = 0.02
