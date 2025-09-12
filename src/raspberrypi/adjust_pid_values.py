@@ -61,16 +61,12 @@ contour_workers = ContourWorkers(
 )
 
 STRAIGHT_CONST = 95
-turnThresh = 150
-exitThresh = 1500
 
 MAX_OFFSET_DEGREE = 30
 maxRight = STRAIGHT_CONST + MAX_OFFSET_DEGREE
 maxLeft = STRAIGHT_CONST - MAX_OFFSET_DEGREE
 slightRight = STRAIGHT_CONST + 20
 slightLeft = STRAIGHT_CONST - 20
-
-wall_detector_boundary_area = (ROI1[2] - ROI1[0]) * (ROI1[3] - ROI1[1])
 
 # Initial PID values
 kp = 1.2

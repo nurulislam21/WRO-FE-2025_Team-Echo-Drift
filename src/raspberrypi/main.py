@@ -1,12 +1,12 @@
+import sys
+import time
+import serial
 import cv2
 import numpy as np
-import serial
-import time
+import threading
 from picamera2 import Picamera2
 from datetime import datetime
-import sys
-import threading
-from queue import Queue, Empty
+from collections import deque
 from img_processing_functions import display_roi, get_min_y, get_avg_x
 from contour_workers import ContourWorkers
 from simple_pid import PID
@@ -74,19 +74,22 @@ STRAIGHT_CONST = 95
 turnThresh = 150
 exitThresh = 1500
 
-maxRight = STRAIGHT_CONST + 30
-maxLeft = STRAIGHT_CONST - 30
+MAX_OFFSET_DEGREE = 30
+maxRight = STRAIGHT_CONST + MAX_OFFSET_DEGREE
+maxLeft = STRAIGHT_CONST - MAX_OFFSET_DEGREE
 slightRight = STRAIGHT_CONST + 20
 slightLeft = STRAIGHT_CONST - 20
 
 # PID controller constants
-wall_detector_boundary_area = (ROI1[2] - ROI1[0]) * (ROI1[3] - ROI1[1])
-kp = 0.02  # correction
-kd = 0.003  # damping
-ki = 0  # drift
-integral = 0
-pid = PID(Kp=kp, Ki=ki, Kd=kd, setpoint=STRAIGHT_CONST)
-pid.output_limits = (maxLeft, maxRight)
+kp = 3
+ki = 0.01
+kd = 0.05
+pid = PID(Kp=kp, Ki=ki, Kd=kd, setpoint=0)
+pid.output_limits = (-MAX_OFFSET_DEGREE, MAX_OFFSET_DEGREE)  # limit output to -30 to 30
+pid.sample_time = 0.02
+SMOOTH_WINDOW = 3
+left_buf = deque(maxlen=SMOOTH_WINDOW)
+right_buf = deque(maxlen=SMOOTH_WINDOW)
 
 # Start/Stopping logic
 startProcessing = False
@@ -244,18 +247,28 @@ def main():
                     t += 1
                     lDetected = False
 
-            # PID controller
-            area_diff = (
-                (left_area - right_area) / wall_detector_boundary_area
-            ) * 500  # limit from 0 to 500/-500
-            area_mapped_angle = np.interp(area_diff, [-500, 500], [maxLeft, maxRight])
             # Intersection turning
             # if turnDir == "left":
             #     angle = slightLeft
             # elif turnDir == "right":
             #     angle = slightRight
             # else:
-            angle = pid(area_mapped_angle)
+
+            # PID controller
+            left_buf.append(left_area)
+            right_buf.append(right_area)
+            left_s = sum(left_buf) / len(left_buf)
+            right_s = sum(right_buf) / len(right_buf)
+            aDiff = left_s - right_s
+            aSum = left_s + right_s
+            error = aDiff / (aSum + 1e-6)  # normalized between roughly [-1,1]
+            control_norm = pid(error)
+            angle = int(
+                max(
+                    min(STRAIGHT_CONST + control_norm * MAX_OFFSET_DEGREE, maxRight),
+                    maxLeft,
+                ),
+            )
 
             # map speed with angle
             speed = np.interp(
