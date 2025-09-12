@@ -8,8 +8,10 @@ import sys
 import threading
 from queue import Queue, Empty
 from img_processing_functions import display_roi, get_min_y, get_avg_x
-from contour_workers import ContourWorkers, ContourResult
+from contour_workers import ContourWorkers
+from simple_pid import PID
 import copy
+
 
 # debug flag parsing
 debug_flag = sys.argv[1] == "--debug" if len(sys.argv) > 1 else ""
@@ -68,29 +70,26 @@ contour_workers = ContourWorkers(
     roi4=ROI4,
 )
 
-# Control parameters
-kp = 0.02 # correction
-kd = 0.003 # damping
-ki = 0  # drift
-integral = 0
-
-straightConst = 95
+STRAIGHT_CONST = 95
 turnThresh = 150
 exitThresh = 1500
-tDeviation = 25
-sharpRight = straightConst + tDeviation
-sharpLeft = straightConst - tDeviation
 
-maxRight = straightConst + 30
-maxLeft = straightConst - 30
+maxRight = STRAIGHT_CONST + 30
+maxLeft = STRAIGHT_CONST - 30
+slightRight = STRAIGHT_CONST + 20
+slightLeft = STRAIGHT_CONST - 20
 
-slightRight = straightConst + 20
-slightLeft = straightConst - 20
+# PID controller constants
+wall_detector_boundary_area = (ROI1[2] - ROI1[0]) * (ROI1[3] - ROI1[1])
+kp = 0.02  # correction
+kd = 0.003  # damping
+ki = 0  # drift
+integral = 0
+pid = PID(kp=kp, ki=ki, kd=kd, setpoint=STRAIGHT_CONST)
+pid.output_limits = (maxLeft, maxRight)
 
+# Start/Stopping logic
 startProcessing = False
-stopProcessing = False
-
-# Stopping logic
 stopFlag = False
 stopTime = 0
 
@@ -151,7 +150,7 @@ def main():
 
     # State variables
     lTurn = rTurn = lDetected = False
-    t = angle = prevAngle = aDiff = prevDiff = 0
+    t = angle = prevAngle = area_diff = prevDiff = 0
     turnDir = "none"
 
     try:
@@ -183,8 +182,8 @@ def main():
             ) = contour_workers.collect_results()
 
             # Use the latest processing results
-            leftArea = left_result.area
-            rightArea = right_result.area
+            left_area = left_result.area
+            right_area = right_result.area
             orangeArea = orange_result.area
             blueArea = blue_result.area
             greenArea = green_result.area
@@ -203,7 +202,7 @@ def main():
                         turnDir = "left"
                         print(turnDir)
 
-            # overwrite leftArea/rightArea with obstacle areas if detected
+            # overwrite left_area/right_area with obstacle areas if detected
             if (green_result.contours or red_result.contours) and (
                 greenArea > 100 or redArea > 100
             ):
@@ -224,20 +223,21 @@ def main():
 
                 if green_piller_y_distance < red_piller_y_distance:
                     print("green piller detected")
-                    rightArea = (
+                    right_area = (
                         (CAM_WIDTH - get_avg_x(green_result.contours)) * 2
                     ) / CAM_WIDTH
                 elif red_piller_y_distance < green_piller_y_distance:
                     print("red piller detected")
-                    leftArea = (get_avg_x(red_result.contours) * 2) / CAM_WIDTH
+                    left_area = (get_avg_x(red_result.contours) * 2) / CAM_WIDTH
 
-
-            if leftArea <= turnThresh and not rTurn:
+            if left_area <= turnThresh and not rTurn:
                 lTurn = True
-            elif rightArea <= turnThresh and not lTurn:
+            elif right_area <= turnThresh and not lTurn:
                 rTurn = True
 
-            if (rightArea > exitThresh and rTurn) or (leftArea > exitThresh and lTurn):
+            if (right_area > exitThresh and rTurn) or (
+                left_area > exitThresh and lTurn
+            ):
                 lTurn = rTurn = False
                 prevDiff = 0
                 if lDetected:
@@ -245,20 +245,24 @@ def main():
                     lDetected = False
 
             # PID controller
-            aDiff = leftArea - rightArea
-            integral += aDiff
-            derivative = aDiff - prevDiff
-
+            area_diff = (
+                (left_area - right_area) / wall_detector_boundary_area
+            ) * 500  # limit from 0 to 500/-500
+            area_mapped_angle = np.interp(area_diff, [-500, 500], [maxLeft, maxRight])
             # Intersection turning
             # if turnDir == "left":
             #     angle = slightLeft
             # elif turnDir == "right":
             #     angle = slightRight
             # else:
-            angle = int(max(straightConst + aDiff * kp + derivative * kd + integral * ki, 0))
+            angle = pid(area_mapped_angle)
 
             # map speed with angle
-            speed = np.interp(angle, [maxLeft, straightConst, maxRight], [MIN_SPEED, MAX_SPEED, MIN_SPEED])
+            speed = np.interp(
+                angle,
+                [maxLeft, STRAIGHT_CONST, maxRight],
+                [MIN_SPEED, MAX_SPEED, MIN_SPEED],
+            )
 
             # trigger only once when intersection detected
             if (turnDir == "left" or turnDir == "right") and not IntersectionDetected:
@@ -328,7 +332,7 @@ def main():
                         2,
                     )
 
-                status = f"Angle: {angle} | Turns: {t} | L: {leftArea} | R: {rightArea} | G: {greenArea} | R: {redArea}"
+                status = f"Angle: {angle} | Turns: {t} | L: {left_area} | R: {right_area} | G: {greenArea} | R: {redArea}"
                 cv2.putText(
                     debug_frame,
                     status,
@@ -343,7 +347,7 @@ def main():
             # Send to Arduino
             arduino.write(f"{speed},{angle}\n".encode())
 
-            prevDiff = aDiff
+            prevDiff = area_diff
             prevAngle = angle
 
             if stopFlag and (datetime.now().microsecond - stopTime) > 50000:
@@ -351,7 +355,7 @@ def main():
                 print(angle)
                 break
 
-            if t >= 12 and abs(angle - straightConst) <= 15 and not stopFlag:
+            if t >= 12 and abs(angle - STRAIGHT_CONST) <= 15 and not stopFlag:
                 stopFlag = True
                 stopTime = datetime.now().microsecond
 
