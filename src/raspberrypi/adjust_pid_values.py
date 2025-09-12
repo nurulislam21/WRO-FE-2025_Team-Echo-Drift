@@ -26,8 +26,8 @@ ROI3 = [200, 300, 440, 350]  # lap detection
 ROI4 = [90, 175, 540, 280]  # obstacle detection
 
 # Color ranges
-LOWER_BLACK = np.array([21, 109, 112])
-UPPER_BLACK = np.array([81, 149, 152])
+LOWER_BLACK = np.array([0, 114, 116])
+UPPER_BLACK = np.array([58, 154, 156])
 
 LOWER_ORANGE = np.array([105, 125, 87])
 UPPER_ORANGE = np.array([185, 165, 127])
@@ -338,6 +338,13 @@ def main():
         main={"format": "RGB888", "size": (640, 480)}
     )
     picam2.configure(config)
+    picam2.set_controls({
+        "ExposureTime": 16000,
+        "AnalogueGain": 42.0,
+        "AeEnable": False,
+        "AwbEnable": False,
+        "FrameDurationLimits": (40000, 40000)
+    })
     picam2.start()
 
     # Initialize GUI
