@@ -36,8 +36,8 @@ ROI3 = [200, 300, 440, 350]  # lap detection
 ROI4 = [90, 175, 540, 280]  # obstacle detection
 
 # Color ranges
-LOWER_BLACK = np.array([21, 109, 112])
-UPPER_BLACK = np.array([81, 149, 152])
+LOWER_BLACK = np.array([0, 114, 116])
+UPPER_BLACK = np.array([58, 154, 156])
 
 LOWER_ORANGE = np.array([105, 125, 87])
 UPPER_ORANGE = np.array([185, 165, 127])
@@ -259,7 +259,7 @@ def main():
             right_buf.append(right_area)
             left_s = sum(left_buf) / len(left_buf)
             right_s = sum(right_buf) / len(right_buf)
-            aDiff = left_s - right_s
+            aDiff = right_s - left_s
             aSum = left_s + right_s
             error = aDiff / (aSum + 1e-6)  # normalized between roughly [-1,1]
             control_norm = pid(error)
