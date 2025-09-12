@@ -147,6 +147,8 @@ class CameraController:
             info_img, "Press ESC or Q to quit", (10, 285), font, 0.4, (0, 0, 255), 1
         )
 
+        # convert to RGB
+        info_img = cv2.cvtColor(info_img, cv2.COLOR_BGR2RGB)
         cv2.imshow("Camera Controls", info_img)
 
     def on_exposure_change(self, val):
