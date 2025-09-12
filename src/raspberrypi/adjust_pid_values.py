@@ -10,6 +10,7 @@ import tkinter as tk
 from tkinter import ttk
 from PIL import Image, ImageTk
 import queue
+from collections import deque
 
 
 # Simulated camera settings
@@ -78,6 +79,9 @@ kd = 0.06
 pid = PID(Kp=kp, Ki=ki, Kd=kd, setpoint=0)
 pid.output_limits = (-MAX_OFFSET_DEGREE, MAX_OFFSET_DEGREE)  # limit output to -30 to 30
 pid.sample_time = 0.02
+SMOOTH_WINDOW = 3
+left_buf = deque(maxlen=SMOOTH_WINDOW)
+right_buf = deque(maxlen=SMOOTH_WINDOW)
 
 
 class PIDTuningGUI:
@@ -382,7 +386,15 @@ def main():
                 left_area = left_result.area
                 right_area = right_result.area
 
-                error = (left_area - right_area) / (left_area + right_area + 1e-6)
+                left_buf.append(left_area)
+                right_buf.append(right_area)
+                left_s = sum(left_buf) / len(left_buf)
+                right_s = sum(right_buf) / len(right_buf)
+                aDiff = left_s - right_s
+                aSum = left_s + right_s
+                error = aDiff / (aSum + 1e-6)  # normalized between roughly [-1,1]
+            
+                print("Error:", error)
                 control_norm = pid(error)
                 angle = int(
                     max(
