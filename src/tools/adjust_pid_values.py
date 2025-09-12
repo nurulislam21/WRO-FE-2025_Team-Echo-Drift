@@ -1,7 +1,7 @@
 import copy
 from picamera2 import Picamera2
 import cv2
-from ..raspberrypi.contour_workers import ContourWorkers
+from src.raspberrypi.contour_workers import ContourWorkers
 from simple_pid import PID
 import numpy as np
 import threading
