@@ -79,6 +79,7 @@ pid = PID(Kp=kp, Ki=ki, Kd=kd, setpoint=0)
 pid.output_limits = (-MAX_OFFSET_DEGREE, MAX_OFFSET_DEGREE)  # limit output to -30 to 30
 pid.sample_time = 0.02
 
+
 class PIDTuningGUI:
     def __init__(self):
         self.root = tk.Tk()
@@ -246,7 +247,16 @@ class PIDTuningGUI:
         self.root.mainloop()
 
 
-def draw_roi_and_info(frame, left_area, right_area, area_diff, angle, pid_output, left_result=None, right_result=None):
+def draw_roi_and_info(
+    frame,
+    left_area,
+    right_area,
+    area_diff,
+    nArea,
+    pid_output,
+    left_result=None,
+    right_result=None,
+):
     """Draw ROI rectangles and information overlay on frame"""
     frame_copy = frame.copy()
 
@@ -291,7 +301,7 @@ def draw_roi_and_info(frame, left_area, right_area, area_diff, angle, pid_output
         f"Left Area: {left_area:.1f}",
         f"Right Area: {right_area:.1f}",
         f"Area Diff: {area_diff:.1f}",
-        f"Target Angle: {angle:.1f}",
+        f"Normalized area: {nArea:.1f}",
         f"PID Output: {pid_output:.1f}",
         f"PID: P={pid.tunings[0]:.3f} I={pid.tunings[1]:.4f} D={pid.tunings[2]:.4f}",
     ]
@@ -374,8 +384,14 @@ def main():
 
                 error = (left_area - right_area) / (left_area + right_area + 1e-6)
                 control_norm = pid(error)
-                angle = int(max(min(STRAIGHT_CONST + control_norm * MAX_OFFSET_DEGREE, maxRight), maxLeft))
-
+                angle = int(
+                    max(
+                        min(
+                            STRAIGHT_CONST + control_norm * MAX_OFFSET_DEGREE, maxRight
+                        ),
+                        maxLeft,
+                    ),
+                )
 
                 # Create frame with overlay information
                 frame_with_info = draw_roi_and_info(
@@ -383,7 +399,7 @@ def main():
                     left_area,
                     right_area,
                     left_area - right_area,
-                    0,
+                    control_norm,
                     angle,
                     left_result,
                     right_result,
@@ -397,7 +413,7 @@ def main():
                             left_area,
                             right_area,
                             left_area - right_area,
-                            0,
+                            control_norm,
                             angle,
                         )
                     )
@@ -411,7 +427,7 @@ def main():
                                 left_area,
                                 right_area,
                                 left_area - right_area,
-                                0,
+                                control_norm,
                                 angle,
                             )
                         )
