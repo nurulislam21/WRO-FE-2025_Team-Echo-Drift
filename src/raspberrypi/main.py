@@ -256,19 +256,20 @@ def main():
 
                 if green_piller_y_distance < red_piller_y_distance:
                     print("green piller detected")
-                    x_position = get_avg_x(green_result.contours)
-                    print("x pos", x_position)
-                    right_area = (CAM_WIDTH - x_position) / CAM_WIDTH
-                    print("ratio", right_area)
-                    right_area = right_area * BLACK_WALL_DETECTOR_AREA
+                    # x_position = get_avg_x(green_result.contours)
+                    # print("x pos", x_position)
+                    # right_area = (CAM_WIDTH - x_position) / CAM_WIDTH
+                    # print("ratio", right_area)
+                    # right_area = right_area * BLACK_WALL_DETECTOR_AREA
                 elif red_piller_y_distance < green_piller_y_distance:
                     print("red piller detected")
-                    x_position = get_avg_x(red_result.contours)
-                    print("x pos", x_position)
-                    left_area = (x_position) / CAM_WIDTH
-                    print("ratio", left_area)
-                    left_area += left_area * BLACK_WALL_DETECTOR_AREA
-                    left_area = min(left_area, BLACK_WALL_DETECTOR_AREA)
+                    angle += 10
+                    # x_position = get_avg_x(red_result.contours)
+                    # print("x pos", x_position)
+                    # left_area = (x_position) / CAM_WIDTH
+                    # print("ratio", left_area)
+                    # left_area += left_area * BLACK_WALL_DETECTOR_AREA
+                    # left_area = min(left_area, BLACK_WALL_DETECTOR_AREA)
 
             # map speed with angle
             speed = np.interp(
