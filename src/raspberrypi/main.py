@@ -245,19 +245,27 @@ def main():
             u_obj, weight = 0.0, 0.0
             if red_result.contours:
                 # pick nearest red object (smallest cy)
-                cx, cy = min(red_result.contours, key=lambda r: r[1])
+                red_centroids = []
+                for cnt in red_result.contours:
+                    M = cv2.moments(cnt)
+                    if M["m00"] > 0:  # avoid division by zero
+                        cx = int(M["m10"] / M["m00"])
+                        cy = int(M["m01"] / M["m00"])
+                        red_centroids.append((cx, cy))
 
-                # normalize x-error and distance
-                x_err = (cx - CAM_WIDTH / 2) / (CAM_WIDTH / 2)  # [-1..1]
-                y_dist = 1 - cy / CAM_HEIGHT  # 0 (far) → 1 (close)
+                if red_centroids:  # no valid centroids
+                    cx, cy = min(red_centroids, key=lambda x: x[1])
+                    # normalize x-error and distance
+                    x_err = (cx - CAM_WIDTH / 2) / (CAM_WIDTH / 2)  # [-1..1]
+                    y_dist = 1 - cy / CAM_HEIGHT  # 0 (far) → 1 (close)
 
-                # steer away dynamically (repulsion)
-                e_obj = -x_err * (1 + 2 * y_dist)
-                u_obj = obj_pid(e_obj)
+                    # steer away dynamically (repulsion)
+                    e_obj = -x_err * (1 + 2 * y_dist)
+                    u_obj = obj_pid(e_obj)
 
-                # blending weight: obstacle closer → more influence
-                weight = min(1.0, y_dist * 2.0)
-            
+                    # blending weight: obstacle closer → more influence
+                    weight = min(1.0, y_dist * 2.0)
+
             u_total = (1 - weight) * u_walls + weight * u_obj
             # --- Map normalized control to servo angle ---
             angle = int(
