@@ -199,8 +199,8 @@ def main():
 
             # intersection detection
             if not intersection_detected:
-                if (orange_result.contours and orange_area > 10) or (
-                    blue_result.contours and blue_area > 10
+                if (orange_result.contours and orange_area > 50) or (
+                    blue_result.contours and blue_area > 50
                 ):
                     intersection_detected = True
                     intersection_crossing_start = int(time.time())
