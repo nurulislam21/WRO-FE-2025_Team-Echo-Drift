@@ -339,8 +339,9 @@ def main():
             # Send to Arduino
             arduino.write(f"{speed},{angle}\n".encode())
 
-            if stopFlag and (int(time.time()) - stopTime) > 1.2:
+            if stopFlag and (int(time.time()) - stopTime) > 1:
                 print("Lap completed!")
+                arduino.write(f"0,{angle}\n".encode())
                 print(angle)
                 break
 
