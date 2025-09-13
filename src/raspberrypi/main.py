@@ -199,8 +199,8 @@ def main():
 
             # intersection detection
             if not intersection_detected:
-                if (orange_result.contours and orange_area > 50) or (
-                    blue_result.contours and blue_area > 50
+                if (orange_result.contours and orange_area > 80) or (
+                    blue_result.contours and blue_area > 80
                 ):
                     intersection_detected = True
                     intersection_crossing_start = int(time.time())
@@ -339,7 +339,7 @@ def main():
             # Send to Arduino
             arduino.write(f"{speed},{angle}\n".encode())
 
-            if stopFlag and (int(time.time()) - stopTime) > 1:
+            if stopFlag and (int(time.time()) - stopTime) > 1.7:
                 print("Lap completed!")
                 arduino.write(f"0,{angle}\n".encode())
                 print(angle)
