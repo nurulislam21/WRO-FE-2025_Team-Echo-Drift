@@ -92,11 +92,16 @@ kp = 1.5
 ki = 0.02
 kd = 0.07
 pid = PID(Kp=kp, Ki=ki, Kd=kd, setpoint=0)
-pid.output_limits = (-MAX_OFFSET_DEGREE, MAX_OFFSET_DEGREE)  # limit output to -30 to 30
+pid.output_limits = (-1, 1)  # limit output to -1 to 1
 pid.sample_time = 0.02
 SMOOTH_WINDOW = 3
 left_buf = deque(maxlen=SMOOTH_WINDOW)
 right_buf = deque(maxlen=SMOOTH_WINDOW)
+
+# --- Obstacle PID (for red object) ---
+obj_pid = PID(Kp=1.0, Ki=0.0, Kd=0.05, setpoint=0)
+obj_pid.output_limits = (-1, 1)  # normalized [-1, 1]
+obj_pid.sample_time = 0.02
 
 # Start/Stopping logic
 startProcessing = False
@@ -208,13 +213,13 @@ def main():
             aDiff = right_s - left_s
             aSum = left_s + right_s
             error = aDiff / (aSum + 1e-6)  # normalized between roughly [-1,1]
-            control_norm = pid(error)
-            angle = int(
-                max(
-                    min(STRAIGHT_CONST + control_norm * MAX_OFFSET_DEGREE, maxRight),
-                    maxLeft,
-                ),
-            )
+            u_walls = pid(error)
+            # angle = int(
+            #     max(
+            #         min(STRAIGHT_CONST + control_norm * MAX_OFFSET_DEGREE, maxRight),
+            #         maxLeft,
+            #     ),
+            # )
 
             # intersection detection
             if not intersection_detected:
@@ -236,40 +241,31 @@ def main():
                     print("Intersection crossing ended.")
 
             # overwrite left_area/right_area with obstacle areas if detected
-            if (green_result.contours or red_result.contours) and (
-                green_area > 100 or red_area > 100
-            ):
-                # get the nearer obstacle
-                green_piller_y_distance = get_min_y(green_result.contours)
-                red_piller_y_distance = get_min_y(red_result.contours)
+            # --- Obstacle avoidance ---
+            u_obj, weight = 0.0, 0.0
+            if red_result.contours:
+                # pick nearest red object (smallest cy)
+                cx, cy = min(red_result.contours, key=lambda r: r[1])
 
-                green_piller_y_distance = (
-                    float("inf")
-                    if green_piller_y_distance is None
-                    else green_piller_y_distance
-                )
-                red_piller_y_distance = (
-                    float("inf")
-                    if red_piller_y_distance is None
-                    else red_piller_y_distance
-                )
+                # normalize x-error and distance
+                x_err = (cx - CAM_WIDTH / 2) / (CAM_WIDTH / 2)  # [-1..1]
+                y_dist = 1 - cy / CAM_HEIGHT  # 0 (far) → 1 (close)
 
-                if green_piller_y_distance < red_piller_y_distance:
-                    print("green piller detected")
-                    # x_position = get_avg_x(green_result.contours)
-                    # print("x pos", x_position)
-                    # right_area = (CAM_WIDTH - x_position) / CAM_WIDTH
-                    # print("ratio", right_area)
-                    # right_area = right_area * BLACK_WALL_DETECTOR_AREA
-                elif red_piller_y_distance < green_piller_y_distance:
-                    print("red piller detected")
-                    angle += 10
-                    # x_position = get_avg_x(red_result.contours)
-                    # print("x pos", x_position)
-                    # left_area = (x_position) / CAM_WIDTH
-                    # print("ratio", left_area)
-                    # left_area += left_area * BLACK_WALL_DETECTOR_AREA
-                    # left_area = min(left_area, BLACK_WALL_DETECTOR_AREA)
+                # steer away dynamically (repulsion)
+                e_obj = -x_err * (1 + 2 * y_dist)
+                u_obj = obj_pid(e_obj)
+
+                # blending weight: obstacle closer → more influence
+                weight = min(1.0, y_dist * 2.0)
+            
+            u_total = (1 - weight) * u_walls + weight * u_obj
+            # --- Map normalized control to servo angle ---
+            angle = int(
+                max(
+                    min(STRAIGHT_CONST + u_total * MAX_OFFSET_DEGREE, maxRight),
+                    maxLeft,
+                )
+            )
 
             # map speed with angle
             speed = np.interp(
@@ -277,6 +273,9 @@ def main():
                 [maxLeft, STRAIGHT_CONST, maxRight],
                 [MIN_SPEED, MAX_SPEED, MIN_SPEED],
             )
+
+            # Send to Arduino
+            arduino.write(f"{speed},{angle}\n".encode())
 
             if DEBUG:
                 debug_frame = frame.copy()
@@ -346,9 +345,6 @@ def main():
                     2,
                 )
                 cv2.imshow("Debug View", debug_frame)
-
-            # Send to Arduino
-            arduino.write(f"{speed},{angle}\n".encode())
 
             if stopFlag and (int(time.time()) - stopTime) > 1.7:
                 print("Lap completed!")
