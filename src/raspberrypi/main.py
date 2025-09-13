@@ -34,9 +34,11 @@ TOTAL_INTERSECTIONS = 12
 
 # Region of Interest coordinates
 ROI1 = [20, 220, 240, 280]  # left
-ROI2 = [400, 220, 620, 280]  # right
-ROI3 = [200, 300, 440, 350]  # lap detection
+ROI2 = [400, 220, 620, 280] # right
+ROI3 = [200, 300, 440, 350] # lap detection
 ROI4 = [90, 175, 540, 280]  # obstacle detection
+
+BLACK_WALL_DETECTOR_AREA = (ROI1[2] - ROI1[0]) * (ROI1[3] - ROI1[1])
 
 # Color ranges
 LOWER_BLACK = np.array([0, 114, 116])
@@ -238,12 +240,18 @@ def main():
 
                 if green_piller_y_distance < red_piller_y_distance:
                     print("green piller detected")
-                    right_area = (
-                        (CAM_WIDTH - get_avg_x(green_result.contours)) * 2
-                    ) / CAM_WIDTH
+                    x_position = get_avg_x(green_result.contours)
+                    print("x pos", x_position)
+                    right_area = (CAM_WIDTH - x_position) / CAM_WIDTH
+                    print("ratio", right_area)
+                    right_area = right_area * BLACK_WALL_DETECTOR_AREA
                 elif red_piller_y_distance < green_piller_y_distance:
                     print("red piller detected")
-                    left_area = (get_avg_x(red_result.contours) * 2) / CAM_WIDTH
+                    x_position = get_avg_x(red_result.contours)
+                    print("x pos", x_position)
+                    left_area = (x_position) / CAM_WIDTH
+                    print("ratio", left_area)
+                    left_area = left_area * BLACK_WALL_DETECTOR_AREA
 
             # PID controller
             left_buf.append(left_area)
