@@ -56,7 +56,8 @@ LOWER_GREEN = np.array([60, 88, 150])
 UPPER_GREEN = np.array([120, 128, 190])
 
 contour_workers = ContourWorkers(
-    mode="NO_OBSTACLE",
+    # mode="NO_OBSTACLE",
+    mode="OBSTACLE",
     lower_blue=LOWER_BLUE,
     upper_blue=UPPER_BLUE,
     lower_black=LOWER_BLACK,
