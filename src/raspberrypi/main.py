@@ -251,7 +251,8 @@ def main():
                     print("x pos", x_position)
                     left_area = (x_position) / CAM_WIDTH
                     print("ratio", left_area)
-                    left_area = left_area * BLACK_WALL_DETECTOR_AREA
+                    left_area += left_area * BLACK_WALL_DETECTOR_AREA
+                    left_area = min(left_area, BLACK_WALL_DETECTOR_AREA)
 
             # PID controller
             left_buf.append(left_area)
