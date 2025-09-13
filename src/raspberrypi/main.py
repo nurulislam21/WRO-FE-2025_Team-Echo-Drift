@@ -26,8 +26,8 @@ print("DEBUG MODE" if DEBUG else "PRODUCTION")
 # Simulated camera settings
 CAM_WIDTH = 640
 CAM_HEIGHT = 480
-MAX_SPEED = 110
-MIN_SPEED = 60
+MAX_SPEED = 100
+MIN_SPEED = 55
 
 # Intersections
 TOTAL_INTERSECTIONS = 12
@@ -51,8 +51,8 @@ LOWER_BLUE = np.array([92, 150, 166])
 UPPER_BLUE = np.array([152, 190, 206])
 
 # obstacle color ranges
-LOWER_RED = np.array([33, 137, 70])
-UPPER_RED = np.array([93, 177, 110])
+LOWER_RED = np.array([48, 154, 39])
+UPPER_RED = np.array([108, 194, 79])
 
 LOWER_GREEN = np.array([60, 88, 150])
 UPPER_GREEN = np.array([120, 128, 190])
