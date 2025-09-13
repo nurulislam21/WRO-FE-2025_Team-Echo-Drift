@@ -98,6 +98,7 @@ right_buf = deque(maxlen=SMOOTH_WINDOW)
 # Start/Stopping logic
 startProcessing = False
 stopFlag = False
+stopTime = 0
 
 # Intersection crossing
 current_intersections = 0
@@ -113,7 +114,7 @@ arduino.write(b"0,95\n")
 
 # Threading variables - separate queues for each detection task
 def main():
-    global stopFlag
+    global stopFlag, stopTime
     global current_intersections, intersection_detected, intersection_crossing_start
     global startProcessing
 
@@ -338,9 +339,19 @@ def main():
             # Send to Arduino
             arduino.write(f"{speed},{angle}\n".encode())
 
-            if current_intersections >= 12 and abs(angle - STRAIGHT_CONST) <= 15:
-                print("Stopping robot...")
+            if stopFlag and (int(time.time()) - stopTime) > 1.2:
+                print("Lap completed!")
+                print(angle)
                 break
+
+            if (
+                current_intersections >= 12
+                # and abs(angle - STRAIGHT_CONST) <= 15
+                and not stopFlag
+            ):
+                stopFlag = True
+                stopTime = int(time.time())
+                print("Preparing to stop...")
 
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 break
