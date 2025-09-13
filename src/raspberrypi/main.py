@@ -200,6 +200,22 @@ def main():
             green_area = green_result.area
             red_area = red_result.area
 
+            # PID controller
+            left_buf.append(left_area)
+            right_buf.append(right_area)
+            left_s = sum(left_buf) / len(left_buf)
+            right_s = sum(right_buf) / len(right_buf)
+            aDiff = right_s - left_s
+            aSum = left_s + right_s
+            error = aDiff / (aSum + 1e-6)  # normalized between roughly [-1,1]
+            control_norm = pid(error)
+            angle = int(
+                max(
+                    min(STRAIGHT_CONST + control_norm * MAX_OFFSET_DEGREE, maxRight),
+                    maxLeft,
+                ),
+            )
+
             # intersection detection
             if not intersection_detected:
                 if (orange_result.contours and orange_area > 80) or (
@@ -218,21 +234,6 @@ def main():
                 ):
                     intersection_detected = False
                     print("Intersection crossing ended.")
-
-            # PID controller
-            left_buf.append(left_area)
-            right_buf.append(right_area)
-            left_s = sum(left_buf) / len(left_buf)
-            right_s = sum(right_buf) / len(right_buf)
-            aDiff = right_s - left_s
-            aSum = left_s + right_s
-            error = aDiff / (aSum + 1e-6)  # normalized between roughly [-1,1]
-            control_norm = pid(error)
-            angle = np.interp(
-                control_norm,
-                [-MAX_OFFSET_DEGREE, 0, MAX_OFFSET_DEGREE],
-                [maxLeft, STRAIGHT_CONST, maxRight],
-            )
 
             # overwrite left_area/right_area with obstacle areas if detected
             if (green_result.contours or red_result.contours) and (
@@ -262,13 +263,12 @@ def main():
                     right_area = right_area * BLACK_WALL_DETECTOR_AREA
                 elif red_piller_y_distance < green_piller_y_distance:
                     print("red piller detected")
-                    angle += 10  # turn right a bit to avoid red piller                    
-                    # x_position = get_avg_x(red_result.contours)
-                    # print("x pos", x_position)
-                    # left_area = (x_position) / CAM_WIDTH
-                    # print("ratio", left_area)
-                    # left_area += left_area * BLACK_WALL_DETECTOR_AREA
-                    # left_area = min(left_area, BLACK_WALL_DETECTOR_AREA)
+                    x_position = get_avg_x(red_result.contours)
+                    print("x pos", x_position)
+                    left_area = (x_position) / CAM_WIDTH
+                    print("ratio", left_area)
+                    left_area += left_area * BLACK_WALL_DETECTOR_AREA
+                    left_area = min(left_area, BLACK_WALL_DETECTOR_AREA)
 
             # map speed with angle
             speed = np.interp(
