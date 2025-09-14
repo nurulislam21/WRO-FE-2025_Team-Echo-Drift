@@ -255,6 +255,7 @@ def main():
 
                 if red_centroids:  # no valid centroids
                     cx, cy = min(red_centroids, key=lambda x: x[1])
+                    print(f"x: {cx}, y: {cy}")
                     # normalize x-error and distance
                     x_err = (cx - CAM_WIDTH / 2) / (CAM_WIDTH / 2)  # [-1..1]
                     y_dist = 1 - cy / CAM_HEIGHT  # 0 (far) → 1 (close)
