@@ -266,7 +266,7 @@ def main():
                     # blending weight: obstacle closer → more influence
                     weight = min(1.0, y_dist * 2.0)
 
-            u_total = (1 - weight) * u_walls + weight * u_obj
+            u_total = ((1 - weight) * u_walls) + (weight * u_obj)
             # --- Map normalized control to servo angle ---
             angle = int(
                 max(
