@@ -7,7 +7,7 @@ import threading
 from picamera2 import Picamera2
 import time
 from collections import deque
-from img_processing_functions import display_roi, get_min_y, get_avg_x
+from img_processing_functions import display_roi, get_max_y_coord, get_min_x_coord
 from contour_workers import ContourWorkers
 from simple_pid import PID
 import copy
@@ -99,11 +99,6 @@ pid.sample_time = 0.02
 SMOOTH_WINDOW = 3
 left_buf = deque(maxlen=SMOOTH_WINDOW)
 right_buf = deque(maxlen=SMOOTH_WINDOW)
-
-# --- Obstacle PID (for red object) ---
-obj_pid = PID(Kp=1.0, Ki=0.0, Kd=0.05, setpoint=0)
-obj_pid.output_limits = (-1, 1)  # normalized [-1, 1]
-obj_pid.sample_time = 0.02
 
 # Start/Stopping logic
 startProcessing = False
@@ -215,13 +210,7 @@ def main():
             aDiff = right_s - left_s
             aSum = left_s + right_s
             error = aDiff / (aSum + 1e-6)  # normalized between roughly [-1,1]
-            u_walls = pid(error)
-            # angle = int(
-            #     max(
-            #         min(STRAIGHT_CONST + control_norm * MAX_OFFSET_DEGREE, maxRight),
-            #         maxLeft,
-            #     ),
-            # )
+            normalized_angle_offset = pid(error)
 
             # intersection detection
             if not intersection_detected:
@@ -242,38 +231,27 @@ def main():
                     intersection_detected = False
                     print("Intersection crossing ended.")
 
-            # overwrite left_area/right_area with obstacle areas if detected
             # --- Obstacle avoidance ---
-            u_obj, weight = 0.0, 0.0
-            if red_result.contours:
+            if contour_workers.mode == "OBSTACLE" and red_result.contours:
                 # pick nearest red object (smallest cy)
-                red_centroids = []
-                for cnt in red_result.contours:
-                    M = cv2.moments(cnt)
-                    if M["m00"] > 0:  # avoid division by zero
-                        cx = int(M["m10"] / M["m00"])
-                        cy = int(M["m01"] / M["m00"])
-                        red_centroids.append((cx, cy))
+                obj_x, obj_y = get_max_y_coord(red_result.contours)
+                wall_x, wall_y = get_min_x_coord(green_result.contours)
 
-                if red_centroids:  # no valid centroids
-                    cx, cy = min(red_centroids, key=lambda x: x[1])
-                    print(f"x: {cx}, y: {cy}")
-                    # normalize x-error and distance
-                    x_err = (cx - OBSTACLE_DETECTOR_X / 2) / (OBSTACLE_DETECTOR_X / 2)  # [-1..1]
-                    y_dist = 1 - cy / OBSTACLE_DETECTOR_Y  # 0 (far) → 1 (close)
+                if not (wall_x and wall_y):
+                    # set default wall position if none detected
+                    wall_x = OBSTACLE_DETECTOR_X
+                    wall_y = OBSTACLE_DETECTOR_Y // 2
 
-                    # steer away dynamically (repulsion)
-                    e_obj = -x_err * (1 + 2 * y_dist)
-                    u_obj = obj_pid(e_obj)
+                if obj_y:
+                    # compute how far is the bot from the object and walls middle point
+                    offset_x = (obj_x + ((wall_x - obj_x) // 2)) - (OBSTACLE_DETECTOR_X // 2)
+                    obj_error = offset_x / (OBSTACLE_DETECTOR_X // 2)  # normalized [-1, 1]
+                    normalized_angle_offset = pid(obj_error)
 
-                    # blending weight: obstacle closer → more influence
-                    weight = min(1.0, y_dist * 2.0)
-
-            u_total = ((1 - weight) * u_walls) + (weight * u_obj)
             # --- Map normalized control to servo angle ---
             angle = int(
                 max(
-                    min(STRAIGHT_CONST + u_total * MAX_OFFSET_DEGREE, maxRight),
+                    min(STRAIGHT_CONST + normalized_angle_offset * MAX_OFFSET_DEGREE, maxRight),
                     maxLeft,
                 )
             )
