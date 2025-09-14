@@ -39,6 +39,8 @@ ROI3 = [200, 300, 440, 350]  # lap detection
 ROI4 = [90, 140, 540, 320]  # obstacle detection
 
 BLACK_WALL_DETECTOR_AREA = (ROI1[2] - ROI1[0]) * (ROI1[3] - ROI1[1])
+OBSTACLE_DETECTOR_X = ROI4[2] - ROI4[0]
+OBSTACLE_DETECTOR_Y = ROI4[3] - ROI4[1]
 
 # Color ranges
 LOWER_BLACK = np.array([0, 114, 116])
@@ -257,8 +259,8 @@ def main():
                     cx, cy = min(red_centroids, key=lambda x: x[1])
                     print(f"x: {cx}, y: {cy}")
                     # normalize x-error and distance
-                    x_err = (cx - CAM_WIDTH / 2) / (CAM_WIDTH / 2)  # [-1..1]
-                    y_dist = 1 - cy / CAM_HEIGHT  # 0 (far) → 1 (close)
+                    x_err = (cx - OBSTACLE_DETECTOR_X / 2) / (OBSTACLE_DETECTOR_X / 2)  # [-1..1]
+                    y_dist = 1 - cy / OBSTACLE_DETECTOR_Y  # 0 (far) → 1 (close)
 
                     # steer away dynamically (repulsion)
                     e_obj = -x_err * (1 + 2 * y_dist)
