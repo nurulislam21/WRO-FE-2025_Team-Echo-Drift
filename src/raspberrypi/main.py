@@ -26,8 +26,8 @@ print("DEBUG MODE" if DEBUG else "PRODUCTION")
 # Simulated camera settings
 CAM_WIDTH = 640
 CAM_HEIGHT = 480
-MAX_SPEED = 60
-MIN_SPEED = 55
+MAX_SPEED = 30
+MIN_SPEED = 30
 
 # Intersections
 TOTAL_INTERSECTIONS = 12
@@ -41,6 +41,10 @@ ROI4 = [90, 140, 540, 320]  # obstacle detection
 BLACK_WALL_DETECTOR_AREA = (ROI1[2] - ROI1[0]) * (ROI1[3] - ROI1[1])
 OBSTACLE_DETECTOR_X = ROI4[2] - ROI4[0]
 OBSTACLE_DETECTOR_Y = ROI4[3] - ROI4[1]
+
+REVERSE_TRIGGER_Y = OBSTACLE_DETECTOR_Y - 20
+REVERSE_TRIGGER_X_MIN = (OBSTACLE_DETECTOR_X // 2) - 150
+REVERSE_TRIGGER_X_MAX = (OBSTACLE_DETECTOR_X // 2) + 150
 
 # Color ranges
 LOWER_BLACK = np.array([0, 114, 116])
@@ -222,7 +226,7 @@ def main():
                     print("Intersection crossing ended.")
 
             # --- Obstacle avoidance ---
-            if contour_workers.mode == "OBSTACLE" and red_result.contours:
+            if contour_workers.mode == "OBSTACLE" and red_result.contours and red_area > 300:
                 # pick nearest red object (smallest cy)
                 obj_x, obj_y = get_max_y_coord(red_result.contours)
                 r_wall_x, r_wall_y = get_min_x_coord(right_result.contours)
@@ -234,9 +238,20 @@ def main():
                     r_wall_y = OBSTACLE_DETECTOR_Y // 2
 
                 if not (obj_x is None and obj_y is None):
+                    # if object is too close, back off
+                    if obj_y > REVERSE_TRIGGER_Y and obj_x > REVERSE_TRIGGER_X_MIN and obj_x < REVERSE_TRIGGER_X_MAX:
+                        print("Object too close! Backing off.")
+                        for _ in range(7):       
+                            arduino.write(f"-{MIN_SPEED},{STRAIGHT_CONST}\n".encode())
+                            time.sleep(0.1)
+                        
+                        for _ in range(5):       
+                            arduino.write(f"0,{STRAIGHT_CONST}\n".encode())
+                            time.sleep(0.1)                        
+
                     # transform to global coordinates
                     obj_x += ROI4[0]                    
-                    r_wall_x += ROI2[0]                    
+                    r_wall_x += ROI2[0]              
 
                     # compute how far is the bot from the object and walls middle point
                     offset_x = (obj_x + ((r_wall_x - obj_x) // 2)) - (OBSTACLE_DETECTOR_X // 2)
@@ -277,7 +292,7 @@ def main():
                 [maxLeft, STRAIGHT_CONST, maxRight],
                 [MIN_SPEED, MAX_SPEED, MIN_SPEED],
             )
-            speed = 0
+            # speed = 0
 
             # Send to Arduino
             arduino.write(f"{speed},{angle}\n".encode())
@@ -286,6 +301,15 @@ def main():
                 debug_frame = frame.copy()
                 debug_frame = display_roi(
                     debug_frame, [ROI1, ROI2, ROI3, ROI4], (255, 0, 255)
+                )
+
+                # draw reverse trigger zone
+                cv2.rectangle(
+                    debug_frame,
+                    (ROI4[0] + REVERSE_TRIGGER_X_MIN, ROI4[1] + REVERSE_TRIGGER_Y),
+                    (ROI4[0] + REVERSE_TRIGGER_X_MAX, ROI4[3]),
+                    (255, 0, 0),
+                    2,
                 )
 
                 # Draw contours using the latest results
