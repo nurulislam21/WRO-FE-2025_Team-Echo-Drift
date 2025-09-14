@@ -91,7 +91,7 @@ slightLeft = STRAIGHT_CONST - 20
 
 # PID controller constants
 kp = 1.5
-ki = 0.02
+ki = 0.0
 kd = 0.07
 pid = PID(Kp=kp, Ki=ki, Kd=kd, setpoint=0)
 pid.output_limits = (-1, 1)  # limit output to -1 to 1
@@ -200,17 +200,7 @@ def main():
             orange_area = orange_result.area
             blue_area = blue_result.area
             green_area = green_result.area
-            red_area = red_result.area
-
-            # PID controller
-            left_buf.append(left_area)
-            right_buf.append(right_area)
-            left_s = sum(left_buf) / len(left_buf)
-            right_s = sum(right_buf) / len(right_buf)
-            aDiff = right_s - left_s
-            aSum = left_s + right_s
-            error = aDiff / (aSum + 1e-6)  # normalized between roughly [-1,1]
-            normalized_angle_offset = pid(error)
+            red_area = red_result.area            
 
             # intersection detection
             if not intersection_detected:
@@ -237,24 +227,41 @@ def main():
                 obj_x, obj_y = get_max_y_coord(red_result.contours)
                 r_wall_x, r_wall_y = get_min_x_coord(right_result.contours)
 
-                if not (r_wall_x and r_wall_y):
+                if (r_wall_x is None and r_wall_y is None):
+                    print("No wall detected!")
                     # set default wall position if none detected
                     r_wall_x = OBSTACLE_DETECTOR_X
                     r_wall_y = OBSTACLE_DETECTOR_Y // 2
 
-                if obj_y:
-                    # convert to global coordinates
-                    obj_x += ROI4[0]
-                    obj_y += ROI4[1]
-                    r_wall_x += ROI2[0]
-                    r_wall_y += ROI2[1]
+                if not (obj_x is None and obj_y is None):
+                    # transform to global coordinates
+                    obj_x += ROI4[0]                    
+                    r_wall_x += ROI2[0]                    
 
                     # compute how far is the bot from the object and walls middle point
                     offset_x = (obj_x + ((r_wall_x - obj_x) // 2)) - (OBSTACLE_DETECTOR_X // 2)
-                    obj_error = offset_x / (OBSTACLE_DETECTOR_X // 2)  # normalized [-1, 1]
+                    obj_error = (offset_x / (OBSTACLE_DETECTOR_X // 2))  # normalized [-1, 1]
+                    obj_error = - np.clip(obj_error, -1, 1)
                     normalized_angle_offset = pid(obj_error)
 
+                    # steer more aggressively when closer to object
+                    y_gain = np.interp(obj_y, [0, OBSTACLE_DETECTOR_Y], [0, 1])
+                    normalized_angle_offset *= y_gain
+                    print(f"Obj error: {obj_error} | PID output: {normalized_angle_offset} | y_gain: {y_gain}")
+
                 print(f"Obj: {obj_x}, {obj_y} | Wall: {r_wall_x}, {r_wall_y}")
+            
+            else:
+                # PID controller
+                left_buf.append(left_area)
+                right_buf.append(right_area)
+                left_s = sum(left_buf) / len(left_buf)
+                right_s = sum(right_buf) / len(right_buf)
+                aDiff = right_s - left_s
+                aSum = left_s + right_s
+                error = aDiff / (aSum + 1e-6)  # normalized between roughly [-1,1]
+                normalized_angle_offset = pid(error)
+                print(f"Line error: {error}, PID output: {normalized_angle_offset}")
 
             # --- Map normalized control to servo angle ---
             angle = int(

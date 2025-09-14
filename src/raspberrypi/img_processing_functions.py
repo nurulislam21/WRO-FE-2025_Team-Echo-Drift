@@ -39,6 +39,7 @@ def get_max_y_coord(contours) -> tuple[int, int] | tuple[None, None]:
 
 def get_min_x_coord(contours) -> tuple[int, int] | tuple[None, None]:
     if not contours:  # empty list
+        print("No contours found for min x coord")
         return (None, None)
     
     all_points = np.vstack(contours).reshape(-1, 2)
