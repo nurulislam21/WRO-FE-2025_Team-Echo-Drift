@@ -235,7 +235,7 @@ def main():
             if contour_workers.mode == "OBSTACLE" and red_result.contours:
                 # pick nearest red object (smallest cy)
                 obj_x, obj_y = get_max_y_coord(red_result.contours)
-                wall_x, wall_y = get_min_x_coord(green_result.contours)
+                wall_x, wall_y = get_min_x_coord(right_result.contours)
 
                 print(f"Obj: {obj_x}, {obj_y} | Wall: {wall_x}, {wall_y}")
 
