@@ -169,11 +169,11 @@ def main():
     try:
         while True:
             # dont start until start button pressed
-            if arduino.in_waiting > 0:
-                line = arduino.readline().decode("utf-8").rstrip()
-                print(f"Arduino: {line}")
-                if not line == "START":
-                    startProcessing = True
+            # if arduino.in_waiting > 0:
+            #     line = arduino.readline().decode("utf-8").rstrip()
+            #     print(f"Arduino: {line}")
+            #     if not line == "START":
+            #         startProcessing = True
             # if not startProcessing:
             #     continue
 
@@ -236,6 +236,8 @@ def main():
                 # pick nearest red object (smallest cy)
                 obj_x, obj_y = get_max_y_coord(red_result.contours)
                 wall_x, wall_y = get_min_x_coord(green_result.contours)
+
+                print(f"Obj: {obj_x}, {obj_y} | Wall: {wall_x}, {wall_y}")
 
                 if not (wall_x and wall_y):
                     # set default wall position if none detected
