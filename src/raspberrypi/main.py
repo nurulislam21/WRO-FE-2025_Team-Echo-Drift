@@ -26,8 +26,8 @@ print("DEBUG MODE" if DEBUG else "PRODUCTION")
 # Simulated camera settings
 CAM_WIDTH = 640
 CAM_HEIGHT = 480
-MAX_SPEED = 30
-MIN_SPEED = 30
+MAX_SPEED = 60
+MIN_SPEED = 40
 
 # Intersections
 TOTAL_INTERSECTIONS = 12
@@ -105,6 +105,7 @@ left_buf = deque(maxlen=SMOOTH_WINDOW)
 right_buf = deque(maxlen=SMOOTH_WINDOW)
 
 # Start/Stopping logic
+speed = 0
 startProcessing = False
 stopFlag = False
 stopTime = 0
@@ -123,7 +124,7 @@ arduino.write(b"0,95\n")
 
 # Threading variables - separate queues for each detection task
 def main():
-    global stopFlag, stopTime
+    global stopFlag, stopTime, speed
     global current_intersections, intersection_detected, intersection_crossing_start
     global startProcessing
 
@@ -187,6 +188,9 @@ def main():
             # Distribute frame to all processing threads (non-blocking)
             frame_copy = copy.deepcopy(frame)
 
+            # default values
+            speed_factor = 1.0
+
             contour_workers.put_frames_in_queues(frame_copy)
             # Retrieve all results from queues (non-blocking)
             (
@@ -241,13 +245,24 @@ def main():
                     # if object is too close, back off
                     if obj_y > REVERSE_TRIGGER_Y and obj_x > REVERSE_TRIGGER_X_MIN and obj_x < REVERSE_TRIGGER_X_MAX:
                         print("Object too close! Backing off.")
-                        for _ in range(7):       
+                        # clear red queue to avoid repeated triggers
+                        while True:
+                            try:
+                                contour_workers.red_queue.get_nowait()
+                                contour_workers.red_queue.task_done()
+                            except:
+                                break
+
+                        last_angle = angle
+                        # back off and straighten
+                        arduino.write(f"-{MIN_SPEED},{STRAIGHT_CONST}\n".encode())
+                        for _ in range(11):       
                             arduino.write(f"-{MIN_SPEED},{STRAIGHT_CONST}\n".encode())
                             time.sleep(0.1)
                         
-                        for _ in range(5):       
+                        for _ in range(8):       
                             arduino.write(f"0,{STRAIGHT_CONST}\n".encode())
-                            time.sleep(0.1)                        
+                            time.sleep(0.1)                                  
 
                     # transform to global coordinates
                     obj_x += ROI4[0]                    
@@ -260,8 +275,9 @@ def main():
                     normalized_angle_offset = pid(obj_error)
 
                     # steer more aggressively when closer to object
-                    y_gain = np.interp(obj_y, [0, OBSTACLE_DETECTOR_Y], [0, 1])
+                    y_gain = np.interp(obj_y, [0, OBSTACLE_DETECTOR_Y], [0, 1])                    
                     normalized_angle_offset *= y_gain
+                    speed_factor = 1 - (0.3 * y_gain)  # slow down when closer to object
                     print(f"Obj error: {obj_error} | PID output: {normalized_angle_offset} | y_gain: {y_gain}")
 
                 print(f"Obj: {obj_x}, {obj_y} | Wall: {r_wall_x}, {r_wall_y}")
@@ -287,7 +303,7 @@ def main():
             )
 
             # map speed with angle
-            speed = np.interp(
+            speed = speed_factor * np.interp(
                 angle,
                 [maxLeft, STRAIGHT_CONST, maxRight],
                 [MIN_SPEED, MAX_SPEED, MIN_SPEED],
