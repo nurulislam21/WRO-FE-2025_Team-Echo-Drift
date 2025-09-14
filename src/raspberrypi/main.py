@@ -281,6 +281,7 @@ def main():
                 [maxLeft, STRAIGHT_CONST, maxRight],
                 [MIN_SPEED, MAX_SPEED, MIN_SPEED],
             )
+            speed = 0
 
             # Send to Arduino
             arduino.write(f"{speed},{angle}\n".encode())
