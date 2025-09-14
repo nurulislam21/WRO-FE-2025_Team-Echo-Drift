@@ -235,20 +235,26 @@ def main():
             if contour_workers.mode == "OBSTACLE" and red_result.contours:
                 # pick nearest red object (smallest cy)
                 obj_x, obj_y = get_max_y_coord(red_result.contours)
-                wall_x, wall_y = get_min_x_coord(right_result.contours)
+                r_wall_x, r_wall_y = get_min_x_coord(right_result.contours)
 
-                print(f"Obj: {obj_x}, {obj_y} | Wall: {wall_x}, {wall_y}")
-
-                if not (wall_x and wall_y):
+                if not (r_wall_x and r_wall_y):
                     # set default wall position if none detected
-                    wall_x = OBSTACLE_DETECTOR_X
-                    wall_y = OBSTACLE_DETECTOR_Y // 2
+                    r_wall_x = OBSTACLE_DETECTOR_X
+                    r_wall_y = OBSTACLE_DETECTOR_Y // 2
 
                 if obj_y:
+                    # convert to global coordinates
+                    obj_x += ROI4[0]
+                    obj_y += ROI4[1]
+                    r_wall_x += ROI2[0]
+                    r_wall_y += ROI2[1]
+
                     # compute how far is the bot from the object and walls middle point
-                    offset_x = (obj_x + ((wall_x - obj_x) // 2)) - (OBSTACLE_DETECTOR_X // 2)
+                    offset_x = (obj_x + ((r_wall_x - obj_x) // 2)) - (OBSTACLE_DETECTOR_X // 2)
                     obj_error = offset_x / (OBSTACLE_DETECTOR_X // 2)  # normalized [-1, 1]
                     normalized_angle_offset = pid(obj_error)
+
+                print(f"Obj: {obj_x}, {obj_y} | Wall: {r_wall_x}, {r_wall_y}")
 
             # --- Map normalized control to servo angle ---
             angle = int(
