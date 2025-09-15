@@ -33,8 +33,8 @@ print("DEBUG MODE" if DEBUG else "PRODUCTION")
 # Simulated camera settings
 CAM_WIDTH = 640
 CAM_HEIGHT = 480
-MAX_SPEED = 50
-MIN_SPEED = 40
+MAX_SPEED = 100
+MIN_SPEED = 60
 
 # Intersections
 TOTAL_INTERSECTIONS = 100
@@ -48,6 +48,7 @@ ROI4 = [90, 140, 540, 320]  # obstacle detection
 BLACK_WALL_DETECTOR_AREA = (ROI1[2] - ROI1[0]) * (ROI1[3] - ROI1[1])
 OBSTACLE_DETECTOR_X = ROI4[2] - ROI4[0]
 OBSTACLE_DETECTOR_Y = ROI4[3] - ROI4[1]
+obstacle_wall_pivot = (None, None)
 
 REVERSE_TRIGGER_Y = OBSTACLE_DETECTOR_Y - 20
 REVERSE_TRIGGER_X_MIN = (OBSTACLE_DETECTOR_X // 2) - 115
@@ -138,7 +139,7 @@ arduino.write(b"0,95\n")
 def main():
     global stopFlag, stopTime, speed, trigger_reverse
     global current_intersections, intersection_detected, intersection_crossing_start
-    global startProcessing
+    global startProcessing, obstacle_wall_pivot
 
     # Initialize PiCamera2
     picam2 = Picamera2()
@@ -226,6 +227,8 @@ def main():
             if DEBUG:
                 display_debug_screen(
                     frame=frame,
+                    CAM_WIDTH=CAM_WIDTH,
+                    CAM_HEIGHT=CAM_HEIGHT,
                     left_result=left_result,
                     right_result=right_result,
                     orange_result=orange_result,
@@ -245,6 +248,7 @@ def main():
                     right_area=right_area,
                     orange_area=orange_area,
                     blue_area=blue_area,
+                    obstacle_wall_pivot=obstacle_wall_pivot,
                 )
 
             if trigger_reverse:
@@ -298,22 +302,7 @@ def main():
                     offset_x = (obj_x + ((r_wall_x - obj_x) // 2)) - (CAM_WIDTH // 2)
 
                     # show a circle dot on the middle of the object and wall
-                    if DEBUG:                        
-                        cv2.circle(
-                            frame,
-                            (obj_x + ((r_wall_x - obj_x) // 2), obj_y),
-                            5,
-                            (0, 255, 255),
-                            -1,
-                        )  # yellow dot on mid point
-                        # a bar in the center of the screen
-                        cv2.line(
-                            frame,
-                            (CAM_WIDTH // 2, 0),
-                            (CAM_WIDTH // 2, CAM_HEIGHT),
-                            (255, 0, 0),
-                            1,
-                        )  # blue line in the center
+                    obstacle_wall_pivot = (obj_x + ((r_wall_x - obj_x) // 2), obj_y)                     
 
                     obj_error = offset_x / (CAM_WIDTH // 2)  # normalized [-1, 1]
                     obj_error = -np.clip(
@@ -340,6 +329,7 @@ def main():
                 # print(f"Obj: {obj_x}, {obj_y} | Wall: {r_wall_x}, {r_wall_y}")
 
             else:
+                obstacle_wall_pivot = (None, None)
                 # PID controller
                 # left_buf.append(left_area)
                 # right_buf.append(right_area)
@@ -426,7 +416,7 @@ def main():
                 break
 
             if (
-                current_intersections >= 12
+                current_intersections >= TOTAL_INTERSECTIONS
                 # and abs(angle - STRAIGHT_CONST) <= 15
                 and not stopFlag
             ):

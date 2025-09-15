@@ -31,6 +31,8 @@ def display_roi(frame, rois, color):
 
 
 def display_debug_screen(
+    CAM_WIDTH,
+    CAM_HEIGHT,
     frame,
     ROI1,
     ROI2,
@@ -51,9 +53,26 @@ def display_debug_screen(
     right_area,
     orange_area,
     blue_area,
+    obstacle_wall_pivot,
 ):
     debug_frame = frame.copy()
     debug_frame = display_roi(debug_frame, [ROI1, ROI2, ROI3, ROI4], (255, 0, 255))
+
+    if obstacle_wall_pivot != (None, None):
+        cv2.circle(
+            debug_frame,
+            obstacle_wall_pivot,
+            5,
+            (0, 0, 255),
+        )
+
+    cv2.line(
+        debug_frame,
+        (CAM_WIDTH // 2, 0),
+        (CAM_WIDTH // 2, CAM_HEIGHT),
+        (255, 0, 0),
+        1,
+    )  # blue line in the center
 
     # draw reverse trigger zone
     cv2.rectangle(
