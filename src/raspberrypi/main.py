@@ -114,7 +114,7 @@ speed = 0
 
 trigger_reverse = False
 reverse_start_time = 0
-reverse_duration = 1.0  # seconds
+reverse_duration = 1.4  # seconds
 
 startProcessing = False
 stopFlag = False
