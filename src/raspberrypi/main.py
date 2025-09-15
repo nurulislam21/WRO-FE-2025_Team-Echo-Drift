@@ -250,6 +250,8 @@ def main():
                 if (time.time() - reverse_start_time) > reverse_duration:
                     trigger_reverse = False
                     speed = 0  # stop after reversing
+                else:
+                    angle = STRAIGHT_CONST  # go straight when reversing
                 arduino.write(f"{speed},{angle}\n".encode())
                 print(f"Reversing... Speed: {speed}, Angle: {angle}")
                 if cv2.waitKey(1) & 0xFF == ord("q"):
