@@ -155,3 +155,32 @@ def get_max_x_coord(contours) -> tuple[int, int] | tuple[None, None]:
     all_points = np.vstack(contours).reshape(-1, 2)
     max_idx = np.argmax(all_points[:, 0])  # index of largest x
     return tuple(all_points[max_idx])  # (x, y)
+
+
+import cv2
+
+def get_overall_centroid(contours):
+    """
+    Calculate the single centroid of multiple contours combined.
+
+    Args:
+        contours (list): List of contours (each contour is a numpy array of points)
+
+    Returns:
+        tuple: (cx, cy) as the centroid of all contours combined, or (None, None) if invalid
+    """
+    # Compute moments for all contours together
+    M = {"m00": 0, "m10": 0, "m01": 0}
+    
+    for contour in contours:
+        m = cv2.moments(contour)
+        M["m00"] += m["m00"]
+        M["m10"] += m["m10"]
+        M["m01"] += m["m01"]
+
+    if M["m00"] != 0:
+        cx = int(M["m10"] / M["m00"])
+        cy = int(M["m01"] / M["m00"])
+        return (cx, cy)
+    else:
+        return (None, None)  # invalid if total area = 0

@@ -13,6 +13,7 @@ from img_processing_functions import (
     get_min_x_coord,
     display_debug_screen,
     get_max_x_coord,
+    get_overall_centroid
 )
 from contour_workers import ContourWorkers
 from simple_pid import PID
@@ -245,7 +246,7 @@ def main():
                     orange_area=orange_area,
                     blue_area=blue_area,
                 )
-            
+
             if trigger_reverse:
                 speed = -MIN_SPEED
                 if (time.time() - reverse_start_time) > reverse_duration:
@@ -267,7 +268,8 @@ def main():
             ):
                 # pick nearest red object (smallest cy)
                 obj_x, obj_y = get_max_y_coord(red_result.contours)
-                r_wall_x, r_wall_y = get_min_x_coord(right_result.contours)
+                # r_wall_x, r_wall_y = get_min_x_coord(right_result.contours)
+                r_wall_x, r_wall_y = get_overall_centroid(right_result.contours)
 
                 if r_wall_x is None:
                     print("No wall detected!")
@@ -290,26 +292,49 @@ def main():
 
                     # transform to global coordinates
                     obj_x += ROI4[0]
-                    obj_y += ROI4[1]             
+                    obj_y += ROI4[1]
 
                     # compute how far is the bot from the object and walls middle point
-                    offset_x = (obj_x + ((r_wall_x - obj_x) // 2)) - (
-                        CAM_WIDTH // 2
-                    )
-                    obj_error = offset_x / (
-                        CAM_WIDTH // 2
-                    )  # normalized [-1, 1]
-                    obj_error = -np.clip(obj_error * 10, -1, 1) # amplify to make it more responsive
+                    offset_x = (obj_x + ((r_wall_x - obj_x) // 2)) - (CAM_WIDTH // 2)
+
+                    # show a circle dot on the middle of the object and wall
+                    if DEBUG:                        
+                        cv2.circle(
+                            frame,
+                            (obj_x + ((r_wall_x - obj_x) // 2), obj_y),
+                            5,
+                            (0, 255, 255),
+                            -1,
+                        )  # yellow dot on mid point
+                        # a bar in the center of the screen
+                        cv2.line(
+                            frame,
+                            (CAM_WIDTH // 2, 0),
+                            (CAM_WIDTH // 2, CAM_HEIGHT),
+                            (255, 0, 0),
+                            1,
+                        )  # blue line in the center
+
+                    obj_error = offset_x / (CAM_WIDTH // 2)  # normalized [-1, 1]
+                    obj_error = -np.clip(
+                        obj_error * 10, -1, 1
+                    )  # amplify to make it more responsive
                     normalized_angle_offset = pid(obj_error)
 
-                    # steer more aggressively when closer to object                    
-                    y_gain = np.interp(obj_y, [0, (CAM_HEIGHT // 2) - 50, (CAM_HEIGHT // 2) - 20, ROI4[3]], [0, 0.2, 0.7, 1])
+                    # steer more aggressively when closer to object
+                    y_gain = np.interp(
+                        obj_y,
+                        [0, (CAM_HEIGHT // 2) - 50, (CAM_HEIGHT // 2) - 20, ROI4[3]],
+                        [0, 0.2, 0.7, 1],
+                    )
                     normalized_angle_offset *= y_gain
                     speed_factor = 1 - (0.3 * y_gain)  # slow down when closer to object
                     print(
                         f"Obj error: {obj_error} | PID output: {normalized_angle_offset} | y_gain: {y_gain}"
                     )
-                    print(f"offset_x: {offset_x}, obj_x: {obj_x}, r_wall_x: {r_wall_x}, obj_y: {obj_y}")
+                    print(
+                        f"offset_x: {offset_x}, obj_x: {obj_x}, r_wall_x: {r_wall_x}, obj_y: {obj_y}"
+                    )
                     print(f"Normalized angle offset: {normalized_angle_offset}")
 
                 # print(f"Obj: {obj_x}, {obj_y} | Wall: {r_wall_x}, {r_wall_y}")
@@ -338,19 +363,18 @@ def main():
                 else:
                     # transform to global coordinates
                     right_x += ROI2[0]
-                
-                offset_x = (left_x + ((right_x - left_x) // 2)) - (
-                    CAM_WIDTH // 2
-                )
-                wall_error = offset_x / (
-                    CAM_WIDTH // 2
-                )
 
-                wall_error = -np.clip(wall_error * 2, -1, 1)  # amplify to make it more responsive
+                offset_x = (left_x + ((right_x - left_x) // 2)) - (CAM_WIDTH // 2)
+                wall_error = offset_x / (CAM_WIDTH // 2)
+
+                wall_error = -np.clip(
+                    wall_error * 2, -1, 1
+                )  # amplify to make it more responsive
                 normalized_angle_offset = pid(wall_error)
 
-
-                print(f"Line error: {wall_error}, PID output: {normalized_angle_offset}")
+                print(
+                    f"Line error: {wall_error}, PID output: {normalized_angle_offset}"
+                )
 
             # --- Map normalized control to servo angle ---
             angle = int(
@@ -375,6 +399,7 @@ def main():
             arduino.write(f"{speed},{angle}\n".encode())
 
             # intersection detection
+            # work here
             if not intersection_detected:
                 if (orange_result.contours and orange_area > 80) or (
                     blue_result.contours and blue_area > 80
