@@ -32,11 +32,11 @@ print("DEBUG MODE" if DEBUG else "PRODUCTION")
 # Simulated camera settings
 CAM_WIDTH = 640
 CAM_HEIGHT = 480
-MAX_SPEED = 60
+MAX_SPEED = 50
 MIN_SPEED = 40
 
 # Intersections
-TOTAL_INTERSECTIONS = 12
+TOTAL_INTERSECTIONS = 100
 
 # Region of Interest coordinates
 ROI1 = [20, 220, 240, 280]  # left
@@ -49,8 +49,8 @@ OBSTACLE_DETECTOR_X = ROI4[2] - ROI4[0]
 OBSTACLE_DETECTOR_Y = ROI4[3] - ROI4[1]
 
 REVERSE_TRIGGER_Y = OBSTACLE_DETECTOR_Y - 20
-REVERSE_TRIGGER_X_MIN = (OBSTACLE_DETECTOR_X // 2) - 135
-REVERSE_TRIGGER_X_MAX = (OBSTACLE_DETECTOR_X // 2) + 135
+REVERSE_TRIGGER_X_MIN = (OBSTACLE_DETECTOR_X // 2) - 115
+REVERSE_TRIGGER_X_MAX = (OBSTACLE_DETECTOR_X // 2) + 115
 
 # Color ranges
 LOWER_BLACK = np.array([0, 114, 116])
@@ -299,18 +299,20 @@ def main():
                     obj_error = offset_x / (
                         CAM_WIDTH // 2
                     )  # normalized [-1, 1]
-                    obj_error = -np.clip(obj_error, -1, 1)
+                    obj_error = -np.clip(obj_error * 10, -1, 1) # amplify to make it more responsive
                     normalized_angle_offset = pid(obj_error)
 
-                    # steer more aggressively when closer to object
-                    y_gain = np.interp(obj_y, [0, (CAM_HEIGHT // 2) - 40, CAM_HEIGHT], [0, 0.5, 1])
+                    # steer more aggressively when closer to object                    
+                    y_gain = np.interp(obj_y, [0, (CAM_HEIGHT // 2) - 50, (CAM_HEIGHT // 2) - 20, ROI4[3]], [0, 0.2, 0.7, 1])
                     normalized_angle_offset *= y_gain
                     speed_factor = 1 - (0.3 * y_gain)  # slow down when closer to object
                     print(
                         f"Obj error: {obj_error} | PID output: {normalized_angle_offset} | y_gain: {y_gain}"
                     )
+                    print(f"offset_x: {offset_x}, obj_x: {obj_x}, r_wall_x: {r_wall_x}, obj_y: {obj_y}")
+                    print(f"Normalized angle offset: {normalized_angle_offset}")
 
-                print(f"Obj: {obj_x}, {obj_y} | Wall: {r_wall_x}, {r_wall_y}")
+                # print(f"Obj: {obj_x}, {obj_y} | Wall: {r_wall_x}, {r_wall_y}")
 
             else:
                 # PID controller
@@ -344,7 +346,7 @@ def main():
                     CAM_WIDTH // 2
                 )
 
-                wall_error = -np.clip(wall_error, -1, 1)
+                wall_error = -np.clip(wall_error * 2, -1, 1)  # amplify to make it more responsive
                 normalized_angle_offset = pid(wall_error)
 
 
