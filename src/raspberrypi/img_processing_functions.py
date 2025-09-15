@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-from contour_workers import ContourResult
+
 
 
 def find_contours(frame, lower_color, upper_color, roi):
@@ -39,12 +39,12 @@ def display_debug_screen(
     REVERSE_TRIGGER_X_MIN,
     REVERSE_TRIGGER_X_MAX,
     REVERSE_TRIGGER_Y,
-    left_result: ContourResult,
-    right_result: ContourResult,
-    orange_result: ContourResult,
-    blue_result: ContourResult,
-    green_result: ContourResult,
-    red_result: ContourResult,
+    left_result,
+    right_result,
+    orange_result,
+    blue_result,
+    green_result,
+    red_result,
     angle,
     current_intersections,
     left_area,
