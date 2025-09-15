@@ -145,3 +145,13 @@ def get_min_x_coord(contours) -> tuple[int, int] | tuple[None, None]:
     all_points = np.vstack(contours).reshape(-1, 2)
     min_idx = np.argmin(all_points[:, 0])  # index of smallest x
     return tuple(all_points[min_idx])  # (x, y)
+
+
+def get_max_x_coord(contours) -> tuple[int, int] | tuple[None, None]:
+    if not contours:  # empty list
+        print("No contours found for max x coord")
+        return (None, None)
+
+    all_points = np.vstack(contours).reshape(-1, 2)
+    max_idx = np.argmax(all_points[:, 0])  # index of largest x
+    return tuple(all_points[max_idx])  # (x, y)
