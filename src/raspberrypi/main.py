@@ -7,7 +7,12 @@ import threading
 from picamera2 import Picamera2
 import time
 from collections import deque
-from img_processing_functions import display_roi, get_max_y_coord, get_min_x_coord
+from img_processing_functions import (
+    display_roi,
+    get_max_y_coord,
+    get_min_x_coord,
+    display_debug_screen,
+)
 from contour_workers import ContourWorkers
 from simple_pid import PID
 import copy
@@ -104,8 +109,13 @@ SMOOTH_WINDOW = 3
 left_buf = deque(maxlen=SMOOTH_WINDOW)
 right_buf = deque(maxlen=SMOOTH_WINDOW)
 
-# Start/Stopping logic
+# Start/reverse/Stopping logic
 speed = 0
+
+trigger_reverse = False
+reverse_start_time = 0
+reverse_duration = 1.0  # seconds
+
 startProcessing = False
 stopFlag = False
 stopTime = 0
@@ -124,7 +134,7 @@ arduino.write(b"0,95\n")
 
 # Threading variables - separate queues for each detection task
 def main():
-    global stopFlag, stopTime, speed
+    global stopFlag, stopTime, speed, trigger_reverse
     global current_intersections, intersection_detected, intersection_crossing_start
     global startProcessing
 
@@ -208,7 +218,128 @@ def main():
             orange_area = orange_result.area
             blue_area = blue_result.area
             green_area = green_result.area
-            red_area = red_result.area            
+            red_area = red_result.area
+
+            # Debug view
+            if DEBUG:
+                display_debug_screen(
+                    frame=frame,
+                    left_result=left_result,
+                    right_result=right_result,
+                    orange_result=orange_result,
+                    blue_result=blue_result,
+                    green_result=green_result,
+                    red_result=red_result,
+                    ROI1=ROI1,
+                    ROI2=ROI2,
+                    ROI3=ROI3,
+                    ROI4=ROI4,
+                    REVERSE_TRIGGER_X_MIN=REVERSE_TRIGGER_X_MIN,
+                    REVERSE_TRIGGER_X_MAX=REVERSE_TRIGGER_X_MAX,
+                    REVERSE_TRIGGER_Y=REVERSE_TRIGGER_Y,
+                    angle=angle,
+                    current_intersections=current_intersections,
+                    left_area=left_area,
+                    right_area=right_area,
+                    orange_area=orange_area,
+                    blue_area=blue_area,
+                )
+            
+            if trigger_reverse:
+                speed = -MIN_SPEED
+                if (time.time() - reverse_start_time) > reverse_duration:
+                    trigger_reverse = False
+                    speed = 0  # stop after reversing
+                arduino.write(f"{speed},{angle}\n".encode())
+                print(f"Reversing... Speed: {speed}, Angle: {angle}")
+                if cv2.waitKey(1) & 0xFF == ord("q"):
+                    break
+                continue
+
+            # --- Obstacle avoidance ---
+            if (
+                contour_workers.mode == "OBSTACLE"
+                and red_result.contours
+                and red_area > 300
+            ):
+                # pick nearest red object (smallest cy)
+                obj_x, obj_y = get_max_y_coord(red_result.contours)
+                r_wall_x, r_wall_y = get_min_x_coord(right_result.contours)
+
+                if r_wall_x is None and r_wall_y is None:
+                    print("No wall detected!")
+                    # set default wall position if none detected
+                    r_wall_x = OBSTACLE_DETECTOR_X
+                    r_wall_y = OBSTACLE_DETECTOR_Y // 2
+
+                if not (obj_x is None and obj_y is None):
+                    # if object is too close, back off
+                    if (
+                        obj_y > REVERSE_TRIGGER_Y
+                        and obj_x > REVERSE_TRIGGER_X_MIN
+                        and obj_x < REVERSE_TRIGGER_X_MAX
+                    ):
+                        print("Object too close! Backing off.")
+                        trigger_reverse = True
+                        reverse_start_time = time.time()
+
+                    # transform to global coordinates
+                    obj_x += ROI4[0]
+                    r_wall_x += ROI2[0]
+
+                    # compute how far is the bot from the object and walls middle point
+                    offset_x = (obj_x + ((r_wall_x - obj_x) // 2)) - (
+                        OBSTACLE_DETECTOR_X // 2
+                    )
+                    obj_error = offset_x / (
+                        OBSTACLE_DETECTOR_X // 2
+                    )  # normalized [-1, 1]
+                    obj_error = -np.clip(obj_error, -1, 1)
+                    normalized_angle_offset = pid(obj_error)
+
+                    # steer more aggressively when closer to object
+                    y_gain = np.interp(obj_y, [0, OBSTACLE_DETECTOR_Y], [0, 1])
+                    normalized_angle_offset *= y_gain
+                    speed_factor = 1 - (0.3 * y_gain)  # slow down when closer to object
+                    print(
+                        f"Obj error: {obj_error} | PID output: {normalized_angle_offset} | y_gain: {y_gain}"
+                    )
+
+                print(f"Obj: {obj_x}, {obj_y} | Wall: {r_wall_x}, {r_wall_y}")
+
+            else:
+                # PID controller
+                left_buf.append(left_area)
+                right_buf.append(right_area)
+                left_s = sum(left_buf) / len(left_buf)
+                right_s = sum(right_buf) / len(right_buf)
+                aDiff = right_s - left_s
+                aSum = left_s + right_s
+                error = aDiff / (aSum + 1e-6)  # normalized between roughly [-1,1]
+                normalized_angle_offset = pid(error)
+                print(f"Line error: {error}, PID output: {normalized_angle_offset}")
+
+            # --- Map normalized control to servo angle ---
+            angle = int(
+                max(
+                    min(
+                        STRAIGHT_CONST + normalized_angle_offset * MAX_OFFSET_DEGREE,
+                        maxRight,
+                    ),
+                    maxLeft,
+                )
+            )
+
+            # map speed with angle
+            speed = speed_factor * np.interp(
+                angle,
+                [maxLeft, STRAIGHT_CONST, maxRight],
+                [MIN_SPEED, MAX_SPEED, MIN_SPEED],
+            )
+            # speed = 0
+
+            # Send to Arduino
+            arduino.write(f"{speed},{angle}\n".encode())
 
             # intersection detection
             if not intersection_detected:
@@ -229,168 +360,7 @@ def main():
                     intersection_detected = False
                     print("Intersection crossing ended.")
 
-            # --- Obstacle avoidance ---
-            if contour_workers.mode == "OBSTACLE" and red_result.contours and red_area > 300:
-                # pick nearest red object (smallest cy)
-                obj_x, obj_y = get_max_y_coord(red_result.contours)
-                r_wall_x, r_wall_y = get_min_x_coord(right_result.contours)
-
-                if (r_wall_x is None and r_wall_y is None):
-                    print("No wall detected!")
-                    # set default wall position if none detected
-                    r_wall_x = OBSTACLE_DETECTOR_X
-                    r_wall_y = OBSTACLE_DETECTOR_Y // 2
-
-                if not (obj_x is None and obj_y is None):
-                    # if object is too close, back off
-                    if obj_y > REVERSE_TRIGGER_Y and obj_x > REVERSE_TRIGGER_X_MIN and obj_x < REVERSE_TRIGGER_X_MAX:
-                        print("Object too close! Backing off.")
-                        # clear red queue to avoid repeated triggers
-                        while True:
-                            try:
-                                contour_workers.red_queue.get_nowait()
-                                contour_workers.red_queue.task_done()
-                            except:
-                                break
-
-                        last_angle = angle
-                        # back off and straighten
-                        arduino.write(f"-{MIN_SPEED},{STRAIGHT_CONST}\n".encode())
-                        for _ in range(11):       
-                            arduino.write(f"-{MIN_SPEED},{STRAIGHT_CONST}\n".encode())
-                            time.sleep(0.1)
-                        
-                        for _ in range(8):       
-                            arduino.write(f"0,{STRAIGHT_CONST}\n".encode())
-                            time.sleep(0.1)                                  
-
-                    # transform to global coordinates
-                    obj_x += ROI4[0]                    
-                    r_wall_x += ROI2[0]              
-
-                    # compute how far is the bot from the object and walls middle point
-                    offset_x = (obj_x + ((r_wall_x - obj_x) // 2)) - (OBSTACLE_DETECTOR_X // 2)
-                    obj_error = (offset_x / (OBSTACLE_DETECTOR_X // 2))  # normalized [-1, 1]
-                    obj_error = - np.clip(obj_error, -1, 1)
-                    normalized_angle_offset = pid(obj_error)
-
-                    # steer more aggressively when closer to object
-                    y_gain = np.interp(obj_y, [0, OBSTACLE_DETECTOR_Y], [0, 1])                    
-                    normalized_angle_offset *= y_gain
-                    speed_factor = 1 - (0.3 * y_gain)  # slow down when closer to object
-                    print(f"Obj error: {obj_error} | PID output: {normalized_angle_offset} | y_gain: {y_gain}")
-
-                print(f"Obj: {obj_x}, {obj_y} | Wall: {r_wall_x}, {r_wall_y}")
-            
-            else:
-                # PID controller
-                left_buf.append(left_area)
-                right_buf.append(right_area)
-                left_s = sum(left_buf) / len(left_buf)
-                right_s = sum(right_buf) / len(right_buf)
-                aDiff = right_s - left_s
-                aSum = left_s + right_s
-                error = aDiff / (aSum + 1e-6)  # normalized between roughly [-1,1]
-                normalized_angle_offset = pid(error)
-                print(f"Line error: {error}, PID output: {normalized_angle_offset}")
-
-            # --- Map normalized control to servo angle ---
-            angle = int(
-                max(
-                    min(STRAIGHT_CONST + normalized_angle_offset * MAX_OFFSET_DEGREE, maxRight),
-                    maxLeft,
-                )
-            )
-
-            # map speed with angle
-            speed = speed_factor * np.interp(
-                angle,
-                [maxLeft, STRAIGHT_CONST, maxRight],
-                [MIN_SPEED, MAX_SPEED, MIN_SPEED],
-            )
-            # speed = 0
-
-            # Send to Arduino
-            arduino.write(f"{speed},{angle}\n".encode())
-
-            if DEBUG:
-                debug_frame = frame.copy()
-                debug_frame = display_roi(
-                    debug_frame, [ROI1, ROI2, ROI3, ROI4], (255, 0, 255)
-                )
-
-                # draw reverse trigger zone
-                cv2.rectangle(
-                    debug_frame,
-                    (ROI4[0] + REVERSE_TRIGGER_X_MIN, ROI4[1] + REVERSE_TRIGGER_Y),
-                    (ROI4[0] + REVERSE_TRIGGER_X_MAX, ROI4[3]),
-                    (255, 0, 0),
-                    2,
-                )
-
-                # Draw contours using the latest results
-                if left_result.contours:
-                    cv2.drawContours(
-                        debug_frame[ROI1[1] : ROI1[3], ROI1[0] : ROI1[2]],
-                        left_result.contours,
-                        -1,
-                        (0, 255, 0),
-                        2,
-                    )
-                if right_result.contours:
-                    cv2.drawContours(
-                        debug_frame[ROI2[1] : ROI2[3], ROI2[0] : ROI2[2]],
-                        right_result.contours,
-                        -1,
-                        (0, 255, 0),
-                        2,
-                    )
-                if orange_result.contours:
-                    cv2.drawContours(
-                        debug_frame[ROI3[1] : ROI3[3], ROI3[0] : ROI3[2]],
-                        orange_result.contours,
-                        -1,
-                        (0, 165, 255),
-                        2,
-                    )
-                if blue_result.contours:
-                    cv2.drawContours(
-                        debug_frame[ROI3[1] : ROI3[3], ROI3[0] : ROI3[2]],
-                        blue_result.contours,
-                        -1,
-                        (0, 165, 255),
-                        2,
-                    )
-
-                if green_result.contours:
-                    cv2.drawContours(
-                        debug_frame[ROI4[1] : ROI4[3], ROI4[0] : ROI4[2]],
-                        green_result.contours,
-                        -1,
-                        (0, 255, 0),
-                        2,
-                    )
-                if red_result.contours:
-                    cv2.drawContours(
-                        debug_frame[ROI4[1] : ROI4[3], ROI4[0] : ROI4[2]],
-                        red_result.contours,
-                        -1,
-                        (0, 0, 255),
-                        2,
-                    )
-
-                status = f"Angle: {angle} | Turns: {current_intersections/4} | L: {left_area} | R: {right_area} | OR: {orange_area} | BL: {blue_area}"
-                cv2.putText(
-                    debug_frame,
-                    status,
-                    (10, 30),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    0.6,
-                    (0, 255, 255),
-                    2,
-                )
-                cv2.imshow("Debug View", debug_frame)
-
+            # Stopping logic
             if stopFlag and (int(time.time()) - stopTime) > 1.7:
                 print("Lap completed!")
                 arduino.write(f"0,{angle}\n".encode())
