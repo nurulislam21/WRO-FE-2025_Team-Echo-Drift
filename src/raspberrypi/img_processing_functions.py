@@ -14,27 +14,11 @@ def find_contours(frame, lower_color, upper_color, roi, direction=None):
     mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-    if direction is not None:
-        all_points = np.vstack(contours)
+    if direction is not None and contours:
+        # Combine all points into one array safely
+        all_points = np.concatenate(contours, axis=0)
         hull = cv2.convexHull(all_points)
-        points = hull.reshape(-1, 2)
-        # Dictionary to store max x per y
-        y_groups = defaultdict(list)
-        for x, y in points:
-            y_groups[y].append(x)
-
-        # Build modified contour
-        modified_points = []
-        for y, xs in y_groups.items():
-            max_x = max(xs)
-            for x in xs:
-                if x == max_x:
-                    modified_points.append([roi[3], y])  # replace max x with const
-                else:
-                    modified_points.append([x, y])
-
-        return np.array(modified_points, dtype=np.int32).reshape(-1, 1, 2)
-
+        contours = [hull]
     return contours
 
 

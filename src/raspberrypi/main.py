@@ -306,7 +306,7 @@ def main():
 
                     obj_error = offset_x / (CAM_WIDTH // 2)  # normalized [-1, 1]
                     obj_error = -np.clip(
-                        obj_error * 10, -1, 1
+                        obj_error * 8, -1, 1
                     )  # amplify to make it more responsive
                     normalized_angle_offset = pid(obj_error)
 
@@ -318,13 +318,13 @@ def main():
                     )
                     normalized_angle_offset *= y_gain
                     speed_factor = 1 - (0.3 * y_gain)  # slow down when closer to object
-                    print(
-                        f"Obj error: {obj_error} | PID output: {normalized_angle_offset} | y_gain: {y_gain}"
-                    )
-                    print(
-                        f"offset_x: {offset_x}, obj_x: {obj_x}, r_wall_x: {r_wall_x}, obj_y: {obj_y}"
-                    )
-                    print(f"Normalized angle offset: {normalized_angle_offset}")
+                    # print(
+                    #     f"Obj error: {obj_error} | PID output: {normalized_angle_offset} | y_gain: {y_gain}"
+                    # )
+                    # print(
+                    #     f"offset_x: {offset_x}, obj_x: {obj_x}, r_wall_x: {r_wall_x}, obj_y: {obj_y}"
+                    # )
+                    # print(f"Normalized angle offset: {normalized_angle_offset}")
 
                 # print(f"Obj: {obj_x}, {obj_y} | Wall: {r_wall_x}, {r_wall_y}")
 
@@ -362,9 +362,9 @@ def main():
                 )  # amplify to make it more responsive
                 normalized_angle_offset = pid(wall_error)
 
-                print(
-                    f"Line error: {wall_error}, PID output: {normalized_angle_offset}"
-                )
+                # print(
+                #     f"Line error: {wall_error}, PID output: {normalized_angle_offset}"
+                # )
 
             # --- Map normalized control to servo angle ---
             angle = int(
