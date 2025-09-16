@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+from collections import defaultdict
 
 
 def find_contours(frame, lower_color, upper_color, roi, direction=None):
@@ -14,32 +15,25 @@ def find_contours(frame, lower_color, upper_color, roi, direction=None):
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     if direction is not None:
-        modified_contours = []
+        all_points = np.vstack(contours)
+        hull = cv2.convexHull(all_points)
+        points = hull.reshape(-1, 2)
+        # Dictionary to store max x per y
+        y_groups = defaultdict(list)
+        for x, y in points:
+            y_groups[y].append(x)
 
-        for contour in contours:
-            # reshape for easier handling
-            pts = contour.reshape(-1, 2)
-
-            # group points by y
-            y_to_x = {}
-            for x, y in pts:
-                if y not in y_to_x:
-                    y_to_x[y] = []
-                y_to_x[y].append(x)
-
-            # build modified contour
-            new_pts = []
-            for x, y in pts:
-                max_x = max(y_to_x[y])  # max x for this y
+        # Build modified contour
+        modified_points = []
+        for y, xs in y_groups.items():
+            max_x = max(xs)
+            for x in xs:
                 if x == max_x:
-                    new_pts.append([roi[3], y])  # replace max x with constant
+                    modified_points.append([roi[3], y])  # replace max x with const
                 else:
-                    new_pts.append([x, y])  # keep original
+                    modified_points.append([x, y])
 
-            modified_contours.append(
-                np.array(new_pts, dtype=np.int32).reshape(-1, 1, 2)
-            )
-            contours = modified_contours
+        return np.array(modified_points, dtype=np.int32).reshape(-1, 1, 2)
 
     return contours
 
