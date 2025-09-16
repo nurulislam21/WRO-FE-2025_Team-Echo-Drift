@@ -284,46 +284,102 @@ def main():
                 continue
 
             # --- Obstacle avoidance ---
-            if (
-                contour_workers.mode == "OBSTACLE"
-                and red_result.contours
-                and red_area > 300
+            if contour_workers.mode == "OBSTACLE" and (
+                (red_result.contours and red_area > 300)
+                or (green_result.contours and green_area > 300)
             ):
-                # pick nearest red object (smallest cy)
-                obj_x, obj_y = get_max_y_coord(red_result.contours)
-                # r_wall_x, r_wall_y = get_min_x_coord(right_result.contours)
-                r_wall_x, r_wall_y = get_overall_centroid(right_result.contours)
+                # get object coordinates
+                green_obj_x, green_obj_y = get_max_y_coord(green_result.contours)
+                red_obj_x, red_obj_y = get_max_y_coord(red_result.contours)
 
-                if r_wall_x is None:
-                    print("No wall detected!")
-                    # set default wall position if none detected
-                    r_wall_x = CAM_WIDTH
-                else:
-                    # transform to global coordinates
-                    r_wall_x += RIGHT_REGION[0]
+                # set inf if no object detected
+                if green_obj_y is None or green_obj_x is None:
+                    green_obj_x = float("inf")
+                    green_obj_y = float("inf")
 
-                if not (obj_x is None and obj_y is None):
+                if red_obj_y is None or red_obj_x is None:
+                    red_obj_x = float("inf")
+                    red_obj_y = float("inf")
+
+                # only proceed if at least one object is detected
+                if not (
+                    (green_obj_x == float("inf") and green_obj_y == float("inf"))
+                    and (red_obj_x == float("inf") and red_obj_y == float("inf"))
+                ):
+
                     # if object is too close, back off
                     if (
-                        obj_y > REVERSE_TRIGGER_Y
-                        and obj_x > REVERSE_TRIGGER_X_MIN
-                        and obj_x < REVERSE_TRIGGER_X_MAX
+                        red_obj_y > REVERSE_TRIGGER_Y
+                        and red_obj_x > REVERSE_TRIGGER_X_MIN
+                        and red_obj_x < REVERSE_TRIGGER_X_MAX
+                    ) or (
+                        green_obj_y > REVERSE_TRIGGER_Y
+                        and green_obj_x > REVERSE_TRIGGER_X_MIN
+                        and green_obj_x < REVERSE_TRIGGER_X_MAX
                     ):
                         print("Object too close! Backing off.")
                         trigger_reverse = True
                         reverse_start_time = time.time()
 
-                    # transform to global coordinates
-                    obj_x += OBS_REGION[0]
-                    obj_y += OBS_REGION[1]
+                    # if red obj is closer
+                    if red_obj_y < green_obj_y:
+                        r_wall_x, r_wall_y = get_overall_centroid(right_result.contours)
 
-                    # compute how far is the bot from the object and walls middle point
-                    offset_x = (obj_x + ((r_wall_x - obj_x) // 2)) - (CAM_WIDTH // 2)
+                        if r_wall_x is None:
+                            print("No wall detected!")
+                            # set default wall position if none detected
+                            r_wall_x = CAM_WIDTH
+                        else:
+                            # transform to global coordinates
+                            r_wall_x += RIGHT_REGION[0]
 
-                    # show a circle dot on the middle of the object and wall
-                    obstacle_wall_pivot = (obj_x + ((r_wall_x - obj_x) // 2), obj_y)
+                        # transform to global coordinates
+                        red_obj_x += OBS_REGION[0]
+                        red_obj_y += OBS_REGION[1]
 
-                    obj_error = offset_x / (CAM_WIDTH // 2)  # normalized [-1, 1]
+                        # compute how far is the bot from the object and walls middle point
+                        offset_x = (red_obj_x + ((r_wall_x - red_obj_x) // 2)) - (
+                            CAM_WIDTH // 2
+                        )
+
+                        # show a circle dot on the middle of the object and wall
+                        obstacle_wall_pivot = (
+                            red_obj_x + ((r_wall_x - red_obj_x) // 2),
+                            red_obj_y,
+                        )
+
+                        obj_error = offset_x / (CAM_WIDTH // 2)  # normalized [-1, 1]
+
+                    # if green obj is closer
+                    elif green_obj_y < red_obj_y:
+                        l_wall_x, l_wall_y = get_overall_centroid(left_result.contours)
+
+                        if l_wall_x is None:
+                            print("No wall detected!")
+                            # set default wall position if none detected
+                            l_wall_x = 0
+                        else:
+                            # transform to global coordinates
+                            l_wall_x += LEFT_REGION[0]
+
+                        # transform to global coordinates
+                        green_obj_x += OBS_REGION[0]
+                        green_obj_y += OBS_REGION[1]
+
+                        # compute how far is the bot from the object and walls middle point
+                        offset_x = (green_obj_x - ((green_obj_x - l_wall_x) // 2)) - (
+                            CAM_WIDTH // 2
+                        )
+
+                        # show a circle dot on the middle of the object and wall
+                        obstacle_wall_pivot = (
+                            green_obj_x - ((green_obj_x - l_wall_x) // 2),
+                            green_obj_y,
+                        )
+
+                        obj_error = offset_x / (CAM_WIDTH // 2)  # normalized [-1, 1]
+                        
+
                     obj_error = -np.clip(
                         obj_error * 8, -1, 1
                     )  # amplify to make it more responsive
@@ -331,7 +387,7 @@ def main():
 
                     # steer more aggressively when closer to object
                     y_gain = np.interp(
-                        obj_y,
+                        red_obj_y,
                         [
                             0,
                             (CAM_HEIGHT // 2) - 50,
@@ -342,15 +398,8 @@ def main():
                     )
                     normalized_angle_offset *= y_gain
                     speed_factor = 1 - (0.3 * y_gain)  # slow down when closer to object
-                    # print(
-                    #     f"Obj error: {obj_error} | PID output: {normalized_angle_offset} | y_gain: {y_gain}"
-                    # )
-                    # print(
-                    #     f"offset_x: {offset_x}, obj_x: {obj_x}, r_wall_x: {r_wall_x}, obj_y: {obj_y}"
-                    # )
-                    # print(f"Normalized angle offset: {normalized_angle_offset}")
 
-                # print(f"Obj: {obj_x}, {obj_y} | Wall: {r_wall_x}, {r_wall_y}")
+                # print(f"Obj: {red_obj_x}, {red_obj_y} | Wall: {r_wall_x}, {r_wall_y}")
 
             else:
                 obstacle_wall_pivot = (None, None)
@@ -363,32 +412,6 @@ def main():
                 aSum = left_s + right_s
                 error = aDiff / (aSum + 1e-6)  # normalized between roughly [-1,1]
                 normalized_angle_offset = pid(error)
-                # left_x, left_y = get_max_x_coord(left_result.contours)
-                # right_x, right_y = get_min_x_coord(right_result.contours)
-
-                # if left_x is None:
-                #     left_x = 0
-                # else:
-                #     # transform to global coordinates
-                #     left_x += LEFT_REGION[0]
-
-                # if right_x is None:
-                #     right_x = CAM_WIDTH
-                # else:
-                #     # transform to global coordinates
-                #     right_x += RIGHT_REGION[0]
-
-                # offset_x = (left_x + ((right_x - left_x) // 2)) - (CAM_WIDTH // 2)
-                # wall_error = offset_x / (CAM_WIDTH // 2)
-
-                # wall_error = -np.clip(
-                #     wall_error * 2, -1, 1
-                # )  # amplify to make it more responsive
-                # normalized_angle_offset = pid(wall_error)
-
-                # print(
-                #     f"Line error: {wall_error}, PID output: {normalized_angle_offset}"
-                # )
 
             # --- Map normalized control to servo angle ---
             angle = int(
