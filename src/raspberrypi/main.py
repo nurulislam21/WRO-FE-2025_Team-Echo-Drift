@@ -90,6 +90,7 @@ contour_workers = ContourWorkers(
     upper_green=UPPER_GREEN,
     left_region=LEFT_REGION,
     right_region=RIGHT_REGION,
+    reverse_region=REVERSE_REGION,
     lap_region=LAP_REGION,
     obs_region=OBS_REGION,
 )
