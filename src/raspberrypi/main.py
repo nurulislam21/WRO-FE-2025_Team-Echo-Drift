@@ -231,6 +231,8 @@ def main():
             red_area = red_result.area
             reverse_area = reverse_result.area
 
+            print(reverse_area)
+
             # Debug view
             if DEBUG:
                 display_debug_screen(
@@ -271,7 +273,7 @@ def main():
                     break
                 continue
 
-            elif reverse_area > 400:
+            elif reverse_area > 1500:
                 print("Reverse trigger detected!")
                 trigger_reverse = True
                 reverse_start_time = time.time()
