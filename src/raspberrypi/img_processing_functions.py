@@ -3,6 +3,15 @@ import numpy as np
 from collections import defaultdict
 
 
+def replace_closest(polygon, new_point):
+    # Compute distances from new_point to each polygon vertex
+    distances = np.linalg.norm(polygon - new_point, axis=1)
+    # Index of the closest point
+    idx = np.argmin(distances)
+    # Replace that vertex
+    polygon[idx] = new_point
+    return polygon
+
 def find_contours(frame, lower_color, upper_color, roi, direction=None):
     x1, y1, x2, y2 = roi
     roi_frame = frame[y1:y2, x1:x2]
@@ -18,13 +27,14 @@ def find_contours(frame, lower_color, upper_color, roi, direction=None):
         # Combine all points into one array safely
         all_points = np.concatenate(contours, axis=0)
         hull = cv2.convexHull(all_points)
-        contours = [hull]
+        # contours = [hull]
 
         if direction == "right":
             print("----------------")
             print(hull.reshape(-1, 2))
-            import time
-            time.sleep(1)
+            hull = replace_closest(hull.reshape(-1, 2), np.array([roi[2], roi[1]]))
+            hull = replace_closest(hull.reshape(-1, 2), np.array([roi[2], roi[3]]))
+            contours = [hull.reshape(-1, 1, 2)]
         
         # modified_contours = []
 
