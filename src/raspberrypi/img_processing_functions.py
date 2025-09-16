@@ -27,40 +27,17 @@ def find_contours(frame, lower_color, upper_color, roi, direction=None):
         # Combine all points into one array safely
         all_points = np.concatenate(contours, axis=0)
         hull = cv2.convexHull(all_points)
-        # contours = [hull]
+        hull = hull.reshape(-1, 2)        
 
-        if direction == "right":
-            print("----------------")
-            print(hull.reshape(-1, 2))
-            hull = replace_closest(hull.reshape(-1, 2), np.array([roi[2], roi[1]]))
-            hull = replace_closest(hull.reshape(-1, 2), np.array([roi[2], roi[3]]))
-            contours = [hull.reshape(-1, 1, 2)]
-        
-        # modified_contours = []
+        if direction == "right":                        
+            hull = replace_closest(hull, np.array([roi[2]-roi[0], 0]))
+            hull = replace_closest(hull, np.array([roi[2]-roi[0], roi[3]-roi[1]]))
 
-        # for contour in contours:
-        #     # reshape for easier handling
-        #     pts = contour.reshape(-1, 2)
-            
-        #     # group points by y
-        #     y_to_x = {}
-        #     for x, y in pts:
-        #         if y not in y_to_x:
-        #             y_to_x[y] = []
-        #         y_to_x[y].append(x)
-            
-        #     # build modified contour
-        #     new_pts = []
-        #     for (x, y) in pts:
-        #         max_x = max(y_to_x[y])  # max x for this y
-        #         if x == max_x:
-        #             new_pts.append([roi[3], y])  # replace max x with constant
-        #         else:
-        #             new_pts.append([x, y])  # keep original
-            
-        #     modified_contours.append(np.array(new_pts, dtype=np.int32).reshape(-1, 1, 2))
+        elif direction == "left":            
+            hull = replace_closest(hull, np.array([0, 0]))
+            hull = replace_closest(hull, np.array([0, roi[3]-roi[1]]))            
         
-        # contours = modified_contours
+        contours = [hull.reshape(-1, 1, 2)]
 
     return contours
 

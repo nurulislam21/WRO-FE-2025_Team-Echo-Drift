@@ -331,36 +331,36 @@ def main():
             else:
                 obstacle_wall_pivot = (None, None)
                 # PID controller
-                # left_buf.append(left_area)
-                # right_buf.append(right_area)
-                # left_s = sum(left_buf) / len(left_buf)
-                # right_s = sum(right_buf) / len(right_buf)
-                # aDiff = right_s - left_s
-                # aSum = left_s + right_s
-                # error = aDiff / (aSum + 1e-6)  # normalized between roughly [-1,1]
-                # normalized_angle_offset = pid(error)
-                left_x, left_y = get_max_x_coord(left_result.contours)
-                right_x, right_y = get_min_x_coord(right_result.contours)
+                left_buf.append(left_area)
+                right_buf.append(right_area)
+                left_s = sum(left_buf) / len(left_buf)
+                right_s = sum(right_buf) / len(right_buf)
+                aDiff = right_s - left_s
+                aSum = left_s + right_s
+                error = aDiff / (aSum + 1e-6)  # normalized between roughly [-1,1]
+                normalized_angle_offset = pid(error)
+                # left_x, left_y = get_max_x_coord(left_result.contours)
+                # right_x, right_y = get_min_x_coord(right_result.contours)
 
-                if left_x is None:
-                    left_x = 0
-                else:
-                    # transform to global coordinates
-                    left_x += ROI1[0]
+                # if left_x is None:
+                #     left_x = 0
+                # else:
+                #     # transform to global coordinates
+                #     left_x += ROI1[0]
 
-                if right_x is None:
-                    right_x = CAM_WIDTH
-                else:
-                    # transform to global coordinates
-                    right_x += ROI2[0]
+                # if right_x is None:
+                #     right_x = CAM_WIDTH
+                # else:
+                #     # transform to global coordinates
+                #     right_x += ROI2[0]
 
-                offset_x = (left_x + ((right_x - left_x) // 2)) - (CAM_WIDTH // 2)
-                wall_error = offset_x / (CAM_WIDTH // 2)
+                # offset_x = (left_x + ((right_x - left_x) // 2)) - (CAM_WIDTH // 2)
+                # wall_error = offset_x / (CAM_WIDTH // 2)
 
-                wall_error = -np.clip(
-                    wall_error * 2, -1, 1
-                )  # amplify to make it more responsive
-                normalized_angle_offset = pid(wall_error)
+                # wall_error = -np.clip(
+                #     wall_error * 2, -1, 1
+                # )  # amplify to make it more responsive
+                # normalized_angle_offset = pid(wall_error)
 
                 # print(
                 #     f"Line error: {wall_error}, PID output: {normalized_angle_offset}"
