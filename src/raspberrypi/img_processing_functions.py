@@ -19,6 +19,39 @@ def find_contours(frame, lower_color, upper_color, roi, direction=None):
         all_points = np.concatenate(contours, axis=0)
         hull = cv2.convexHull(all_points)
         contours = [hull]
+
+        if direction == "right":
+            print("----------------")
+            print(hull.reshape(-1, 2))
+            import time
+            time.sleep(1)
+        
+        # modified_contours = []
+
+        # for contour in contours:
+        #     # reshape for easier handling
+        #     pts = contour.reshape(-1, 2)
+            
+        #     # group points by y
+        #     y_to_x = {}
+        #     for x, y in pts:
+        #         if y not in y_to_x:
+        #             y_to_x[y] = []
+        #         y_to_x[y].append(x)
+            
+        #     # build modified contour
+        #     new_pts = []
+        #     for (x, y) in pts:
+        #         max_x = max(y_to_x[y])  # max x for this y
+        #         if x == max_x:
+        #             new_pts.append([roi[3], y])  # replace max x with constant
+        #         else:
+        #             new_pts.append([x, y])  # keep original
+            
+        #     modified_contours.append(np.array(new_pts, dtype=np.int32).reshape(-1, 1, 2))
+        
+        # contours = modified_contours
+
     return contours
 
 

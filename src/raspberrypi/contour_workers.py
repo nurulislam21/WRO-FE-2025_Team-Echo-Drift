@@ -189,6 +189,7 @@ class ContourWorkers:
                     self.LOWER_BLACK,
                     self.UPPER_BLACK,
                     self.ROI1,
+                    direction="left",
                 )
                 area, _ = max_contour(contours)
                 result = ContourResult(area, contours)
