@@ -94,7 +94,7 @@ class ContourWorkers:
             self.frame_queue_blue.put_nowait(frame_copy)
         except:
             pass
-        
+
         if self.mode == "OBSTACLE":
             # try:
             #     self.frame_queue_green.put_nowait(frame_copy)
@@ -185,7 +185,10 @@ class ContourWorkers:
             try:
                 frame = self.frame_queue_left.get(timeout=0.1)
                 contours = find_contours(
-                    frame, self.LOWER_BLACK, self.UPPER_BLACK, self.ROI1
+                    frame,
+                    self.LOWER_BLACK,
+                    self.UPPER_BLACK,
+                    self.ROI1,
                 )
                 area, _ = max_contour(contours)
                 result = ContourResult(area, contours)
@@ -212,7 +215,11 @@ class ContourWorkers:
             try:
                 frame = self.frame_queue_right.get(timeout=0.1)
                 contours = find_contours(
-                    frame, self.LOWER_BLACK, self.UPPER_BLACK, self.ROI2
+                    frame,
+                    self.LOWER_BLACK,
+                    self.UPPER_BLACK,
+                    self.ROI2,
+                    direction="right",
                 )
                 area, _ = max_contour(contours)
                 result = ContourResult(area, contours)

@@ -2,17 +2,45 @@ import cv2
 import numpy as np
 
 
-
-def find_contours(frame, lower_color, upper_color, roi):
+def find_contours(frame, lower_color, upper_color, roi, direction=None):
     x1, y1, x2, y2 = roi
     roi_frame = frame[y1:y2, x1:x2]
     labImg = cv2.cvtColor(roi_frame, cv2.COLOR_RGB2Lab)
-    img_blur = cv2.GaussianBlur(labImg, (7, 7), 0)
+    img_blur = cv2.GaussianBlur(labImg, (9, 9), 0)
     mask = cv2.inRange(img_blur, lower_color, upper_color)
     kernel = np.ones((5, 5), np.uint8)
     mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
     mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    if direction is not None:
+        modified_contours = []
+
+        for contour in contours:
+            # reshape for easier handling
+            pts = contour.reshape(-1, 2)
+
+            # group points by y
+            y_to_x = {}
+            for x, y in pts:
+                if y not in y_to_x:
+                    y_to_x[y] = []
+                y_to_x[y].append(x)
+
+            # build modified contour
+            new_pts = []
+            for x, y in pts:
+                max_x = max(y_to_x[y])  # max x for this y
+                if x == max_x:
+                    new_pts.append([roi[3], y])  # replace max x with constant
+                else:
+                    new_pts.append([x, y])  # keep original
+
+            modified_contours.append(
+                np.array(new_pts, dtype=np.int32).reshape(-1, 1, 2)
+            )
+            contours = modified_contours
+
     return contours
 
 
@@ -178,6 +206,7 @@ def get_max_x_coord(contours) -> tuple[int, int] | tuple[None, None]:
 
 import cv2
 
+
 def get_overall_centroid(contours):
     """
     Calculate the single centroid of multiple contours combined.
@@ -190,7 +219,7 @@ def get_overall_centroid(contours):
     """
     # Compute moments for all contours together
     M = {"m00": 0, "m10": 0, "m01": 0}
-    
+
     for contour in contours:
         m = cv2.moments(contour)
         M["m00"] += m["m00"]
