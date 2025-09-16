@@ -76,6 +76,7 @@ def display_debug_screen(
     blue_result,
     green_result,
     red_result,
+    reverse_result,
     angle,
     current_intersections,
     left_area,
@@ -150,6 +151,15 @@ def display_debug_screen(
             red_result.contours,
             -1,
             (0, 0, 255),
+            2,
+        )
+
+    if reverse_result.contours:
+        cv2.drawContours(
+            debug_frame[REVERSE_REGION[1] : REVERSE_REGION[3], REVERSE_REGION[0] : REVERSE_REGION[2]],
+            reverse_result.contours,
+            -1,
+            (255, 0, 0),
             2,
         )
 

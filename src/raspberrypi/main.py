@@ -45,7 +45,7 @@ RIGHT_REGION = [400, 220, 620, 280]  # right
 LAP_REGION = [200, 300, 440, 350]  # lap detection
 OBS_REGION = [95, 140, 545, 320]  # obstacle detection
 REVERSE_REGION = [200, 300, 440, 320]  # reverse trigger area
-FRONT_WALL_REGION = [270, 180, 370, 280]  # front wall detection
+FRONT_WALL_REGION = [300, 180, 340, 200]  # front wall detection
 
 BLACK_WALL_DETECTOR_AREA = (LEFT_REGION[2] - LEFT_REGION[0]) * (
     LEFT_REGION[3] - LEFT_REGION[1]
@@ -243,6 +243,7 @@ def main():
                     blue_result=blue_result,
                     green_result=green_result,
                     red_result=red_result,
+                    reverse_result=reverse_result,
                     LEFT_REGION=LEFT_REGION,
                     RIGHT_REGION=RIGHT_REGION,
                     LAP_REGION=LAP_REGION,
