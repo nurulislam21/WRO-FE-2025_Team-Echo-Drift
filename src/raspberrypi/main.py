@@ -33,8 +33,8 @@ print("DEBUG MODE" if DEBUG else "PRODUCTION")
 # Simulated camera settings
 CAM_WIDTH = 640
 CAM_HEIGHT = 480
-MAX_SPEED = 100
-MIN_SPEED = 60
+MAX_SPEED = 60
+MIN_SPEED = 45
 
 # Intersections
 TOTAL_INTERSECTIONS = 100
