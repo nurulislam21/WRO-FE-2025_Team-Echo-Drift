@@ -13,7 +13,7 @@ from img_processing_functions import (
     get_min_x_coord,
     display_debug_screen,
     get_max_x_coord,
-    get_overall_centroid
+    get_overall_centroid,
 )
 from contour_workers import ContourWorkers
 from simple_pid import PID
@@ -40,19 +40,23 @@ MIN_SPEED = 45
 TOTAL_INTERSECTIONS = 100
 
 # Region of Interest coordinates
-ROI1 = [20, 220, 240, 280]  # left
-ROI2 = [400, 220, 620, 280]  # right
-ROI3 = [200, 300, 440, 350]  # lap detection
-ROI4 = [90, 140, 540, 320]  # obstacle detection
+LEFT_REGION = [20, 220, 240, 280]  # left
+RIGHT_REGION = [400, 220, 620, 280]  # right
+LAP_REGION = [200, 300, 440, 350]  # lap detection
+OBS_REGION = [95, 140, 545, 320]  # obstacle detection
+REVERSE_REGION = [200, 300, 440, 320]  # reverse trigger area
+FRONT_WALL_REGION = [270, 180, 370, 280]  # front wall detection
 
-BLACK_WALL_DETECTOR_AREA = (ROI1[2] - ROI1[0]) * (ROI1[3] - ROI1[1])
-OBSTACLE_DETECTOR_X = ROI4[2] - ROI4[0]
-OBSTACLE_DETECTOR_Y = ROI4[3] - ROI4[1]
+BLACK_WALL_DETECTOR_AREA = (LEFT_REGION[2] - LEFT_REGION[0]) * (
+    LEFT_REGION[3] - LEFT_REGION[1]
+)
+OBSTACLE_DETECTOR_X = OBS_REGION[2] - OBS_REGION[0]
+OBSTACLE_DETECTOR_Y = OBS_REGION[3] - OBS_REGION[1]
 obstacle_wall_pivot = (None, None)
 
-REVERSE_TRIGGER_Y = OBSTACLE_DETECTOR_Y - 20
-REVERSE_TRIGGER_X_MIN = (OBSTACLE_DETECTOR_X // 2) - 115
-REVERSE_TRIGGER_X_MAX = (OBSTACLE_DETECTOR_X // 2) + 115
+REVERSE_TRIGGER_Y = REVERSE_REGION[3]
+REVERSE_TRIGGER_X_MIN = REVERSE_REGION[0]
+REVERSE_TRIGGER_X_MAX = REVERSE_REGION[2] - REVERSE_REGION[0]
 
 # Color ranges
 LOWER_BLACK = np.array([0, 114, 116])
@@ -84,10 +88,10 @@ contour_workers = ContourWorkers(
     upper_red=UPPER_RED,
     lower_green=LOWER_GREEN,
     upper_green=UPPER_GREEN,
-    roi1=ROI1,
-    roi2=ROI2,
-    roi3=ROI3,
-    roi4=ROI4,
+    left_region=LEFT_REGION,
+    right_region=RIGHT_REGION,
+    lap_region=LAP_REGION,
+    obs_region=OBS_REGION,
 )
 
 STRAIGHT_CONST = 95
@@ -117,7 +121,7 @@ speed = 0
 
 trigger_reverse = False
 reverse_start_time = 0
-reverse_duration = 1.0  # seconds
+reverse_duration = 0.7  # seconds
 
 startProcessing = False
 stopFlag = False
@@ -167,6 +171,7 @@ def main():
         contour_workers.blue_contour_worker,
         contour_workers.green_contour_worker,
         contour_workers.red_contour_worker,
+        contour_workers.reverse_contour_worker,
     ]
 
     for worker in workers:
@@ -213,6 +218,7 @@ def main():
                 blue_result,
                 green_result,
                 red_result,
+                reverse_result,
             ) = contour_workers.collect_results()
 
             # Use the latest processing results
@@ -222,6 +228,7 @@ def main():
             blue_area = blue_result.area
             green_area = green_result.area
             red_area = red_result.area
+            reverse_area = reverse_result.area
 
             # Debug view
             if DEBUG:
@@ -235,22 +242,20 @@ def main():
                     blue_result=blue_result,
                     green_result=green_result,
                     red_result=red_result,
-                    ROI1=ROI1,
-                    ROI2=ROI2,
-                    ROI3=ROI3,
-                    ROI4=ROI4,
-                    REVERSE_TRIGGER_X_MIN=REVERSE_TRIGGER_X_MIN,
-                    REVERSE_TRIGGER_X_MAX=REVERSE_TRIGGER_X_MAX,
-                    REVERSE_TRIGGER_Y=REVERSE_TRIGGER_Y,
+                    LEFT_REGION=LEFT_REGION,
+                    RIGHT_REGION=RIGHT_REGION,
+                    LAP_REGION=LAP_REGION,
+                    OBS_REGION=OBS_REGION,
+                    REVERSE_REGION=REVERSE_REGION,
+                    FRONT_WALL_REGION=FRONT_WALL_REGION,
                     angle=angle,
                     current_intersections=current_intersections,
                     left_area=left_area,
                     right_area=right_area,
-                    orange_area=orange_area,
-                    blue_area=blue_area,
                     obstacle_wall_pivot=obstacle_wall_pivot,
                 )
 
+            # --- Reversing logic ---
             if trigger_reverse:
                 speed = -MIN_SPEED
                 if (time.time() - reverse_start_time) > reverse_duration:
@@ -260,6 +265,16 @@ def main():
                     angle = STRAIGHT_CONST  # go straight when reversing
                 arduino.write(f"{speed},{angle}\n".encode())
                 print(f"Reversing... Speed: {speed}, Angle: {angle}")
+                if cv2.waitKey(1) & 0xFF == ord("q"):
+                    break
+                continue
+
+            elif reverse_area > 400:
+                print("Reverse trigger detected!")
+                trigger_reverse = True
+                reverse_start_time = time.time()
+                speed = 0  # stop before reversing
+                arduino.write(f"{speed},{angle}\n".encode())
                 if cv2.waitKey(1) & 0xFF == ord("q"):
                     break
                 continue
@@ -281,7 +296,7 @@ def main():
                     r_wall_x = CAM_WIDTH
                 else:
                     # transform to global coordinates
-                    r_wall_x += ROI2[0]
+                    r_wall_x += RIGHT_REGION[0]
 
                 if not (obj_x is None and obj_y is None):
                     # if object is too close, back off
@@ -295,14 +310,14 @@ def main():
                         reverse_start_time = time.time()
 
                     # transform to global coordinates
-                    obj_x += ROI4[0]
-                    obj_y += ROI4[1]
+                    obj_x += OBS_REGION[0]
+                    obj_y += OBS_REGION[1]
 
                     # compute how far is the bot from the object and walls middle point
                     offset_x = (obj_x + ((r_wall_x - obj_x) // 2)) - (CAM_WIDTH // 2)
 
                     # show a circle dot on the middle of the object and wall
-                    obstacle_wall_pivot = (obj_x + ((r_wall_x - obj_x) // 2), obj_y)                     
+                    obstacle_wall_pivot = (obj_x + ((r_wall_x - obj_x) // 2), obj_y)
 
                     obj_error = offset_x / (CAM_WIDTH // 2)  # normalized [-1, 1]
                     obj_error = -np.clip(
@@ -313,7 +328,12 @@ def main():
                     # steer more aggressively when closer to object
                     y_gain = np.interp(
                         obj_y,
-                        [0, (CAM_HEIGHT // 2) - 50, (CAM_HEIGHT // 2) - 20, ROI4[3]],
+                        [
+                            0,
+                            (CAM_HEIGHT // 2) - 50,
+                            (CAM_HEIGHT // 2) - 20,
+                            OBS_REGION[3],
+                        ],
                         [0, 0.2, 0.7, 1],
                     )
                     normalized_angle_offset *= y_gain
@@ -346,13 +366,13 @@ def main():
                 #     left_x = 0
                 # else:
                 #     # transform to global coordinates
-                #     left_x += ROI1[0]
+                #     left_x += LEFT_REGION[0]
 
                 # if right_x is None:
                 #     right_x = CAM_WIDTH
                 # else:
                 #     # transform to global coordinates
-                #     right_x += ROI2[0]
+                #     right_x += RIGHT_REGION[0]
 
                 # offset_x = (left_x + ((right_x - left_x) // 2)) - (CAM_WIDTH // 2)
                 # wall_error = offset_x / (CAM_WIDTH // 2)

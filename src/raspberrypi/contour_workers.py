@@ -1,4 +1,4 @@
-from img_processing_functions import find_contours, max_contour
+from img_processing_functions import find_contours, max_contour_area
 import threading
 from queue import Queue, Empty
 import cv2
@@ -27,10 +27,11 @@ class ContourWorkers:
         upper_red: np.ndarray,
         lower_green: np.ndarray,
         upper_green: np.ndarray,
-        roi1: list,
-        roi2: list,
-        roi3: list,
-        roi4: list,
+        left_region: list,
+        right_region: list,
+        lap_region: list,
+        obs_region: list,
+        reverse_region: list,
     ):
         self.mode = mode
         # colors
@@ -45,10 +46,11 @@ class ContourWorkers:
         self.LOWER_GREEN = lower_green
         self.UPPER_GREEN = upper_green
         # regions of interest
-        self.ROI1 = roi1
-        self.ROI2 = roi2
-        self.ROI3 = roi3
-        self.ROI4 = roi4
+        self.LEFT_REGION = left_region
+        self.RIGHT_REGION = right_region
+        self.LAP_REGION = lap_region
+        self.OBS_REGION = obs_region
+        self.REVERSE_REGION = reverse_region
         # queues
         self.frame_queue_left = Queue(maxsize=2)
         self.frame_queue_right = Queue(maxsize=2)
@@ -56,6 +58,7 @@ class ContourWorkers:
         self.frame_queue_blue = Queue(maxsize=2)
         self.frame_queue_green = Queue(maxsize=2)
         self.frame_queue_red = Queue(maxsize=2)
+        self.frame_queue_reverse = Queue(maxsize=2)
         # result queues
         self.result_queue_left = Queue(maxsize=2)
         self.result_queue_right = Queue(maxsize=2)
@@ -63,6 +66,7 @@ class ContourWorkers:
         self.result_queue_blue = Queue(maxsize=2)
         self.result_queue_green = Queue(maxsize=2)
         self.result_queue_red = Queue(maxsize=2)
+        self.result_queue_reverse = Queue(maxsize=2)
         # control event
         self.stop_processing = threading.Event()
 
@@ -73,6 +77,7 @@ class ContourWorkers:
         self.blue_result = ContourResult()
         self.green_result = ContourResult()
         self.red_result = ContourResult()
+        self.reverse_result = ContourResult()
 
     def put_frames_in_queues(self, frame_copy):
         try:
@@ -92,6 +97,11 @@ class ContourWorkers:
 
         try:
             self.frame_queue_blue.put_nowait(frame_copy)
+        except:
+            pass
+
+        try:
+            self.frame_queue_reverse.put_nowait(frame_copy)
         except:
             pass
 
@@ -143,6 +153,12 @@ class ContourWorkers:
         except Empty:
             pass
 
+        try:
+            while not self.result_queue_reverse.empty():
+                self.reverse_result = self.result_queue_reverse.get_nowait()
+        except Empty:
+            pass
+
         return (
             self.left_result,
             self.right_result,
@@ -150,34 +166,8 @@ class ContourWorkers:
             self.blue_result,
             self.green_result,
             self.red_result,
+            self.reverse_result,
         )
-
-    def blue_contour_worker(self):
-        """Worker thread for blue marker detection"""
-        while not self.stop_processing.is_set():
-            try:
-                frame = self.frame_queue_blue.get(timeout=0.1)
-                contours = find_contours(
-                    frame, self.LOWER_BLUE, self.UPPER_BLUE, self.ROI3
-                )
-                area, _ = max_contour(contours)
-                result = ContourResult(area, contours)
-
-                try:
-                    self.result_queue_blue.put_nowait(result)
-                except:
-                    try:
-                        self.result_queue_blue.get_nowait()
-                        self.result_queue_blue.put_nowait(result)
-                    except Empty:
-                        pass
-
-                self.frame_queue_blue.task_done()
-            except Empty:
-                continue
-            except Exception as e:
-                print(f"Blue processing error: {e}")
-                continue
 
     def left_contour_worker(self):
         """Worker thread for left ROI black line detection"""
@@ -188,10 +178,10 @@ class ContourWorkers:
                     frame,
                     self.LOWER_BLACK,
                     self.UPPER_BLACK,
-                    self.ROI1,
+                    self.LEFT_REGION,
                     direction="left",
                 )
-                area, _ = max_contour(contours)
+                area, _ = max_contour_area(contours)
                 result = ContourResult(area, contours)
 
                 try:
@@ -219,10 +209,10 @@ class ContourWorkers:
                     frame,
                     self.LOWER_BLACK,
                     self.UPPER_BLACK,
-                    self.ROI2,
+                    self.RIGHT_REGION,
                     direction="right",
                 )
-                area, _ = max_contour(contours)
+                area, _ = max_contour_area(contours)
                 result = ContourResult(area, contours)
 
                 try:
@@ -247,9 +237,9 @@ class ContourWorkers:
             try:
                 frame = self.frame_queue_orange.get(timeout=0.1)
                 contours = find_contours(
-                    frame, self.LOWER_ORANGE, self.UPPER_ORANGE, self.ROI3
+                    frame, self.LOWER_ORANGE, self.UPPER_ORANGE, self.LAP_REGION
                 )
-                area, _ = max_contour(contours)
+                area, _ = max_contour_area(contours)
                 result = ContourResult(area, contours)
 
                 try:
@@ -274,9 +264,9 @@ class ContourWorkers:
             try:
                 frame = self.frame_queue_blue.get(timeout=0.1)
                 contours = find_contours(
-                    frame, self.LOWER_BLUE, self.UPPER_BLUE, self.ROI3
+                    frame, self.LOWER_BLUE, self.UPPER_BLUE, self.LAP_REGION
                 )
-                area, _ = max_contour(contours)
+                area, _ = max_contour_area(contours)
                 result = ContourResult(area, contours)
 
                 try:
@@ -301,9 +291,9 @@ class ContourWorkers:
             try:
                 frame = self.frame_queue_green.get(timeout=0.1)
                 contours = find_contours(
-                    frame, self.LOWER_GREEN, self.UPPER_GREEN, self.ROI4
+                    frame, self.LOWER_GREEN, self.UPPER_GREEN, self.OBS_REGION
                 )
-                area, _ = max_contour(contours)
+                area, _ = max_contour_area(contours)
                 result = ContourResult(area, contours, "green_pillar")
 
                 try:
@@ -328,9 +318,9 @@ class ContourWorkers:
             try:
                 frame = self.frame_queue_red.get(timeout=0.1)
                 contours = find_contours(
-                    frame, self.LOWER_RED, self.UPPER_RED, self.ROI4
+                    frame, self.LOWER_RED, self.UPPER_RED, self.OBS_REGION
                 )
-                area, _ = max_contour(contours)
+                area, _ = max_contour_area(contours)
                 result = ContourResult(area, contours, "red_pillar")
 
                 try:
@@ -347,4 +337,31 @@ class ContourWorkers:
                 continue
             except Exception as e:
                 print(f"Red processing error: {e}")
+                continue
+   
+    def reverse_contour_worker(self):
+        """Worker thread for reverse trigger detection"""
+        while not self.stop_processing.is_set():
+            try:
+                frame = self.frame_queue_reverse.get(timeout=0.1)
+                contours = find_contours(
+                    frame, self.LOWER_BLACK, self.UPPER_BLACK, self.REVERSE_REGION
+                )
+                area, _ = max_contour_area(contours)
+                result = ContourResult(area, contours, "reverse_trigger")
+
+                try:
+                    self.result_queue_reverse.put_nowait(result)
+                except:
+                    try:
+                        self.result_queue_reverse.get_nowait()
+                        self.result_queue_reverse.put_nowait(result)
+                    except Empty:
+                        pass
+
+                self.frame_queue_reverse.task_done()
+            except Empty:
+                continue
+            except Exception as e:
+                print(f"Reverse processing error: {e}")
                 continue

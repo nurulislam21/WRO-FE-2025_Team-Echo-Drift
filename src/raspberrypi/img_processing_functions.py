@@ -12,6 +12,7 @@ def replace_closest(polygon, new_point):
     polygon[idx] = new_point
     return polygon
 
+
 def find_contours(frame, lower_color, upper_color, roi, direction=None):
     x1, y1, x2, y2 = roi
     roi_frame = frame[y1:y2, x1:x2]
@@ -24,25 +25,28 @@ def find_contours(frame, lower_color, upper_color, roi, direction=None):
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     if direction is not None and contours:
+        if max_contour_area(contours)[0] < 1000:
+            return contours
+
         # Combine all points into one array safely
         all_points = np.concatenate(contours, axis=0)
         hull = cv2.convexHull(all_points)
-        hull = hull.reshape(-1, 2)        
+        hull = hull.reshape(-1, 2)
 
-        if direction == "right":                        
-            hull = replace_closest(hull, np.array([roi[2]-roi[0], 0]))
-            hull = replace_closest(hull, np.array([roi[2]-roi[0], roi[3]-roi[1]]))
+        if direction == "right":
+            hull = replace_closest(hull, np.array([roi[2] - roi[0], 0]))
+            hull = replace_closest(hull, np.array([roi[2] - roi[0], roi[3] - roi[1]]))
 
-        elif direction == "left":            
+        elif direction == "left":
             hull = replace_closest(hull, np.array([0, 0]))
-            hull = replace_closest(hull, np.array([0, roi[3]-roi[1]]))            
-        
+            hull = replace_closest(hull, np.array([0, roi[3] - roi[1]]))
+
         contours = [hull.reshape(-1, 1, 2)]
 
     return contours
 
 
-def max_contour(contours):
+def max_contour_area(contours):
     if len(contours) == 0:
         return (0, None)
     largest = max(contours, key=cv2.contourArea)
@@ -60,13 +64,12 @@ def display_debug_screen(
     CAM_WIDTH,
     CAM_HEIGHT,
     frame,
-    ROI1,
-    ROI2,
-    ROI3,
-    ROI4,
-    REVERSE_TRIGGER_X_MIN,
-    REVERSE_TRIGGER_X_MAX,
-    REVERSE_TRIGGER_Y,
+    LEFT_REGION,
+    RIGHT_REGION,
+    LAP_REGION,
+    OBS_REGION,
+    FRONT_WALL_REGION,
+    REVERSE_REGION,
     left_result,
     right_result,
     orange_result,
@@ -77,12 +80,11 @@ def display_debug_screen(
     current_intersections,
     left_area,
     right_area,
-    orange_area,
-    blue_area,
     obstacle_wall_pivot,
 ):
     debug_frame = frame.copy()
-    debug_frame = display_roi(debug_frame, [ROI1, ROI2, ROI3, ROI4], (255, 0, 255))
+    debug_frame = display_roi(debug_frame, [LEFT_REGION, RIGHT_REGION, LAP_REGION, OBS_REGION], (255, 0, 255))
+    debug_frame = display_roi(debug_frame, [REVERSE_REGION, FRONT_WALL_REGION], (0, 255, 255))
 
     if obstacle_wall_pivot != (None, None):
         cv2.circle(
@@ -100,19 +102,10 @@ def display_debug_screen(
         1,
     )  # blue line in the center
 
-    # draw reverse trigger zone
-    cv2.rectangle(
-        debug_frame,
-        (ROI4[0] + REVERSE_TRIGGER_X_MIN, ROI4[1] + REVERSE_TRIGGER_Y),
-        (ROI4[0] + REVERSE_TRIGGER_X_MAX, ROI4[3]),
-        (255, 0, 0),
-        2,
-    )
-
     # Draw contours using the latest results
     if left_result.contours:
         cv2.drawContours(
-            debug_frame[ROI1[1] : ROI1[3], ROI1[0] : ROI1[2]],
+            debug_frame[LEFT_REGION[1] : LEFT_REGION[3], LEFT_REGION[0] : LEFT_REGION[2]],
             left_result.contours,
             -1,
             (0, 255, 0),
@@ -120,7 +113,7 @@ def display_debug_screen(
         )
     if right_result.contours:
         cv2.drawContours(
-            debug_frame[ROI2[1] : ROI2[3], ROI2[0] : ROI2[2]],
+            debug_frame[RIGHT_REGION[1] : RIGHT_REGION[3], RIGHT_REGION[0] : RIGHT_REGION[2]],
             right_result.contours,
             -1,
             (0, 255, 0),
@@ -128,7 +121,7 @@ def display_debug_screen(
         )
     if orange_result.contours:
         cv2.drawContours(
-            debug_frame[ROI3[1] : ROI3[3], ROI3[0] : ROI3[2]],
+            debug_frame[LAP_REGION[1] : LAP_REGION[3], LAP_REGION[0] : LAP_REGION[2]],
             orange_result.contours,
             -1,
             (0, 165, 255),
@@ -136,7 +129,7 @@ def display_debug_screen(
         )
     if blue_result.contours:
         cv2.drawContours(
-            debug_frame[ROI3[1] : ROI3[3], ROI3[0] : ROI3[2]],
+            debug_frame[LAP_REGION[1] : LAP_REGION[3], LAP_REGION[0] : LAP_REGION[2]],
             blue_result.contours,
             -1,
             (0, 165, 255),
@@ -145,7 +138,7 @@ def display_debug_screen(
 
     if green_result.contours:
         cv2.drawContours(
-            debug_frame[ROI4[1] : ROI4[3], ROI4[0] : ROI4[2]],
+            debug_frame[OBS_REGION[1] : OBS_REGION[3], OBS_REGION[0] : OBS_REGION[2]],
             green_result.contours,
             -1,
             (0, 255, 0),
@@ -153,14 +146,14 @@ def display_debug_screen(
         )
     if red_result.contours:
         cv2.drawContours(
-            debug_frame[ROI4[1] : ROI4[3], ROI4[0] : ROI4[2]],
+            debug_frame[OBS_REGION[1] : OBS_REGION[3], OBS_REGION[0] : OBS_REGION[2]],
             red_result.contours,
             -1,
             (0, 0, 255),
             2,
         )
 
-    status = f"Angle: {angle} | Turns: {current_intersections/4} | L: {left_area} | R: {right_area} | OR: {orange_area} | BL: {blue_area}"
+    status = f"Angle: {angle} | Turns: {current_intersections/4} | L: {left_area} | R: {right_area}"
     cv2.putText(
         debug_frame,
         status,

@@ -20,10 +20,10 @@ MAX_SPEED = 110
 MIN_SPEED = 60
 
 # Region of Interest coordinates
-ROI1 = [20, 220, 240, 280]  # left
-ROI2 = [400, 220, 620, 280]  # right
-ROI3 = [200, 300, 440, 350]  # lap detection
-ROI4 = [90, 175, 540, 280]  # obstacle detection
+LEFT_REGION = [20, 220, 240, 280]  # left
+RIGHT_REGION = [400, 220, 620, 280]  # right
+LAP_REGION = [200, 300, 440, 350]  # lap detection
+OBS_REGION = [90, 175, 540, 280]  # obstacle detection
 
 # Color ranges
 LOWER_BLACK = np.array([0, 114, 116])
@@ -54,10 +54,10 @@ contour_workers = ContourWorkers(
     upper_red=UPPER_RED,
     lower_green=LOWER_GREEN,
     upper_green=UPPER_GREEN,
-    roi1=ROI1,
-    roi2=ROI2,
-    roi3=ROI3,
-    roi4=ROI4,
+    roi1=LEFT_REGION,
+    roi2=RIGHT_REGION,
+    roi3=LAP_REGION,
+    roi4=OBS_REGION,
 )
 
 STRAIGHT_CONST = 95
@@ -262,21 +262,21 @@ def draw_roi_and_info(
 
     # Draw ROI rectangles
     cv2.rectangle(
-        frame_copy, (ROI1[0], ROI1[1]), (ROI1[2], ROI1[3]), (255, 0, 0), 2
+        frame_copy, (LEFT_REGION[0], LEFT_REGION[1]), (LEFT_REGION[2], LEFT_REGION[3]), (255, 0, 0), 2
     )  # Left ROI - Green
     cv2.rectangle(
-        frame_copy, (ROI2[0], ROI2[1]), (ROI2[2], ROI2[3]), (255, 0, 0), 2
+        frame_copy, (RIGHT_REGION[0], RIGHT_REGION[1]), (RIGHT_REGION[2], RIGHT_REGION[3]), (255, 0, 0), 2
     )  # Right ROI - Green
     cv2.rectangle(
-        frame_copy, (ROI3[0], ROI3[1]), (ROI3[2], ROI3[3]), (255, 0, 0), 2
+        frame_copy, (LAP_REGION[0], LAP_REGION[1]), (LAP_REGION[2], LAP_REGION[3]), (255, 0, 0), 2
     )  # Lap detection - Blue
     cv2.rectangle(
-        frame_copy, (ROI4[0], ROI4[1]), (ROI4[2], ROI4[3]), (0, 0, 255), 2
+        frame_copy, (OBS_REGION[0], OBS_REGION[1]), (OBS_REGION[2], OBS_REGION[3]), (0, 0, 255), 2
     )  # Obstacle detection - Red
 
     if left_result.contours:
         cv2.drawContours(
-            frame_copy[ROI1[1] : ROI1[3], ROI1[0] : ROI1[2]],
+            frame_copy[LEFT_REGION[1] : LEFT_REGION[3], LEFT_REGION[0] : LEFT_REGION[2]],
             left_result.contours,
             -1,
             (0, 255, 0),
@@ -284,7 +284,7 @@ def draw_roi_and_info(
         )
     if right_result.contours:
         cv2.drawContours(
-            frame_copy[ROI2[1] : ROI2[3], ROI2[0] : ROI2[2]],
+            frame_copy[RIGHT_REGION[1] : RIGHT_REGION[3], RIGHT_REGION[0] : RIGHT_REGION[2]],
             right_result.contours,
             -1,
             (0, 255, 0),
