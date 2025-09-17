@@ -31,6 +31,7 @@ class ContourWorkers:
         right_region: list,
         lap_region: list,
         obs_region: list,
+        front_wall_region: list,
         reverse_region: list,
     ):
         self.mode = mode
@@ -50,6 +51,7 @@ class ContourWorkers:
         self.RIGHT_REGION = right_region
         self.LAP_REGION = lap_region
         self.OBS_REGION = obs_region
+        self.FRONT_WALL_REGION = front_wall_region
         self.REVERSE_REGION = reverse_region
         # queues
         self.frame_queue_left = Queue(maxsize=2)
@@ -59,6 +61,7 @@ class ContourWorkers:
         self.frame_queue_green = Queue(maxsize=2)
         self.frame_queue_red = Queue(maxsize=2)
         self.frame_queue_reverse = Queue(maxsize=2)
+        self.frame_queue_front_wall = Queue(maxsize=2)
         # result queues
         self.result_queue_left = Queue(maxsize=2)
         self.result_queue_right = Queue(maxsize=2)
@@ -67,6 +70,7 @@ class ContourWorkers:
         self.result_queue_green = Queue(maxsize=2)
         self.result_queue_red = Queue(maxsize=2)
         self.result_queue_reverse = Queue(maxsize=2)
+        self.result_queue_front_wall = Queue(maxsize=2)
         # control event
         self.stop_processing = threading.Event()
 
@@ -78,6 +82,7 @@ class ContourWorkers:
         self.green_result = ContourResult()
         self.red_result = ContourResult()
         self.reverse_result = ContourResult()
+        self.front_wall_result = ContourResult()
 
     def put_frames_in_queues(self, frame_copy):
         try:
@@ -113,6 +118,11 @@ class ContourWorkers:
 
             try:
                 self.frame_queue_red.put_nowait(frame_copy)
+            except:
+                pass
+
+            try:
+                self.frame_queue_front_wall.put_nowait(frame_copy)
             except:
                 pass
 
@@ -159,6 +169,12 @@ class ContourWorkers:
         except Empty:
             pass
 
+        try:
+            while not self.result_queue_front_wall.empty():
+                self.front_wall_result = self.result_queue_front_wall.get_nowait()
+        except Empty:
+            pass
+
         return (
             self.left_result,
             self.right_result,
@@ -167,6 +183,7 @@ class ContourWorkers:
             self.green_result,
             self.red_result,
             self.reverse_result,
+            self.front_wall_result,
         )
 
     def left_contour_worker(self):
@@ -339,10 +356,12 @@ class ContourWorkers:
                 print(f"Red processing error: {e}")
                 continue
    
-    def reverse_contour_worker(self):
+    def reverse_n_front_wall_contour_worker(self):
         """Worker thread for reverse trigger detection"""
         while not self.stop_processing.is_set():
             try:
+
+                # reverse region processing
                 frame = self.frame_queue_reverse.get(timeout=0.1)
                 contours = find_contours(
                     frame, self.LOWER_BLACK, self.UPPER_BLACK, self.REVERSE_REGION
@@ -358,10 +377,28 @@ class ContourWorkers:
                         self.result_queue_reverse.put_nowait(result)
                     except Empty:
                         pass
-
+                
                 self.frame_queue_reverse.task_done()
+
+                # front wall region processing
+                frame_fw = self.frame_queue_front_wall.get(timeout=0.1)
+                contours_fw = find_contours(
+                    frame_fw, self.LOWER_BLACK, self.UPPER_BLACK, self.FRONT_WALL_REGION
+                )
+                area_fw, _ = max_contour_area(contours_fw)
+                result_fw = ContourResult(area_fw, contours_fw, "front_wall_trigger")
+                try:
+                    self.result_queue_front_wall.put_nowait(result_fw)
+                except:
+                    try:
+                        self.result_queue_front_wall.get_nowait()
+                        self.result_queue_front_wall.put_nowait(result_fw)
+                    except Empty:
+                        pass
+                self.frame_queue_front_wall.task_done()
+
             except Empty:
                 continue
             except Exception as e:
-                print(f"Reverse processing error: {e}")
+                print(f"Reverse and front wall processing error: {e}")
                 continue

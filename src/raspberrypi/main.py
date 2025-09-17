@@ -45,7 +45,7 @@ RIGHT_REGION = [400, 220, 620, 280]  # right
 LAP_REGION = [200, 300, 440, 350]  # lap detection
 OBS_REGION = [95, 140, 545, 320]  # obstacle detection
 REVERSE_REGION = [200, 300, 440, 320]  # reverse trigger area
-FRONT_WALL_REGION = [300, 180, 340, 200]  # front wall detection
+FRONT_WALL_REGION = [300, 200, 340, 220]  # front wall detection
 
 BLACK_WALL_DETECTOR_AREA = (LEFT_REGION[2] - LEFT_REGION[0]) * (
     LEFT_REGION[3] - LEFT_REGION[1]
@@ -86,6 +86,7 @@ contour_workers = ContourWorkers(
     upper_green=UPPER_GREEN,
     left_region=LEFT_REGION,
     right_region=RIGHT_REGION,
+    front_wall_region=FRONT_WALL_REGION,
     reverse_region=REVERSE_REGION,
     lap_region=LAP_REGION,
     obs_region=OBS_REGION,
@@ -168,7 +169,7 @@ def main():
         contour_workers.blue_contour_worker,
         contour_workers.green_contour_worker,
         contour_workers.red_contour_worker,
-        contour_workers.reverse_contour_worker,
+        contour_workers.reverse_n_front_wall_contour_worker,
     ]
 
     for worker in workers:
@@ -216,6 +217,7 @@ def main():
                 green_result,
                 red_result,
                 reverse_result,
+                front_wall_result,
             ) = contour_workers.collect_results()
 
             # Use the latest processing results
@@ -226,6 +228,7 @@ def main():
             green_area = green_result.area
             red_area = red_result.area
             reverse_area = reverse_result.area
+            front_wall_area = front_wall_result.area
             
 
             # Debug view
@@ -285,7 +288,7 @@ def main():
             ):
                 # get object coordinates
                 green_obj_x, green_obj_y = get_max_y_coord(green_result.contours)
-                red_obj_x, red_obj_y = get_max_y_coord(red_result.contours)
+                red_obj_x, red_obj_y = get_max_y_coord(red_result.contours)                
 
                 # set inf if no object detected
                 if green_obj_y is None or green_obj_x is None:
@@ -321,7 +324,12 @@ def main():
 
                     # if red obj is closer
                     if red_obj_y > green_obj_y:
-                        r_wall_x, r_wall_y = get_overall_centroid(right_result.contours)
+                        if front_wall_area > 500:
+                            print("Front wall is not priority, ignoring side walls")
+                            r_wall_x = FRONT_WALL_REGION[0] + (FRONT_WALL_REGION[2] - FRONT_WALL_REGION[0]) // 2
+                            r_wall_y = FRONT_WALL_REGION[1] + (FRONT_WALL_REGION[3] - FRONT_WALL_REGION[1]) // 2
+                        else:
+                            r_wall_x, r_wall_y = get_overall_centroid(right_result.contours)
 
                         if r_wall_x is None:
                             print("No wall detected!")
@@ -351,7 +359,12 @@ def main():
 
                     # if green obj is closer
                     elif green_obj_y > red_obj_y:
-                        l_wall_x, l_wall_y = get_overall_centroid(left_result.contours)
+                        if front_wall_area > 500:
+                            print("Front wall is not priority, ignoring side walls")
+                            l_wall_x = FRONT_WALL_REGION[0] + (FRONT_WALL_REGION[2] - FRONT_WALL_REGION[0]) // 2
+                            l_wall_y = FRONT_WALL_REGION[1] + (FRONT_WALL_REGION[3] - FRONT_WALL_REGION[1]) // 2
+                        else:
+                            l_wall_x, l_wall_y = get_overall_centroid(left_result.contours)
 
                         if l_wall_x is None:
                             print("No wall detected!")
