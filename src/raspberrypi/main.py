@@ -325,19 +325,19 @@ def main():
                     # if red obj is closer
                     if red_obj_y > green_obj_y:
                         if front_wall_area > 500:
-                            print("Front wall is not priority, ignoring side walls")
+                            print("Front wall is priority, ignoring side walls")
                             r_wall_x = FRONT_WALL_REGION[0] + (FRONT_WALL_REGION[2] - FRONT_WALL_REGION[0]) // 2
                             r_wall_y = FRONT_WALL_REGION[1] + (FRONT_WALL_REGION[3] - FRONT_WALL_REGION[1]) // 2
                         else:
                             r_wall_x, r_wall_y = get_overall_centroid(right_result.contours)
 
-                        if r_wall_x is None:
-                            print("No wall detected!")
-                            # set default wall position if none detected
-                            r_wall_x = CAM_WIDTH
-                        else:
-                            # transform to global coordinates
-                            r_wall_x += RIGHT_REGION[0]
+                            if r_wall_x is None:
+                                print("No wall detected!")
+                                # set default wall position if none detected
+                                r_wall_x = CAM_WIDTH
+                            else:
+                                # transform to global coordinates
+                                r_wall_x += RIGHT_REGION[0]
 
                         # transform to global coordinates
                         red_obj_x += OBS_REGION[0]
@@ -360,19 +360,19 @@ def main():
                     # if green obj is closer
                     elif green_obj_y > red_obj_y:
                         if front_wall_area > 500:
-                            print("Front wall is not priority, ignoring side walls")
+                            print("Front wall is priority, ignoring side walls")
                             l_wall_x = FRONT_WALL_REGION[0] + (FRONT_WALL_REGION[2] - FRONT_WALL_REGION[0]) // 2
                             l_wall_y = FRONT_WALL_REGION[1] + (FRONT_WALL_REGION[3] - FRONT_WALL_REGION[1]) // 2
                         else:
                             l_wall_x, l_wall_y = get_overall_centroid(left_result.contours)
 
-                        if l_wall_x is None:
-                            print("No wall detected!")
-                            # set default wall position if none detected
-                            l_wall_x = 0
-                        else:
-                            # transform to global coordinates
-                            l_wall_x += LEFT_REGION[0]
+                            if l_wall_x is None:
+                                print("No wall detected!")
+                                # set default wall position if none detected
+                                l_wall_x = 0
+                            else:
+                                # transform to global coordinates
+                                l_wall_x += LEFT_REGION[0]
 
                         # transform to global coordinates
                         green_obj_x += OBS_REGION[0]
