@@ -54,10 +54,6 @@ OBSTACLE_DETECTOR_X = OBS_REGION[2] - OBS_REGION[0]
 OBSTACLE_DETECTOR_Y = OBS_REGION[3] - OBS_REGION[1]
 obstacle_wall_pivot = (None, None)
 
-REVERSE_TRIGGER_Y = REVERSE_REGION[3]
-REVERSE_TRIGGER_X_MIN = REVERSE_REGION[0]
-REVERSE_TRIGGER_X_MAX = REVERSE_REGION[2] - REVERSE_REGION[0]
-
 # Color ranges
 LOWER_BLACK = np.array([0, 114, 116])
 UPPER_BLACK = np.array([65, 154, 156])
@@ -72,8 +68,8 @@ UPPER_BLUE = np.array([152, 190, 206])
 LOWER_RED = np.array([48, 154, 39])
 UPPER_RED = np.array([108, 194, 79])
 
-LOWER_GREEN = np.array([60, 88, 150])
-UPPER_GREEN = np.array([120, 128, 190])
+LOWER_GREEN = np.array([110, 72, 168])
+UPPER_GREEN = np.array([176, 112, 208])
 
 contour_workers = ContourWorkers(
     # mode="NO_OBSTACLE",
@@ -230,8 +226,7 @@ def main():
             green_area = green_result.area
             red_area = red_result.area
             reverse_area = reverse_result.area
-
-            print(reverse_area)
+            
 
             # Debug view
             if DEBUG:
@@ -294,35 +289,38 @@ def main():
 
                 # set inf if no object detected
                 if green_obj_y is None or green_obj_x is None:
-                    green_obj_x = float("inf")
-                    green_obj_y = float("inf")
+                    green_obj_x = -1
+                    green_obj_y = -1
 
                 if red_obj_y is None or red_obj_x is None:
-                    red_obj_x = float("inf")
-                    red_obj_y = float("inf")
+                    red_obj_x = -1
+                    red_obj_y = -1
 
-                # only proceed if at least one object is detected
+                # only proceed if both are not infinity
                 if not (
-                    (green_obj_x == float("inf") and green_obj_y == float("inf"))
-                    and (red_obj_x == float("inf") and red_obj_y == float("inf"))
+                    (green_obj_x == -1 and green_obj_y == -1)
+                    and (red_obj_x == -1 and red_obj_y == -1)
                 ):
 
-                    # if object is too close, back off
+                    print(f"Red: {red_obj_x}, {red_obj_y} | Green: {green_obj_x}, {green_obj_y}")
+                    # if object is too close, back off (convert to global coords and compare)
                     if (
-                        red_obj_y > REVERSE_TRIGGER_Y
-                        and red_obj_x > REVERSE_TRIGGER_X_MIN
-                        and red_obj_x < REVERSE_TRIGGER_X_MAX
+                        (red_obj_y + OBS_REGION[1]) > REVERSE_REGION[1]
+                        and (red_obj_x + OBS_REGION[0]) > REVERSE_REGION[0]
+                        and (red_obj_x + OBS_REGION[0]) < REVERSE_REGION[2]
                     ) or (
-                        green_obj_y > REVERSE_TRIGGER_Y
-                        and green_obj_x > REVERSE_TRIGGER_X_MIN
-                        and green_obj_x < REVERSE_TRIGGER_X_MAX
+                        (green_obj_y + OBS_REGION[1]) > REVERSE_REGION[1]
+                        and (green_obj_x + OBS_REGION[0]) > REVERSE_REGION[0]
+                        and (green_obj_x + OBS_REGION[0]) < REVERSE_REGION[2]
                     ):
                         print("Object too close! Backing off.")
                         trigger_reverse = True
                         reverse_start_time = time.time()
+                    
+                    direction_turing = ""
 
                     # if red obj is closer
-                    if red_obj_y < green_obj_y:
+                    if red_obj_y > green_obj_y:
                         r_wall_x, r_wall_y = get_overall_centroid(right_result.contours)
 
                         if r_wall_x is None:
@@ -349,9 +347,10 @@ def main():
                         )
 
                         obj_error = offset_x / (CAM_WIDTH // 2)  # normalized [-1, 1]
+                        direction_turing = "right"
 
                     # if green obj is closer
-                    elif green_obj_y < red_obj_y:
+                    elif green_obj_y > red_obj_y:
                         l_wall_x, l_wall_y = get_overall_centroid(left_result.contours)
 
                         if l_wall_x is None:
@@ -378,16 +377,17 @@ def main():
                         )
 
                         obj_error = offset_x / (CAM_WIDTH // 2)  # normalized [-1, 1]
-                        
+                        direction_turing = "left"                        
 
+                    # amplify to make it more responsive
                     obj_error = -np.clip(
-                        obj_error * 8, -1, 1
-                    )  # amplify to make it more responsive
+                        obj_error * 7.5, -1, 1
+                    )  
                     normalized_angle_offset = pid(obj_error)
 
                     # steer more aggressively when closer to object
                     y_gain = np.interp(
-                        red_obj_y,
+                        red_obj_y if direction_turing == "right" else (green_obj_y if direction_turing == "left" else 0),
                         [
                             0,
                             (CAM_HEIGHT // 2) - 50,
@@ -398,6 +398,7 @@ def main():
                     )
                     normalized_angle_offset *= y_gain
                     speed_factor = 1 - (0.3 * y_gain)  # slow down when closer to object
+                    print(f"Norm: {normalized_angle_offset} | Ygain: {y_gain} | OBJ error: {obj_error}")
 
                 # print(f"Obj: {red_obj_x}, {red_obj_y} | Wall: {r_wall_x}, {r_wall_y}")
 
@@ -413,7 +414,7 @@ def main():
                 error = aDiff / (aSum + 1e-6)  # normalized between roughly [-1,1]
                 normalized_angle_offset = pid(error)
 
-            # --- Map normalized control to servo angle ---
+            # --- Map normalized control to servo angle ---            
             angle = int(
                 max(
                     min(

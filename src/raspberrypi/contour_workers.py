@@ -106,10 +106,10 @@ class ContourWorkers:
             pass
 
         if self.mode == "OBSTACLE":
-            # try:
-            #     self.frame_queue_green.put_nowait(frame_copy)
-            # except:
-            #     pass
+            try:
+                self.frame_queue_green.put_nowait(frame_copy)
+            except:
+                pass
 
             try:
                 self.frame_queue_red.put_nowait(frame_copy)
