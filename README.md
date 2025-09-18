@@ -62,11 +62,13 @@ The hardware design balances **mechanical precision** with **reliable electronic
 * **Drive System:** N20/BLDC motors controlled via TB6612FNG motor driver for smooth torque and drift capability
 * **Differential Gear System:** Custom 3D-printed differential with **herringbone outer gear**, ensuring even power distribution to both wheels
 * **Steering:** Ackermann steering configuration controlled via MG995 servo motor for precise drift control
-
 <p align="left">
-  <img src="v-photos/IMG_20250618_162815.jpg" alt="Vehicle Side View" width="500"/>
-  <img src="v-photos/Screenshot 2025-03-10 004102.png" alt="SolidWorks Design" width="500"/>
-
+  <span style="display:inline-block; margin-right:10px;">
+    <img src="v-photos/IMG_20250618_162815.jpg" alt="Vehicle Side View" width="500"/>
+  </span>
+  <span style="display:inline-block;">
+    <img src="v-photos/Screenshot 2025-03-10 004102.png" alt="SolidWorks Design" width="500"/>
+  </span>
 </p>
 
 | Component                    | Model / Specification                                          | Purpose / Role                                                         |
