@@ -65,10 +65,8 @@ The hardware design balances **mechanical precision** with **reliable electronic
 
 <p align="left">
   <img src="v-photos/IMG_20250618_162815.jpg" alt="Vehicle Side View" width="500"/>
-</p>
-
-<p align="right">
   <img src="v-photos/Screenshot 2025-03-10 004102.png" alt="SolidWorks Design" width="500"/>
+
 </p>
 
 | Component                    | Model / Specification                                          | Purpose / Role                                                         |
