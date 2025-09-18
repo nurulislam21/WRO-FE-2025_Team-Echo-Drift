@@ -8,7 +8,7 @@
 ## Navigation Menu
 
 - [Project Overview](#project-overview)  
-- [Hardware Design & Gear](#hardware-design--gear)  
+- [Hardware Design](#hardware-design--gear)  
 - [Software Architecture](#software-architecture)  
 - [Setup & Dependencies](#setup--dependencies)  
 - [Build, Deployment & Usage](#build-deployment--usage)  
