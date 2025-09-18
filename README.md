@@ -109,6 +109,8 @@ The **differential gear** is the core of our vehicle’s drift performance:
 </p>
 
 > The combination of **herringbone gears** and **precise alignment** ensures efficient power transmission and minimal slippage during high-speed drift maneuvers.
+* **Why we are using a differential gear:**
+  [![Video 2](https://img.youtube.com/vi/F40ZBDAG8-o/maxresdefault.jpg)](https://www.youtube.com/watch?v=F40ZBDAG8-o)
 
 ---
 
