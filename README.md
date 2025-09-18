@@ -7,6 +7,19 @@
 
 ---
 
+## Our Team
+
+<p align="center">
+  <img src="t-photos/image.webp" alt="Team Echo Drift" width="500"/>
+</p>
+
+### Core Team Members & Roles
+- **Nurul Islam** – Team Leader & Mechanical Engineering
+- **Tanim SK** – Programming & Software Architecture
+- **Majedul Islam Nayem** – Electronics & Circuit Design
+
+---
+
 ## Navigation Menu
 
 - [Project Overview](#project-overview)  
