@@ -54,8 +54,6 @@ Our robot is built on a **fully 3D-printed chassis** designed in **SolidWorks**,
 
 Our vehicle combines **mechanical precision** with **robust electronics**.  
 
-### Mobility Management
-
 Chassis: Fully 3D-printed in STL format using SolidWorks design, providing a lightweight, modular, and strong structure.
 
 Drive System: BLDC motors powered via a VESC controller, enabling smooth acceleration, deceleration, and torque.
@@ -64,7 +62,7 @@ Differential Gear: 3D-printed differential with a herringbone outer gear, ensuri
 
 Steering: Ackermann steering configuration controlled by a servo motor, allowing controlled sliding and accurate path following.
 
-<p align="center"> <img src="v-photos/IMG_20250618_170008.webp" alt="Vehicle Front View" width="500"/> </p>
+<p align="center"> <img src="v-photos/IMG_20250618_162815.jpg" alt="Vehicle Front View" width="500"/> </p>
 <p align="center">
   <img src="v-photos/Screenshot 2025-03-10 004102.png" alt="Designing in Solidworks" width="500"/>
 </p>
