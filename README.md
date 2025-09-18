@@ -14,7 +14,7 @@
 </p>
 
 ### Core Team Members & Roles
-- **Nurul Islam** – Team Leader & Mechanical Engineering
+- **Nurul Islam** – Mechanical Engineering
 - **Tanim SK** – Programming & Software Architecture
 - **Majedul Islam Nayem** – Electronics & Circuit Design
 
@@ -23,15 +23,13 @@
 ## Navigation Menu
 
 - [Project Overview](#project-overview)  
-- [Hardware Design & Gear](#hardware-design--gear)  
+- [Hardware Design](#hardware-design--gear)  
 - [Software Architecture](#software-architecture)  
 - [Setup & Dependencies](#setup--dependencies)  
 - [Build, Deployment & Usage](#build-deployment--usage)  
 - [Project Structure](#project-structure)
 - [Resources & Media](#resources--media)  
 - [Team & Contributors](#team--contributors)  
-- [License](#license)  
-
 ---
 
 ## Project Overview
@@ -52,10 +50,21 @@ Our robot is built on a **fully 3D-printed chassis** designed in **SolidWorks**,
 
 ---
 
-## Hardware Design & Gear
+## Hardware Design
 
 Our vehicle combines **mechanical precision** with **robust electronics**.  
 
+### Mobility Management
+
+Chassis: Fully 3D-printed in STL format using SolidWorks design, providing a lightweight, modular, and strong structure.
+
+Drive System: BLDC motors powered via a VESC controller, enabling smooth acceleration, deceleration, and torque.
+
+Differential Gear: 3D-printed differential with a herringbone outer gear, ensuring efficient power distribution and smooth cornering.
+
+Steering: Ackermann steering configuration controlled by a servo motor, allowing controlled sliding and accurate path following.
+
+<p align="center"> <img src="v-photos/IMG_20250618_170008.webp" alt="Vehicle Front View" width="500"/> </p>
 <p align="center">
   <img src="v-photos/Screenshot 2025-03-10 004102.png" alt="Designing in Solidworks" width="500"/>
 </p>
