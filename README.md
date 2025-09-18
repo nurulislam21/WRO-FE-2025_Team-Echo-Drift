@@ -56,6 +56,10 @@ Our robot is built on a **fully 3D-printed chassis** designed in **SolidWorks**,
 
 Our vehicle combines **mechanical precision** with **robust electronics**.  
 
+<p align="center">
+  <img src="v-photos/Screenshot 2025-03-10 004102.png" alt="Designing in Solidworks" width="500"/>
+</p>
+
 | Component                    | Model / Specification                                               | Purpose / Role                                                                 |
 | ---------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
 | **Main Controller**          | Raspberry Pi 5 Model B ( 8 GB RAM)                                  | High-level navigation & vision processing                                      |
