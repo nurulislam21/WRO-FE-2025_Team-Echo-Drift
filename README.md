@@ -63,11 +63,11 @@ The hardware design balances **mechanical precision** with **reliable electronic
 * **Differential Gear System:** Custom 3D-printed differential with **herringbone outer gear**, ensuring even power distribution to both wheels
 * **Steering:** Ackermann steering configuration controlled via MG995 servo motor for precise drift control
 
-<p align="center">
+<p align="left">
   <img src="v-photos/IMG_20250618_162815.jpg" alt="Vehicle Side View" width="500"/>
 </p>
 
-<p align="center">
+<p align="right">
   <img src="v-photos/Screenshot 2025-03-10 004102.png" alt="SolidWorks Design" width="500"/>
 </p>
 
