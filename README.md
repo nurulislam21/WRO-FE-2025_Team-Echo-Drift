@@ -110,14 +110,11 @@ Steering: Ackermann steering configuration controlled by a servo motor, allowing
   <img src="other/software_flowchart.png" alt="Software Flowchart" width="600"/>
 </p>
 
----
 ## Video 
 - **Qualify Round**
-- 
-[![Video 1](https://img.youtube.com/vi/efOUVDhcxk8/maxresdefault.jpg)](https://www.youtube.com/watch?v=efOUVDhcxk8)
+[![Video 1](https://img.youtube.com/vi/efOUVDhcxk8/hqdefault.jpg)](https://www.youtube.com/watch?v=efOUVDhcxk8)
 
 - **Obstacle Round**
-- 
 [![Video 2](https://img.youtube.com/vi/GM8HPATsVBk/maxresdefault.jpg)](https://www.youtube.com/watch?v=GM8HPATsVBk)
 
 ---
