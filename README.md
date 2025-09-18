@@ -128,15 +128,6 @@ The software is modular, maintainable, and optimized for **real-time autonomous 
 
 ---
 
-## Video
-
-* **Qualifying Round:**
-  [![Video 1](https://img.youtube.com/vi/efOUVDhcxk8/hqdefault.jpg)](https://www.youtube.com/watch?v=efOUVDhcxk8)
-
-* **Obstacle Round:**
-  [![Video 2](https://img.youtube.com/vi/GM8HPATsVBk/maxresdefault.jpg)](https://www.youtube.com/watch?v=GM8HPATsVBk)
-
----
 
 ## Setup & Dependencies
 
@@ -172,5 +163,16 @@ sudo make check
 sudo make install
 cd ..
 ```
+
+---
+
+
+## Video
+
+* **Qualifying Round:**
+  [![Video 1](https://img.youtube.com/vi/efOUVDhcxk8/hqdefault.jpg)](https://www.youtube.com/watch?v=efOUVDhcxk8)
+
+* **Obstacle Round:**
+  [![Video 2](https://img.youtube.com/vi/GM8HPATsVBk/maxresdefault.jpg)](https://www.youtube.com/watch?v=GM8HPATsVBk)
 
 ---
