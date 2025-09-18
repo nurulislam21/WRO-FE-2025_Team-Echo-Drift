@@ -2,6 +2,8 @@
 
 ![WRO Future Engineers](https://img.shields.io/badge/WRO-Future_Engineers-orange?style=for-the-badge)
 ![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)
+![C Language](https://img.shields.io/badge/Language-C-blue?style=for-the-badge)
+![Platform](https://img.shields.io/badge/Platform-Raspberry_Pi-red?style=for-the-badge)
 
 ---
 
@@ -12,6 +14,7 @@
 - [Software Architecture](#software-architecture)  
 - [Setup & Dependencies](#setup--dependencies)  
 - [Build, Deployment & Usage](#build-deployment--usage)  
+- [Project Structure](#project-structure)
 - [Resources & Media](#resources--media)  
 - [Team & Contributors](#team--contributors)  
 - [License](#license)  
@@ -41,7 +44,7 @@ Our robot is built on a **fully 3D-printed chassis** designed in **SolidWorks**,
 Our vehicle combines **mechanical precision** with **robust electronics**.  
 
 | Component | Model / Specification | Purpose / Role |
-|-----------|------------------------|----------------|
+|-----------|---------------------|----------------|
 | **Main Controller** | Raspberry Pi 4 Model B (Quad-core, 4 GB RAM) | High-level navigation & vision processing |
 | **Motor Controller / ESC** | VESC 6-Plus | Smooth motor control, regenerative braking |
 | **Drive Motors** | BLDC Motor, 12 V / 20 W | Propulsion & drift torque |
@@ -87,11 +90,33 @@ Our vehicle combines **mechanical precision** with **robust electronics**.
 ## Setup & Dependencies
 
 - **OS:** Raspberry Pi OS / Ubuntu 20.04  
-- **Language:** Python ≥ 3.10, C++ for embedded parts  
-- **Libraries:** `numpy`, `opencv`, `RPi.GPIO`, `scipy`  
-- **Tools:** GCC, Make, firmware uploader, CAD viewer  
+- **Language:** C (with optional Python components)
+- **Compiler:** GCC
+- **Libraries:** WiringPi, bcm2835, Standard C Library
+- **Tools:** Make, GCC toolchain
 
-Install dependencies:  
+Install dependencies on Raspberry Pi:
 
 ```bash
-pip install -r requirements.txt
+# Update system
+sudo apt update
+sudo apt upgrade
+
+# Install build tools
+sudo apt install build-essential git make
+
+# Install WiringPi for GPIO access
+git clone https://github.com/WiringPi/WiringPi
+cd WiringPi
+./build
+cd ..
+
+# Install bcm2835 library for hardware access
+wget http://www.airspayce.com/mikem/bcm2835/bcm2835-1.71.tar.gz
+tar zxvf bcm2835-1.71.tar.gz
+cd bcm2835-1.71
+./configure
+make
+sudo make check
+sudo make install
+cd ..
