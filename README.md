@@ -1,5 +1,10 @@
 # Team Echo Drift — WRO Future Engineers 2025
 
+![WRO Future Engineers](https://img.shields.io/badge/WRO-Future_Engineers-orange?style=for-the-badge)
+![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)
+
+---
+
 ## Navigation Menu
 
 - [Project Overview](#project-overview)  
@@ -55,6 +60,7 @@ Our vehicle is designed with a balance of **mechanical strength, precision gears
 <p align="center">
   <img src="models/chassis_model.png" alt="3D Chassis Model" width="500"/>
 </p>
+
 <p align="center">
   <img src="v-photos/IMG_20250831_032659688_HDR-removebg-preview.png" alt="Gear Mechanism" width="500"/>
 </p>
@@ -77,10 +83,10 @@ Our vehicle is designed with a balance of **mechanical strength, precision gears
 
 ## Setup & Dependencies
 
-- OS: Raspberry Pi OS / Ubuntu 20.04  
-- Language: Python ≥ 3.10, C++ for embedded parts  
-- Libraries: `numpy`, `opencv`, `RPi.GPIO`, `scipy`  
-- Tools: GCC, Make, firmware uploader, CAD viewer  
+- **OS:** Raspberry Pi OS / Ubuntu 20.04  
+- **Language:** Python ≥ 3.10, C++ for embedded parts  
+- **Libraries:** `numpy`, `opencv`, `RPi.GPIO`, `scipy`  
+- **Tools:** GCC, Make, firmware uploader, CAD viewer  
 
 Install dependencies:  
 
