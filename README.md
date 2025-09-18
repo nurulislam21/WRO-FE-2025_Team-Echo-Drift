@@ -46,7 +46,7 @@ Our vehicle is designed with a balance of **mechanical strength, precision gears
 | **Wheels & Tires** | Low-grip drift tires | Enables controlled sliding |
 | **Other** | Wiring harness, fuses, connectors | Reliability & safety |
 
-### Diagrams & Models
+### Design Files & Diagrams
 
 <p align="center">
   <img src="schemes/wiring_diagram.png" alt="Wiring Diagram" width="500"/>
