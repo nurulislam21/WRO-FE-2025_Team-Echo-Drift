@@ -15,68 +15,71 @@
 
 ## Project Overview
 
-Team Echo Drift is our entry for **WRO Future Engineers 2025**. The goal is to build an autonomous drift-capable vehicle that can:
+Team **Echo Drift** is our entry for **WRO Future Engineers 2025**.  
+We are developing an **autonomous drift-capable vehicle** that can:
 
 - Navigate a predefined track with precision  
-- Handle obstacles and adjust its path dynamically  
-- Perform drift maneuvers safely and reproducibly  
-- Be robust and reliable under competition conditions  
+- Detect and avoid obstacles dynamically  
+- Perform controlled drift maneuvers  
+- Ensure robustness, safety, and repeatability  
 
-This repository contains everything: software, hardware design files, schematics, models, photos, video, etc.
+<p align="center">
+  <img src="v-photos/vehicle_front.jpg" alt="Vehicle Front View" width="500"/>
+</p>
 
 ---
 
 ## Hardware Design & Gear
 
-Here are the key components and design details of our vehicle:
+Our vehicle is designed with a balance of **mechanical strength, precision gears, and reliable electronics**.
 
 | Component | Model / Specification | Purpose / Role |
-|-----------|------------------------|-----------------|
-| **Microcontroller / Main Processing Unit** | *[e.g. Raspberry Pi 4 Model B]* — Quad-core, 4 GB RAM | High-level path planning, image processing, communication |
-| **Motor Controller / ESC** | *[e.g. VESC 6-Plus]* — Supports regenerative braking, configurable limits | Control BLDC / DC motors safely and responsively |
-| **Drive Motors** | *[e.g. HobbyWing 56123, 12 kV]* or (DC/Stepper depending) | Provide driving force, torque for drift |
-| **Drift / Steering Mechanism** | *[e.g. servo motor + Ackermann steering setup]* | For steering control and stability during drifts |
-| **Sensors** | *Ultrasonic sensors (HC-SR04), IMU (MPU-6050), LiDAR / ToF as needed* | Obstacle detection, orientation, speed feedback |
-| **Power Supply / Battery** | *[e.g. 3S LiPo, 11.1 V 5000 mAh]* + DC-DC converters | Provide the needed voltages for motors + electronics |
-| **Chassis & Gear** | – Chassis material: *aluminum / acrylic / carbon fiber* <br> – Gears: *spur / bevel / timing belts / pulleys* depending on drive setup <br> – Wheels / Tires: *drift wheels / low-grip for controlled slide* | Mechanical structure and transmission of power; drift-friendly setup |
-| **Other Accessories** | Wiring, connectors, safety features (fuses / thermal sensors), structural supports | Reliability and safety during operation |
+|-----------|------------------------|----------------|
+| **Main Controller** | Raspberry Pi 4 Model B (Quad-core, 4 GB RAM) | High-level navigation & vision processing |
+| **Motor Controller / ESC** | VESC 6-Plus | Smooth motor control, regenerative braking |
+| **Drive Motors** | BLDC Motor, 12 V / 20 W | Propulsion & drift torque |
+| **Steering Servo** | MG995 / similar | Ackermann steering for drift control |
+| **Sensors** | Ultrasonic HC-SR04, MPU-6050 IMU, Optional LiDAR | Obstacle detection & orientation |
+| **Battery** | 3S LiPo, 11.1 V 5000 mAh | Power for motors & controller |
+| **Chassis** | Custom lightweight aluminum frame | Base structure |
+| **Gear System** | Spur gears (15T : 45T ratio) | Provides torque boost for drifting |
+| **Wheels & Tires** | Low-grip drift tires | Enables controlled sliding |
+| **Other** | Wiring harness, fuses, connectors | Reliability & safety |
 
-### Design Files & Diagrams
+### Diagrams & Models
 
-- Schematics & wiring diagrams are in `schemes/`  
-- 3D / CAD / model files for chassis, gear mounts etc. are in `models/`  
-- Gear ratio calculations / transmission layouts should be documented here (you may include spec sheets or spreadsheets)  
+<p align="center">
+  <img src="schemes/wiring_diagram.png" alt="Wiring Diagram" width="500"/>
+</p>
+
+<p align="center">
+  <img src="models/chassis_model.png" alt="3D Chassis Model" width="500"/>
+</p>
 
 ---
 
 ## Software Architecture
 
-We structure the software as modular components:
+- **Sensor Module** — collects and filters sensor data  
+- **Control Module** — motor control, PID/ESC tuning, steering  
+- **Navigation Module** — path planning & drift logic  
+- **Vision Module** — optional, OpenCV/AI-based detection  
+- **Main Loop** — integrates all modules into real-time operation  
 
-- **Control Module** — interfaces with motors, ESC / motor driver; handles low-level control, safety limits  
-- **Sensor Module** — reads data from IMU, ultrasonic / LiDAR sensors; filters and pre-processes data  
-- **Navigation Module** — path planning, drift maneuvers, obstacle avoidance logic  
-- **Perception Module** (if applicable) — image processing or vision-based inputs  
-- **Communication Module** — logging, command input, telemetry (if remote or for debugging)  
-- **Main Loop / Integration** — ties all modules together into real-time operation  
+<p align="center">
+  <img src="other/software_flowchart.png" alt="Software Flowchart" width="600"/>
+</p>
 
 ---
 
 ## Setup & Dependencies
 
-Before building/running the project, ensure you have:
+- OS: Raspberry Pi OS / Ubuntu 20.04  
+- Language: Python ≥ 3.10, C++ for embedded parts  
+- Libraries: `numpy`, `opencv`, `RPi.GPIO`, `scipy`  
+- Tools: GCC, Make, firmware uploader, CAD viewer  
 
-- OS: *Ubuntu 20.04 / Raspberry Pi OS / whichever is used*  
-- Programming language: *Python ≥ 3.x* (if using Python), or specify C++ version etc.  
-- Libraries / Packages: e.g., `numpy`, `opencv`, `RPi.GPIO`, `scipy`, etc.  
-- Tools: e.g. build tools for microcontrollers (gcc, make, etc.), firmware upload tools  
-- CAD software to view / modify models (SolidWorks / Fusion 360 / Onshape etc.)  
+Install dependencies:  
 
----
-
-## Build, Deployment & Usage
-
-1. **Cloning the Repository**  
-   ```bash
-   git clone https://github.com/nurulislam21/WRO-FE-2025_Team-Echo-Drift.git
-   cd WRO-FE-2025_Team-Echo-Drift
+```bash
+pip install -r requirements.txt
