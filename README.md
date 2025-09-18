@@ -8,7 +8,7 @@
 ## Navigation Menu
 
 - [Project Overview](#project-overview)  
-- [Hardware Design](#hardware-design--gear)  
+- [Hardware Design & Gear](#hardware-design--gear)  
 - [Software Architecture](#software-architecture)  
 - [Setup & Dependencies](#setup--dependencies)  
 - [Build, Deployment & Usage](#build-deployment--usage)  
@@ -28,6 +28,8 @@ We are developing an **autonomous drift-capable vehicle** that can:
 - Perform controlled drift maneuvers  
 - Ensure robustness, safety, and repeatability  
 
+Our robot is built on a **fully 3D-printed chassis** designed in **SolidWorks**, ensuring lightweight strength and complete design flexibility.  
+
 <p align="center">
   <img src="v-photos/IMG_20250618_170008.webp" alt="Vehicle Front View" width="500"/>
 </p>
@@ -36,7 +38,7 @@ We are developing an **autonomous drift-capable vehicle** that can:
 
 ## Hardware Design & Gear
 
-Our vehicle is designed with a balance of **mechanical strength, precision gears, and reliable electronics**.
+Our vehicle combines **mechanical precision** with **robust electronics**.  
 
 | Component | Model / Specification | Purpose / Role |
 |-----------|------------------------|----------------|
@@ -44,9 +46,10 @@ Our vehicle is designed with a balance of **mechanical strength, precision gears
 | **Motor Controller / ESC** | VESC 6-Plus | Smooth motor control, regenerative braking |
 | **Drive Motors** | BLDC Motor, 12 V / 20 W | Propulsion & drift torque |
 | **Steering Servo** | MG995 / similar | Ackermann steering for drift control |
+| **Differential Gear System** | Custom 3D-printed differential gear | Power distribution between left & right wheels |
 | **Sensors** | Ultrasonic HC-SR04, MPU-6050 IMU, Optional LiDAR | Obstacle detection & orientation |
 | **Battery** | 3S LiPo, 11.1 V 5000 mAh | Power for motors & controller |
-| **Chassis** | Custom lightweight aluminum frame | Base structure |
+| **Chassis** | Fully 3D-printed (SolidWorks design) | Lightweight, strong, modular |
 | **Gear System** | Spur gears (15T : 45T ratio) | Provides torque boost for drifting |
 | **Wheels & Tires** | Low-grip drift tires | Enables controlled sliding |
 | **Other** | Wiring harness, fuses, connectors | Reliability & safety |
