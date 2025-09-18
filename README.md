@@ -56,19 +56,20 @@ Our robot is built on a **fully 3D-printed chassis** designed in **SolidWorks**,
 
 Our vehicle combines **mechanical precision** with **robust electronics**.  
 
-| Component | Model / Specification | Purpose / Role |
-|-----------|---------------------|----------------|
-| **Main Controller** | Raspberry Pi 4 Model B (Quad-core, 4 GB RAM) | High-level navigation & vision processing |
-| **Motor Controller / ESC** | VESC 6-Plus | Smooth motor control, regenerative braking |
-| **Drive Motors** | BLDC Motor, 12 V / 20 W | Propulsion & drift torque |
-| **Steering Servo** | MG995 / similar | Ackermann steering for drift control |
-| **Differential Gear System** | Custom 3D-printed differential gear | Power distribution between left & right wheels |
-| **Sensors** | Ultrasonic HC-SR04, MPU-6050 IMU, Optional LiDAR | Obstacle detection & orientation |
-| **Battery** | 3S LiPo, 11.1 V 5000 mAh | Power for motors & controller |
-| **Chassis** | Fully 3D-printed (SolidWorks design) | Lightweight, strong, modular |
-| **Gear System** | Spur gears (15T : 45T ratio) | Provides torque boost for drifting |
-| **Wheels & Tires** | Low-grip drift tires | Enables controlled sliding |
-| **Other** | Wiring harness, fuses, connectors | Reliability & safety |
+| Component                    | Model / Specification                                               | Purpose / Role                                                                 |
+| ---------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| **Main Controller**          | Raspberry Pi 5 Model B ( 8 GB RAM)                                  | High-level navigation & vision processing                                      |
+| **Motor Controller**         | TB6612FNG                                                           | Smooth motor control, regenerative braking                                     |
+| **Drive Motors**             | N20 Motor, 12 V                                                     | Propulsion & drift torque                                                      |
+| **Steering Servo**           | MG995 / similar                                                     | Ackermann steering for drift control                                           |
+| **Differential Gear System** | Custom 3D-printed differential gear with **herringbone outer gear** | Power distribution between left & right wheels, improved torque and smoothness |
+| **Sensors**                  | Ultrasonic HC-SR04                                                  | Obstacle detection & orientation                                               |
+| **Battery**                  | 3S LiPo, 11.1 V 2200 mAh                                            | Power for motors & controller                                                  |
+| **Chassis**                  | Fully 3D-printed (SolidWorks STL)                                   | Lightweight, strong, modular                                                   |
+| **Gear System**              | Spur gears (15T : 45T ratio)                                        | Provides torque boost for drifting                                             |
+| **Wheels & Tires**           | Low-grip drift tires                                                | Enables controlled sliding                                                     |
+| **Other**                    | Wiring harness, fuses, connectors                                   | Reliability & safety                                                           |
+
 
 ### Design Files & Diagrams
 
@@ -103,7 +104,7 @@ Our vehicle combines **mechanical precision** with **robust electronics**.
 ## Setup & Dependencies
 
 - **OS:** Raspberry Pi OS / Ubuntu 20.04  
-- **Language:** C (with optional Python components)
+- **Language:** C, C++, Python
 - **Compiler:** GCC
 - **Libraries:** WiringPi, bcm2835, Standard C Library
 - **Tools:** Make, GCC toolchain
