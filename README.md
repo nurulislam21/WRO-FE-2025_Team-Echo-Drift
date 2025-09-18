@@ -110,7 +110,7 @@ The differential gear allows each wheel to rotate at different speeds during cor
 * Reduces tire wear and mechanical stress on the drivetrain
 * Ensures smooth and predictable handling for precision navigation
 
-[![Video: Why Differential Gear](https://img.youtube.com/vi/F40ZBDAG8-o/maxresdefault.jpg)](https://www.youtube.com/watch?v=F40ZBDAG8-o)
+[![Video: Why Differential Gear](https://img.youtube.com/vi/F40ZBDAG8-o/hqdefault.jpg)](https://www.youtube.com/watch?v=F40ZBDAG8-o)
 
 ---
 
