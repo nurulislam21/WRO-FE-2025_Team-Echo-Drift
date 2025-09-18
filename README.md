@@ -2,7 +2,7 @@
 
 ![WRO Future Engineers](https://img.shields.io/badge/WRO-Future_Engineers-orange?style=for-the-badge)
 ![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)
-![C Language](https://img.shields.io/badge/Language-C-blue?style=for-the-badge)
+![C Language](https://img.shields.io/badge/Language-C,Python-blue?style=for-the-badge)
 ![Platform](https://img.shields.io/badge/Platform-Raspberry_Pi-red?style=for-the-badge)
 
 ---
@@ -111,7 +111,13 @@ Steering: Ackermann steering configuration controlled by a servo motor, allowing
 </p>
 
 ---
+## Video 
 
+[![Video 1](https://img.youtube.com/vi/efOUVDhcxk/maxresdefault.jpg)](https://www.youtube.com/watch?v=efOUVDhcxk)
+
+[![Video 2](https://img.youtube.com/vi/GM8HPATsVBk/maxresdefault.jpg)](https://www.youtube.com/watch?v=GM8HPATsVBk)
+
+---
 ## Setup & Dependencies
 
 - **OS:** Raspberry Pi OS / Ubuntu 20.04  
