@@ -97,22 +97,23 @@ The **differential gear** is the core of our vehicle’s drift performance:
 * **Customizable:** Gear ratios can be adjusted to tune drift response
 
 <p align="center">
-  <img src="v-photos/gear_mechanism_front.jpg" alt="Differential Gear Front View" width="450"/>
-</p>
-
-<p align="center">
-  <img src="v-photos/gear_mechanism_side.jpg" alt="Differential Gear Side View" width="450"/>
-</p>
-
-<p align="center">
-  <img src="v-photos/gear_assembly.png" alt="3D Differential Assembly" width="500"/>
+  <img src="other/dfaf80437e9cb2198109392ebfdeb3cd.jpg" alt="3D Differential Assembly" width="500"/>
 </p>
 
 > The combination of **herringbone gears** and **precise alignment** ensures efficient power transmission and minimal slippage during high-speed drift maneuvers.
-* **Why we are using a differential gear:**
-  [![Video 2](https://img.youtube.com/vi/F40ZBDAG8-o/maxresdefault.jpg)](https://www.youtube.com/watch?v=F40ZBDAG8-o)
+
+### Why We Are Using a Differential Gear
+
+The differential gear allows each wheel to rotate at different speeds during cornering, which:
+
+* Improves stability and control during high-speed drift
+* Reduces tire wear and mechanical stress on the drivetrain
+* Ensures smooth and predictable handling for precision navigation
+
+[![Video: Why Differential Gear](https://img.youtube.com/vi/F40ZBDAG8-o/maxresdefault.jpg)](https://www.youtube.com/watch?v=F40ZBDAG8-o)
 
 ---
+
 
 ## Software Architecture
 
