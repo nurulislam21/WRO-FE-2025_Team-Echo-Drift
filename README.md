@@ -24,7 +24,7 @@ We are developing an **autonomous drift-capable vehicle** that can:
 - Ensure robustness, safety, and repeatability  
 
 <p align="center">
-  <img src="v-photos/vehicle_front.jpg" alt="Vehicle Front View" width="500"/>
+  <img src="v-photos/IMG_20250618_170008.webp" alt="Vehicle Front View" width="500"/>
 </p>
 
 ---
@@ -49,11 +49,14 @@ Our vehicle is designed with a balance of **mechanical strength, precision gears
 ### Design Files & Diagrams
 
 <p align="center">
-  <img src="schemes/wiring_diagram.png" alt="Wiring Diagram" width="500"/>
+  <img src="schemes/Schematic_WRO-echo-drift_2025-09-19.png" alt="Wiring Diagram" width="500"/>
 </p>
 
 <p align="center">
   <img src="models/chassis_model.png" alt="3D Chassis Model" width="500"/>
+</p>
+<p align="center">
+  <img src="v-photos/IMG_20250831_032659688_HDR-removebg-preview.png" alt="Gear Mechanism" width="500"/>
 </p>
 
 ---
