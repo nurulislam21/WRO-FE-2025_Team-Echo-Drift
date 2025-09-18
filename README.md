@@ -113,7 +113,7 @@ Steering: Ackermann steering configuration controlled by a servo motor, allowing
 ---
 ## Video 
 
-[![Video 1](https://img.youtube.com/vi/efOUVDhcxk/maxresdefault.jpg)](https://www.youtube.com/watch?v=efOUVDhcxk)
+[![Video 1](https://img.youtube.com/vi/efOUVDhcxk8/maxresdefault.jpg)](https://www.youtube.com/watch?v=efOUVDhcxk8)
 
 [![Video 2](https://img.youtube.com/vi/GM8HPATsVBk/maxresdefault.jpg)](https://www.youtube.com/watch?v=GM8HPATsVBk)
 
