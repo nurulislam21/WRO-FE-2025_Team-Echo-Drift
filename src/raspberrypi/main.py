@@ -47,7 +47,7 @@ LAP_REGION = [200, 300, 440, 350]  # lap detection
 OBS_REGION = [95, 140, 545, 320]  # obstacle detection
 REVERSE_REGION = [200, 300, 440, 320]  # reverse trigger area
 FRONT_WALL_REGION = [300, 200, 340, 220]  # front wall detection
-PARKING_LOT_REGION = [0, 190, CAM_WIDTH, 440]  # parking lot detection
+PARKING_LOT_REGION = [0, 185, CAM_WIDTH, 440]  # parking lot detection
 
 BLACK_WALL_DETECTOR_AREA = (LEFT_REGION[2] - LEFT_REGION[0]) * (
     LEFT_REGION[3] - LEFT_REGION[1]
@@ -74,8 +74,8 @@ LOWER_GREEN = np.array([110, 72, 168])
 UPPER_GREEN = np.array([176, 112, 208])
 
 # parking color ranges
-LOWER_MAGENTA = np.array([100, 93, 107])
-UPPER_MAGENTA = np.array([188, 133, 147])
+LOWER_MAGENTA = np.array([120, 86, 98])
+UPPER_MAGENTA = np.array([190, 126, 138])
 
 
 contour_workers = ContourWorkers(
@@ -161,6 +161,7 @@ parking = Parking(
     maxRight=maxRight,
     STRAIGHT_CONST=STRAIGHT_CONST,
     MAX_OFFSET_DEGREE=MAX_OFFSET_DEGREE,
+    REVERSE_REGION=REVERSE_REGION,
 )
 
 
@@ -261,7 +262,7 @@ def main():
 
             parking_walls, parking_walls_count, parking_wall_pivot = parking.process_parking(
                 parking_result=parking_result, pid=pid
-            )
+            )          
 
             # Debug view
             if DEBUG:
@@ -290,13 +291,7 @@ def main():
                     parking_mode=contour_workers.parking_mode,
                     parking_lot_region=PARKING_LOT_REGION,
                     parking_walls=parking_walls,
-                )
-
-            if parking_walls_count == 2:
-                obstacle_wall_pivot = parking_wall_pivot
-                if cv2.waitKey(1) & 0xFF == ord("q"):
-                    break
-                continue
+                )            
 
             # --- Reversing logic ---
             if trigger_reverse:
@@ -323,6 +318,12 @@ def main():
                     break
 
                 print("continue")
+                continue            
+
+            if parking_walls_count == 2:
+                obstacle_wall_pivot = parking_wall_pivot
+                if cv2.waitKey(1) & 0xFF == ord("q"):
+                    break
                 continue
 
             # --- Obstacle avoidance ---

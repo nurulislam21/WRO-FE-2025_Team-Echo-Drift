@@ -3,6 +3,7 @@ from serial import Serial
 from contour_workers import ContourResult
 from simple_pid import PID
 import numpy as np
+import time
 
 
 class Parking:
@@ -17,6 +18,7 @@ class Parking:
         maxRight: int,
         STRAIGHT_CONST: int,
         MAX_OFFSET_DEGREE: int,
+        REVERSE_REGION: list,
     ):
         self.arduino = arduino
         self.parking_speed = parking_speed
@@ -32,18 +34,13 @@ class Parking:
 
         # state
         self.last_wall_count = 0
+        self.stop_tolerance = 5
 
-    def distance_between_walls_is_valid(self, parking_walls: list):
-        if len(parking_walls) != 2:
-            return False
-        wall_1_x, wall_1_y, wall_1_w, wall_1_h = parking_walls[0]
-        wall_1_cx = wall_1_x + (wall_1_w // 2)
-        wall_2_x, wall_2_y, wall_2_w, wall_2_h = parking_walls[1]
-        wall_2_cx = wall_2_x + (wall_2_w // 2)
-        if abs(wall_2_cx - wall_1_cx) < 200:
-            print("valid distance between walls")
-            return True
-        return False
+        # reverse
+        self.REVERSE_REGION = REVERSE_REGION
+        self.reverse_start_time = 0        
+        self.reverse_duration = 0.2  # seconds
+        self.is_reversing = False
 
     def process_parking(self, parking_result: ContourResult, pid: PID):
         parking_walls = []
@@ -55,20 +52,39 @@ class Parking:
                 x, y, w, h = cv2.boundingRect(contour)
                 area = w * h
 
-                if area > 1500 and self.distance_between_walls_is_valid(parking_walls):
+                if area > 1500:
                     current_wall_count += 1
-                    parking_walls.append((x, y, w, h))
-            
-            if self.last_wall_count == 2 and current_wall_count < 2:
-                self.arduino.write(f"{-self.parking_speed}, {self.STRAIGHT_CONST}\n".encode())
-                return parking_walls, 2, obstacle_wall_pivot
+                    parking_walls.append((x, y, w, h))                
 
+        if self.last_wall_count == 2 and current_wall_count < 2:
+            self.is_reversing = True
+            self.reverse_start_time = time.time()
+
+        if self.is_reversing:
+                if (time.time() - self.reverse_start_time) < self.reverse_duration:
+                    self.arduino.write(f"{-self.parking_speed}, {self.STRAIGHT_CONST}\n".encode())
+                    return parking_walls, 2, obstacle_wall_pivot
+                else:
+                    self.is_reversing = False
+                    self.last_wall_count = 0
+        
+        self.last_wall_count = current_wall_count
         if current_wall_count == 2:
-            self.last_wall_count = 2
             wall_1_x, wall_1_y, wall_1_w, wall_1_h = parking_walls[0]
             wall_1_cx, wall_1_cy = wall_1_x + (wall_1_w // 2), wall_1_y + (wall_1_h // 2)
             wall_2_x, wall_2_y, wall_2_w, wall_2_h = parking_walls[1]
             wall_2_cx, wall_2_cy = wall_2_x + (wall_2_w // 2), wall_2_y + (wall_2_h // 2)
+
+            # check if the centroid y are in the reverse region
+            if ((wall_1_y + wall_1_h + self.parking_lot_region[1]) > self.REVERSE_REGION[3] and (wall_1_cx + self.parking_lot_region[0]) > self.REVERSE_REGION[0] and (wall_1_cx + self.parking_lot_region[0]) < self.REVERSE_REGION
+            or (wall_2_y + wall_2_h + self.parking_lot_region[1]) > self.REVERSE_REGION[3]):
+                print("Entering Reverse Region")
+                self.is_reversing = True
+                self.reverse_start_time = time.time()
+                return parking_walls, 2, obstacle_wall_pivot
+
+            print(f"wall 1: area: {wall_1_w * wall_1_h}, pos: ({wall_1_cx}, {wall_1_cy})")
+            print(f"wall 2: area: {wall_2_w * wall_2_h}, pos: ({wall_2_cx}, {wall_2_cy})")
 
             # transform to global coordinates
             wall_1_cx += self.parking_lot_region[0]
@@ -101,6 +117,16 @@ class Parking:
             )
 
             self.arduino.write(f"{self.parking_speed}, {angle}\n".encode())
+
+
+            # if abs(offset_x) < self.stop_tolerance:
+            #     print("Parking | Stopped")
+            #     print(f"offset_x: {offset_x}, obj_error: {obj_error}, angle: {angle}")
+            #     while True:
+            #         self.arduino.write(f"0, {self.STRAIGHT_CONST}\n".encode())
+            #         time.sleep(0.1)
+
+
             print(f"Parking | Speed: {self.parking_speed}, Angle: {angle}")
 
         return parking_walls, current_wall_count, obstacle_wall_pivot
