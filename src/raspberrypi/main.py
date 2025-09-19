@@ -181,6 +181,7 @@ def main():
         contour_workers.green_contour_worker,
         contour_workers.red_contour_worker,
         contour_workers.reverse_n_front_wall_contour_worker,
+        contour_workers.parking_lot_contour_worker,
     ]
 
     for worker in workers:
@@ -229,6 +230,7 @@ def main():
                 red_result,
                 reverse_result,
                 front_wall_result,
+                parking_result,
             ) = contour_workers.collect_results()
 
             # Use the latest processing results
@@ -268,7 +270,7 @@ def main():
                     obstacle_wall_pivot=obstacle_wall_pivot,
                     parking_mode=contour_workers.parking_mode,
                     parking_lot_region=PARKING_LOT_REGION,
-                    parking_result=None,
+                    parking_result=parking_result,
                 )
 
             # --- Reversing logic ---

@@ -17,6 +17,7 @@ class ContourWorkers:
     def __init__(
         self,
         mode: Literal["OBSTACLE", "NO_OBSTACLE"],
+        # color ranges
         lower_blue: np.ndarray,
         upper_blue: np.ndarray,
         lower_black: np.ndarray,
@@ -29,12 +30,14 @@ class ContourWorkers:
         upper_green: np.ndarray,
         upper_magenta: np.ndarray,
         lower_magenta: np.ndarray,
+        # regions of interest
         left_region: list,
         right_region: list,
         lap_region: list,
         obs_region: list,
         front_wall_region: list,
         reverse_region: list,
+        parking_lot_region: list = None,
     ):
         self.mode = mode
         self.parking_mode = False
@@ -60,6 +63,7 @@ class ContourWorkers:
         self.OBS_REGION = obs_region
         self.FRONT_WALL_REGION = front_wall_region
         self.REVERSE_REGION = reverse_region
+        self.PARKING_LOT_REGION = parking_lot_region
 
         # queues
         self.frame_queue_left = Queue(maxsize=2)
@@ -70,6 +74,7 @@ class ContourWorkers:
         self.frame_queue_red = Queue(maxsize=2)
         self.frame_queue_reverse = Queue(maxsize=2)
         self.frame_queue_front_wall = Queue(maxsize=2)
+        self.frame_queue_parking_lot = Queue(maxsize=2)
 
         # result queues
         self.result_queue_left = Queue(maxsize=2)
@@ -80,6 +85,7 @@ class ContourWorkers:
         self.result_queue_red = Queue(maxsize=2)
         self.result_queue_reverse = Queue(maxsize=2)
         self.result_queue_front_wall = Queue(maxsize=2)
+        self.result_queue_parking_lot = Queue(maxsize=2)
 
         # control event
         self.stop_processing = threading.Event()
@@ -93,6 +99,7 @@ class ContourWorkers:
         self.red_result = ContourResult()
         self.reverse_result = ContourResult()
         self.front_wall_result = ContourResult()
+        self.parking_lot_result = ContourResult()
 
     def put_frames_in_queues(self, frame_copy):
         try:
@@ -133,6 +140,12 @@ class ContourWorkers:
 
             try:
                 self.frame_queue_front_wall.put_nowait(frame_copy)
+            except:
+                pass
+        
+        if self.parking_mode:
+            try:
+                self.frame_queue_parking_lot.put_nowait(frame_copy)
             except:
                 pass
 
@@ -185,6 +198,12 @@ class ContourWorkers:
         except Empty:
             pass
 
+        try:
+            while not self.result_queue_parking_lot.empty():
+                self.parking_lot_result = self.result_queue_parking_lot.get_nowait()
+        except Empty:
+            pass
+
         return (
             self.left_result,
             self.right_result,
@@ -194,6 +213,7 @@ class ContourWorkers:
             self.red_result,
             self.reverse_result,
             self.front_wall_result,
+            self.parking_lot_result,
         )
 
     def left_contour_worker(self):
@@ -393,6 +413,33 @@ class ContourWorkers:
                 continue
             except Exception as e:
                 print(f"Red processing error: {e}")
+                continue
+    
+    def parking_lot_contour_worker(self):
+        """Worker thread for parking lot marker detection"""
+        while not self.stop_processing.is_set():
+            try:
+                frame = self.frame_queue_parking_lot.get(timeout=0.1)
+                contours = find_contours(
+                    frame, self.LOWER_MAGENTA, self.UPPER_MAGENTA, self.PARKING_LOT_REGION
+                )
+                area, _ = max_contour_area(contours)
+                result = ContourResult(area, contours, "magenta_parking_lot")
+
+                try:
+                    self.result_queue_parking_lot.put_nowait(result)
+                except:
+                    try:
+                        self.result_queue_parking_lot.get_nowait()
+                        self.result_queue_parking_lot.put_nowait(result)
+                    except Empty:
+                        pass
+
+                self.frame_queue_parking_lot.task_done()
+            except Empty:
+                continue
+            except Exception as e:
+                print(f"Parking lot processing error: {e}")
                 continue
 
     def reverse_n_front_wall_contour_worker(self):
