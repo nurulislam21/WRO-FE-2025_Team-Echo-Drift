@@ -83,11 +83,11 @@ class Parking:
 
             # check if the centroid y are in the reverse region
             if (
-                ((wall_1_y + self.parking_lot_region[1]) > self.REVERSE_REGION[1])
+                ((wall_1_y + self.parking_lot_region[1] + wall_1_h) > self.REVERSE_REGION[1])
                 and ((wall_1_cx + self.parking_lot_region[0]) > self.REVERSE_REGION[0])
                 and ((wall_1_cx + self.parking_lot_region[0]) < self.REVERSE_REGION[2])
             ) or (
-                ((wall_2_y + self.parking_lot_region[1]) > self.REVERSE_REGION[1])
+                ((wall_2_y + self.parking_lot_region[1] + wall_2_h) > self.REVERSE_REGION[1])
                 and ((wall_2_cx + self.parking_lot_region[0]) > self.REVERSE_REGION[0])
                 and ((wall_2_cx + self.parking_lot_region[0]) < self.REVERSE_REGION[2])
             ):
@@ -97,10 +97,10 @@ class Parking:
                 return parking_walls, 2, obstacle_wall_pivot
 
             print(
-                f"wall 1: X: {wall_1_cx + self.parking_lot_region[0]}, Y: {wall_1_cy + self.parking_lot_region[1]} | REVERSE_REGION: {self.REVERSE_REGION}"
+                f"wall 1: X: {wall_1_cx + self.parking_lot_region[0]}, Y: {wall_1_cy + self.parking_lot_region[1] + wall_1_h} | REVERSE_REGION: {self.REVERSE_REGION}"
             )
             print(
-                f"wall 2: X: {wall_2_cx + self.parking_lot_region[0]}, Y: {wall_2_cy + self.parking_lot_region[1]} | REVERSE_REGION: {self.REVERSE_REGION}"
+                f"wall 2: X: {wall_2_cx + self.parking_lot_region[0]}, Y: {wall_2_cy + self.parking_lot_region[1] + wall_2_h} | REVERSE_REGION: {self.REVERSE_REGION}"
             )
             # print(
             #     f"wall 2: area: {wall_2_w * wall_2_h}, pos: ({wall_2_cx}, {wall_2_cy})"
