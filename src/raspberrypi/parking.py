@@ -97,11 +97,14 @@ class Parking:
                 return parking_walls, 2, obstacle_wall_pivot
 
             print(
-                f"wall 1: area: {wall_1_w * wall_1_h}, pos: ({wall_1_cx}, {wall_1_cy})"
+                f"wall 1: X: {wall_1_cx + self.parking_lot_region[0]}, Y: {wall_1_cy + self.parking_lot_region[1]} | REVERSE_REGION: {self.REVERSE_REGION}"
             )
             print(
-                f"wall 2: area: {wall_2_w * wall_2_h}, pos: ({wall_2_cx}, {wall_2_cy})"
+                f"wall 2: X: {wall_2_cx + self.parking_lot_region[0]}, Y: {wall_2_cy + self.parking_lot_region[1]} | REVERSE_REGION: {self.REVERSE_REGION}"
             )
+            # print(
+            #     f"wall 2: area: {wall_2_w * wall_2_h}, pos: ({wall_2_cx}, {wall_2_cy})"
+            # )
 
             # transform to global coordinates
             wall_1_cx += self.parking_lot_region[0]
@@ -143,6 +146,6 @@ class Parking:
             #         self.arduino.write(f"0, {self.STRAIGHT_CONST}\n".encode())
             #         time.sleep(0.1)
 
-            print(f"Parking | Speed: {self.parking_speed}, Angle: {angle}")
+            # print(f"Parking | Speed: {self.parking_speed}, Angle: {angle}")
 
         return parking_walls, current_wall_count, obstacle_wall_pivot
