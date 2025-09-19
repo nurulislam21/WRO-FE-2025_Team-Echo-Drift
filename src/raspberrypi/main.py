@@ -80,7 +80,7 @@ UPPER_MAGENTA = np.array([188, 133, 147])
 contour_workers = ContourWorkers(
     # mode="NO_OBSTACLE",
     mode="OBSTACLE",
-    
+    # color ranges
     lower_blue=LOWER_BLUE,
     upper_blue=UPPER_BLUE,
     lower_black=LOWER_BLACK,
@@ -93,13 +93,14 @@ contour_workers = ContourWorkers(
     upper_green=UPPER_GREEN,
     upper_magenta=UPPER_MAGENTA,
     lower_magenta=LOWER_MAGENTA,
-
+    # regions
     left_region=LEFT_REGION,
     right_region=RIGHT_REGION,
-    front_wall_region=FRONT_WALL_REGION,
-    reverse_region=REVERSE_REGION,
     lap_region=LAP_REGION,
     obs_region=OBS_REGION,
+    front_wall_region=FRONT_WALL_REGION,
+    reverse_region=REVERSE_REGION,
+    parking_lot_region=PARKING_LOT_REGION,
 )
 contour_workers.parking_mode = True
 

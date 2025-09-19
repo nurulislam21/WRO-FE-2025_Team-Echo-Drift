@@ -37,7 +37,7 @@ class ContourWorkers:
         obs_region: list,
         front_wall_region: list,
         reverse_region: list,
-        parking_lot_region: list = None,
+        parking_lot_region: list,
     ):
         self.mode = mode
         self.parking_mode = False
