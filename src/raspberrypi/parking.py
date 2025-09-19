@@ -46,26 +46,28 @@ class Parking:
                     parking_walls.append((x, y, w, h))
 
         if parking_wall_count == 2:
-            wall_1_x, wall_1_y, _, _ = parking_walls[0]
-            wall_2_x, wall_2_y, _, _ = parking_walls[1]
+            wall_1_x, wall_1_y, wall_1_w, wall_1_h = parking_walls[0]
+            wall_1_cx, wall_1_cy = wall_1_x + (wall_1_w // 2), wall_1_y + (wall_1_h // 2)
+            wall_2_x, wall_2_y, wall_2_w, wall_2_h = parking_walls[1]
+            wall_2_cx, wall_2_cy = wall_2_x + (wall_2_w // 2), wall_2_y + (wall_2_h // 2)
 
             # transform to global coordinates
-            wall_1_x += self.parking_lot_region[0]
-            wall_1_y += self.parking_lot_region[1]
-            wall_2_x += self.parking_lot_region[0]
-            wall_2_y += self.parking_lot_region[1]
+            wall_1_cx += self.parking_lot_region[0]
+            wall_1_cy += self.parking_lot_region[1]
+            wall_2_cx += self.parking_lot_region[0]
+            wall_2_cy += self.parking_lot_region[1]
 
             # compute how far is the bot from the object and walls middle point
-            offset_x = ((wall_1_x + wall_2_x) // 2) - (self.camera_width // 2)
+            offset_x = ((wall_1_cx + wall_2_cx) // 2) - (self.camera_width // 2)
 
             # show a circle dot on the middle of the object and wall
             obstacle_wall_pivot = (
-                (wall_1_x + wall_2_x) // 2,
-                (wall_1_y + wall_2_y) // 2,
+                (wall_1_cx + wall_2_cx) // 2,
+                (wall_1_cy + wall_2_cy) // 2,
             )
 
             obj_error = offset_x / (self.camera_width // 2)
-            obj_error = -np.clip(obj_error * 7.5, -1, 1)
+            obj_error = -np.clip(obj_error * 10, -1, 1)
             normalized_angle_offset = pid(obj_error)
 
             # --- Map normalized control to servo angle ---
