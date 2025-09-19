@@ -142,7 +142,7 @@ class ContourWorkers:
                 self.frame_queue_front_wall.put_nowait(frame_copy)
             except:
                 pass
-        
+
         if self.parking_mode:
             try:
                 self.frame_queue_parking_lot.put_nowait(frame_copy)
@@ -290,7 +290,6 @@ class ContourWorkers:
                     if magenta_area > 0:
                         result = ContourResult(magenta_area, contours, "magenta_right")
 
-
                 try:
                     self.result_queue_right.put_nowait(result)
                 except:
@@ -414,14 +413,17 @@ class ContourWorkers:
             except Exception as e:
                 print(f"Red processing error: {e}")
                 continue
-    
+
     def parking_lot_contour_worker(self):
         """Worker thread for parking lot marker detection"""
         while not self.stop_processing.is_set():
             try:
                 frame = self.frame_queue_parking_lot.get(timeout=0.1)
                 contours = find_contours(
-                    frame, self.LOWER_MAGENTA, self.UPPER_MAGENTA, self.PARKING_LOT_REGION
+                    frame,
+                    self.LOWER_MAGENTA,
+                    self.UPPER_MAGENTA,
+                    self.PARKING_LOT_REGION,
                 )
                 area, _ = max_contour_area(contours)
                 result = ContourResult(area, contours, "magenta_parking_lot")

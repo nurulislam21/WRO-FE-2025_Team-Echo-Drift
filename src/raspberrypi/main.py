@@ -249,7 +249,6 @@ def main():
             reverse_area = reverse_result.area
             front_wall_area = front_wall_result.area
 
-
             parking_walls = parking.process_parking(parking_result=parking_result)
 
             # Debug view
@@ -280,7 +279,7 @@ def main():
                     parking_lot_region=PARKING_LOT_REGION,
                     parking_walls=parking_walls,
                 )
-            
+
             if len(parking_walls) == 2:
                 continue
 
