@@ -101,6 +101,7 @@ contour_workers = ContourWorkers(
     lap_region=LAP_REGION,
     obs_region=OBS_REGION,
 )
+contour_workers.parking_mode = True
 
 STRAIGHT_CONST = 95
 turnThresh = 150
@@ -265,6 +266,9 @@ def main():
                     left_area=left_area,
                     right_area=right_area,
                     obstacle_wall_pivot=obstacle_wall_pivot,
+                    parking_mode=contour_workers.parking_mode,
+                    parking_lot_region=PARKING_LOT_REGION,
+                    parking_result=None,
                 )
 
             # --- Reversing logic ---
