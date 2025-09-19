@@ -1,0 +1,6 @@
+opencv-contrib-python==4.11.0.86
+opencv-python==4.11.0.86
+simple-pid==2.0.1
+pillow==11.2.1
+pyserial==3.5
+numpy==2.2.5
