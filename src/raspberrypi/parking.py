@@ -30,10 +30,13 @@ class Parking:
         self.STRAIGHT_CONST = STRAIGHT_CONST
         self.MAX_OFFSET_DEGREE = MAX_OFFSET_DEGREE
 
+        # state
+        self.last_wall_count = 0
+
 
     def process_parking(self, parking_result: ContourResult, pid: PID):
         parking_walls = []
-        parking_wall_count = 0
+        current_wall_count = 0
         obstacle_wall_pivot = (None, None)
 
         if parking_result and parking_result.area > 800:
@@ -42,10 +45,15 @@ class Parking:
                 area = w * h
 
                 if area > 1000:
-                    parking_wall_count += 1
+                    current_wall_count += 1
                     parking_walls.append((x, y, w, h))
+            
+            if self.last_wall_count == 2 and current_wall_count < 2:
+                self.arduino.write(f"{-self.parking_speed}, {self.STRAIGHT_CONST}\n".encode())
+                return parking_walls, 2, obstacle_wall_pivot
 
-        if parking_wall_count == 2:
+        if current_wall_count == 2:
+            self.last_wall_count = 2
             wall_1_x, wall_1_y, wall_1_w, wall_1_h = parking_walls[0]
             wall_1_cx, wall_1_cy = wall_1_x + (wall_1_w // 2), wall_1_y + (wall_1_h // 2)
             wall_2_x, wall_2_y, wall_2_w, wall_2_h = parking_walls[1]
@@ -84,4 +92,4 @@ class Parking:
             self.arduino.write(f"{self.parking_speed}, {angle}\n".encode())
             print(f"Parking | Speed: {self.parking_speed}, Angle: {angle}")
 
-        return parking_walls, parking_wall_count, obstacle_wall_pivot
+        return parking_walls, current_wall_count, obstacle_wall_pivot
