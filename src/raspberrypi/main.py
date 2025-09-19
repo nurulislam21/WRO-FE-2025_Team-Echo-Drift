@@ -46,6 +46,7 @@ LAP_REGION = [200, 300, 440, 350]  # lap detection
 OBS_REGION = [95, 140, 545, 320]  # obstacle detection
 REVERSE_REGION = [200, 300, 440, 320]  # reverse trigger area
 FRONT_WALL_REGION = [300, 200, 340, 220]  # front wall detection
+PARKING_LOT_REGION = [0, 140, CAM_WIDTH, CAM_HEIGHT]  # parking lot detection
 
 BLACK_WALL_DETECTOR_AREA = (LEFT_REGION[2] - LEFT_REGION[0]) * (
     LEFT_REGION[3] - LEFT_REGION[1]
@@ -71,19 +72,28 @@ UPPER_RED = np.array([108, 194, 79])
 LOWER_GREEN = np.array([110, 72, 168])
 UPPER_GREEN = np.array([176, 112, 208])
 
+# parking color ranges
+LOWER_MAGENTA = np.array([128, 93, 107])
+UPPER_MAGENTA = np.array([188, 133, 147])
+
+
 contour_workers = ContourWorkers(
     # mode="NO_OBSTACLE",
     mode="OBSTACLE",
+    
     lower_blue=LOWER_BLUE,
     upper_blue=UPPER_BLUE,
     lower_black=LOWER_BLACK,
     upper_black=UPPER_BLACK,
     lower_orange=LOWER_ORANGE,
-    upper_orange=UPPER_ORANGE,
+    upper_orange=UPPER_ORANGE,    
     lower_red=LOWER_RED,
     upper_red=UPPER_RED,
     lower_green=LOWER_GREEN,
     upper_green=UPPER_GREEN,
+    upper_magenta=UPPER_MAGENTA,
+    lower_magenta=LOWER_MAGENTA,
+
     left_region=LEFT_REGION,
     right_region=RIGHT_REGION,
     front_wall_region=FRONT_WALL_REGION,

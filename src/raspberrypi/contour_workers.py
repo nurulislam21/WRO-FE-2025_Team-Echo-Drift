@@ -27,6 +27,8 @@ class ContourWorkers:
         upper_red: np.ndarray,
         lower_green: np.ndarray,
         upper_green: np.ndarray,
+        upper_magenta: np.ndarray,
+        lower_magenta: np.ndarray,
         left_region: list,
         right_region: list,
         lap_region: list,
@@ -35,6 +37,8 @@ class ContourWorkers:
         reverse_region: list,
     ):
         self.mode = mode
+        self.parking_mode = False
+
         # colors
         self.LOWER_BLUE = lower_blue
         self.UPPER_BLUE = upper_blue
@@ -46,6 +50,9 @@ class ContourWorkers:
         self.UPPER_RED = upper_red
         self.LOWER_GREEN = lower_green
         self.UPPER_GREEN = upper_green
+        self.LOWER_MAGENTA = lower_magenta
+        self.UPPER_MAGENTA = upper_magenta
+
         # regions of interest
         self.LEFT_REGION = left_region
         self.RIGHT_REGION = right_region
@@ -53,6 +60,7 @@ class ContourWorkers:
         self.OBS_REGION = obs_region
         self.FRONT_WALL_REGION = front_wall_region
         self.REVERSE_REGION = reverse_region
+
         # queues
         self.frame_queue_left = Queue(maxsize=2)
         self.frame_queue_right = Queue(maxsize=2)
@@ -62,6 +70,7 @@ class ContourWorkers:
         self.frame_queue_red = Queue(maxsize=2)
         self.frame_queue_reverse = Queue(maxsize=2)
         self.frame_queue_front_wall = Queue(maxsize=2)
+
         # result queues
         self.result_queue_left = Queue(maxsize=2)
         self.result_queue_right = Queue(maxsize=2)
@@ -71,6 +80,7 @@ class ContourWorkers:
         self.result_queue_red = Queue(maxsize=2)
         self.result_queue_reverse = Queue(maxsize=2)
         self.result_queue_front_wall = Queue(maxsize=2)
+
         # control event
         self.stop_processing = threading.Event()
 
@@ -198,8 +208,22 @@ class ContourWorkers:
                     self.LEFT_REGION,
                     direction="left",
                 )
-                area, _ = max_contour_area(contours)
-                result = ContourResult(area, contours)
+                black_area, _ = max_contour_area(contours)
+                result = ContourResult(black_area, contours, "black_left")
+
+                if self.parking_mode:
+                    frame = self.frame_queue_left.get(timeout=0.1)
+                    contours = find_contours(
+                        frame,
+                        self.LOWER_MAGENTA,
+                        self.UPPER_MAGENTA,
+                        self.LEFT_REGION,
+                        direction="left",
+                    )
+                    magenta_area, _ = max_contour_area(contours)
+
+                    if magenta_area > 0:
+                        result = ContourResult(magenta_area, contours, "magenta_left")
 
                 try:
                     self.result_queue_left.put_nowait(result)
@@ -229,8 +253,23 @@ class ContourWorkers:
                     self.RIGHT_REGION,
                     direction="right",
                 )
-                area, _ = max_contour_area(contours)
-                result = ContourResult(area, contours)
+                black_area, _ = max_contour_area(contours)
+                result = ContourResult(black_area, contours, "black_right")
+
+                if self.parking_mode:
+                    frame = self.frame_queue_right.get(timeout=0.1)
+                    contours = find_contours(
+                        frame,
+                        self.LOWER_MAGENTA,
+                        self.UPPER_MAGENTA,
+                        self.RIGHT_REGION,
+                        direction="right",
+                    )
+                    magenta_area, _ = max_contour_area(contours)
+
+                    if magenta_area > 0:
+                        result = ContourResult(magenta_area, contours, "magenta_right")
+
 
                 try:
                     self.result_queue_right.put_nowait(result)
@@ -355,7 +394,7 @@ class ContourWorkers:
             except Exception as e:
                 print(f"Red processing error: {e}")
                 continue
-   
+
     def reverse_n_front_wall_contour_worker(self):
         """Worker thread for reverse trigger detection"""
         while not self.stop_processing.is_set():
@@ -377,7 +416,7 @@ class ContourWorkers:
                         self.result_queue_reverse.put_nowait(result)
                     except Empty:
                         pass
-                
+
                 self.frame_queue_reverse.task_done()
 
                 # front wall region processing

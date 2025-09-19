@@ -82,10 +82,15 @@ def display_debug_screen(
     left_area,
     right_area,
     obstacle_wall_pivot,
+    parking_mode,
+    parking_lot_region,
+    parking_result,
 ):
     debug_frame = frame.copy()
     debug_frame = display_roi(debug_frame, [LEFT_REGION, RIGHT_REGION, LAP_REGION, OBS_REGION], (255, 0, 255))
     debug_frame = display_roi(debug_frame, [REVERSE_REGION, FRONT_WALL_REGION], (0, 255, 255))
+    if parking_mode:
+        debug_frame = display_roi(debug_frame, [parking_lot_region], (0, 255, 0))
 
     if obstacle_wall_pivot != (None, None):
         cv2.circle(
@@ -170,7 +175,7 @@ def display_debug_screen(
         (10, 30),
         cv2.FONT_HERSHEY_SIMPLEX,
         0.6,
-        (0, 255, 255),
+        (255, 0, 255),
         2,
     )
     cv2.imshow("Debug View", debug_frame)
