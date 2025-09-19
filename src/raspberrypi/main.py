@@ -16,6 +16,7 @@ from img_processing_functions import (
     get_overall_centroid,
 )
 from contour_workers import ContourWorkers
+from parking import Parking
 from simple_pid import PID
 import copy
 
@@ -102,6 +103,7 @@ contour_workers = ContourWorkers(
     reverse_region=REVERSE_REGION,
     parking_lot_region=PARKING_LOT_REGION,
 )
+
 contour_workers.parking_mode = True
 
 STRAIGHT_CONST = 95
@@ -145,8 +147,11 @@ intersection_detected = False
 
 # Serial communication
 arduino = serial.Serial(port="/dev/ttyUSB0", baudrate=115200, dsrdtr=True)
-time.sleep(3)
+time.sleep(2)
 arduino.write(b"0,95\n")
+
+# parking
+parking = Parking(arduino=arduino)
 
 
 # Threading variables - separate queues for each detection task
@@ -244,6 +249,9 @@ def main():
             reverse_area = reverse_result.area
             front_wall_area = front_wall_result.area
 
+
+            parking_walls = parking.process_parking(parking_result=parking_result)
+
             # Debug view
             if DEBUG:
                 display_debug_screen(
@@ -270,8 +278,8 @@ def main():
                     obstacle_wall_pivot=obstacle_wall_pivot,
                     parking_mode=contour_workers.parking_mode,
                     parking_lot_region=PARKING_LOT_REGION,
-                    parking_result=parking_result,
-                )
+                    parking_walls=parking_walls,
+                )            
 
             # --- Reversing logic ---
             if trigger_reverse:

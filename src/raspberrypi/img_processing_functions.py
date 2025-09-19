@@ -84,7 +84,7 @@ def display_debug_screen(
     obstacle_wall_pivot,
     parking_mode,
     parking_lot_region,
-    parking_result,
+    parking_walls,
 ):
     debug_frame = frame.copy()
     debug_frame = display_roi(debug_frame, [LEFT_REGION, RIGHT_REGION, LAP_REGION, OBS_REGION], (255, 0, 255))
@@ -168,14 +168,15 @@ def display_debug_screen(
             2,
         )
 
-    if parking_mode and parking_result and parking_result.contours:
-        cv2.drawContours(
-            debug_frame[parking_lot_region[1] : parking_lot_region[3], parking_lot_region[0] : parking_lot_region[2]],
-            parking_result.contours,
-            -1,
-            (0, 255, 0),
-            2,
-        )
+    if parking_mode and len(parking_walls) > 0:
+        for (x, y, w, h) in parking_walls:
+            cv2.rectangle(
+                debug_frame[parking_lot_region[1] : parking_lot_region[3], parking_lot_region[0] : parking_lot_region[2]],
+                (x, y),
+                (x + w, y + h),
+                (0, 255, 0),
+                2,
+            )
 
     status = f"Angle: {angle} | Turns: {current_intersections/4} | L: {left_area} | R: {right_area}"
     cv2.putText(
