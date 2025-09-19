@@ -174,7 +174,7 @@ def display_debug_screen(
                 debug_frame[parking_lot_region[1] : parking_lot_region[3], parking_lot_region[0] : parking_lot_region[2]],
                 (x, y),
                 (x + w, y + h),
-                (0, 255, 0),
+                (255, 0, 0),
                 2,
             )
 
@@ -185,7 +185,7 @@ def display_debug_screen(
         (10, 30),
         cv2.FONT_HERSHEY_SIMPLEX,
         0.6,
-        (255, 0, 255),
+        (255, 0, 0),
         2,
     )
 

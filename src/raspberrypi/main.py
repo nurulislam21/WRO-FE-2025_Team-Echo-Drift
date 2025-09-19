@@ -279,7 +279,10 @@ def main():
                     parking_mode=contour_workers.parking_mode,
                     parking_lot_region=PARKING_LOT_REGION,
                     parking_walls=parking_walls,
-                )            
+                )
+            
+            if len(parking_walls) == 2:
+                continue
 
             # --- Reversing logic ---
             if trigger_reverse:
