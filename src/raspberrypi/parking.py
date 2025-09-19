@@ -38,7 +38,7 @@ class Parking:
 
         # reverse
         self.REVERSE_REGION = REVERSE_REGION
-        self.reverse_start_time = 0        
+        self.reverse_start_time = 0
         self.reverse_duration = 0.2  # seconds
         self.is_reversing = False
 
@@ -54,37 +54,54 @@ class Parking:
 
                 if area > 1500:
                     current_wall_count += 1
-                    parking_walls.append((x, y, w, h))                
+                    parking_walls.append((x, y, w, h))
 
         if self.last_wall_count == 2 and current_wall_count < 2:
             self.is_reversing = True
             self.reverse_start_time = time.time()
 
         if self.is_reversing:
-                if (time.time() - self.reverse_start_time) < self.reverse_duration:
-                    self.arduino.write(f"{-self.parking_speed}, {self.STRAIGHT_CONST}\n".encode())
-                    return parking_walls, 2, obstacle_wall_pivot
-                else:
-                    self.is_reversing = False
-                    self.last_wall_count = 0
-        
+            if (time.time() - self.reverse_start_time) < self.reverse_duration:
+                self.arduino.write(
+                    f"{-self.parking_speed}, {self.STRAIGHT_CONST}\n".encode()
+                )
+                return parking_walls, 2, obstacle_wall_pivot
+            else:
+                self.is_reversing = False
+                self.last_wall_count = 0
+
         self.last_wall_count = current_wall_count
         if current_wall_count == 2:
             wall_1_x, wall_1_y, wall_1_w, wall_1_h = parking_walls[0]
-            wall_1_cx, wall_1_cy = wall_1_x + (wall_1_w // 2), wall_1_y + (wall_1_h // 2)
+            wall_1_cx, wall_1_cy = wall_1_x + (wall_1_w // 2), wall_1_y + (
+                wall_1_h // 2
+            )
             wall_2_x, wall_2_y, wall_2_w, wall_2_h = parking_walls[1]
-            wall_2_cx, wall_2_cy = wall_2_x + (wall_2_w // 2), wall_2_y + (wall_2_h // 2)
+            wall_2_cx, wall_2_cy = wall_2_x + (wall_2_w // 2), wall_2_y + (
+                wall_2_h // 2
+            )
 
             # check if the centroid y are in the reverse region
-            if ((wall_1_y + wall_1_h + self.parking_lot_region[1]) > self.REVERSE_REGION[3] and (wall_1_cx + self.parking_lot_region[0]) > self.REVERSE_REGION[0] and (wall_1_cx + self.parking_lot_region[0]) < self.REVERSE_REGION
-            or (wall_2_y + wall_2_h + self.parking_lot_region[1]) > self.REVERSE_REGION[3]):
+            if (
+                ((wall_1_y + self.parking_lot_region[1]) > self.REVERSE_REGION[1])
+                and ((wall_1_cx + self.parking_lot_region[0]) > self.REVERSE_REGION[0])
+                and ((wall_1_cx + self.parking_lot_region[0]) < self.REVERSE_REGION[2])
+            ) or (
+                ((wall_2_y + self.parking_lot_region[1]) > self.REVERSE_REGION[1])
+                and ((wall_2_cx + self.parking_lot_region[0]) > self.REVERSE_REGION[0])
+                and ((wall_2_cx + self.parking_lot_region[0]) < self.REVERSE_REGION[2])
+            ):
                 print("Entering Reverse Region")
                 self.is_reversing = True
                 self.reverse_start_time = time.time()
                 return parking_walls, 2, obstacle_wall_pivot
 
-            print(f"wall 1: area: {wall_1_w * wall_1_h}, pos: ({wall_1_cx}, {wall_1_cy})")
-            print(f"wall 2: area: {wall_2_w * wall_2_h}, pos: ({wall_2_cx}, {wall_2_cy})")
+            print(
+                f"wall 1: area: {wall_1_w * wall_1_h}, pos: ({wall_1_cx}, {wall_1_cy})"
+            )
+            print(
+                f"wall 2: area: {wall_2_w * wall_2_h}, pos: ({wall_2_cx}, {wall_2_cy})"
+            )
 
             # transform to global coordinates
             wall_1_cx += self.parking_lot_region[0]
@@ -109,7 +126,8 @@ class Parking:
             angle = int(
                 max(
                     min(
-                        self.STRAIGHT_CONST + normalized_angle_offset * self.MAX_OFFSET_DEGREE,
+                        self.STRAIGHT_CONST
+                        + normalized_angle_offset * self.MAX_OFFSET_DEGREE,
                         self.maxRight,
                     ),
                     self.maxLeft,
@@ -118,14 +136,12 @@ class Parking:
 
             self.arduino.write(f"{self.parking_speed}, {angle}\n".encode())
 
-
             # if abs(offset_x) < self.stop_tolerance:
             #     print("Parking | Stopped")
             #     print(f"offset_x: {offset_x}, obj_error: {obj_error}, angle: {angle}")
             #     while True:
             #         self.arduino.write(f"0, {self.STRAIGHT_CONST}\n".encode())
             #         time.sleep(0.1)
-
 
             print(f"Parking | Speed: {self.parking_speed}, Angle: {angle}")
 
