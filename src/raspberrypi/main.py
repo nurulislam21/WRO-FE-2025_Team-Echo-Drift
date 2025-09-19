@@ -46,7 +46,7 @@ LAP_REGION = [200, 300, 440, 350]  # lap detection
 OBS_REGION = [95, 140, 545, 320]  # obstacle detection
 REVERSE_REGION = [200, 300, 440, 320]  # reverse trigger area
 FRONT_WALL_REGION = [300, 200, 340, 220]  # front wall detection
-PARKING_LOT_REGION = [0, 140, CAM_WIDTH, CAM_HEIGHT]  # parking lot detection
+PARKING_LOT_REGION = [0, 190, CAM_WIDTH, CAM_HEIGHT]  # parking lot detection
 
 BLACK_WALL_DETECTOR_AREA = (LEFT_REGION[2] - LEFT_REGION[0]) * (
     LEFT_REGION[3] - LEFT_REGION[1]
@@ -86,7 +86,7 @@ contour_workers = ContourWorkers(
     lower_black=LOWER_BLACK,
     upper_black=UPPER_BLACK,
     lower_orange=LOWER_ORANGE,
-    upper_orange=UPPER_ORANGE,    
+    upper_orange=UPPER_ORANGE,
     lower_red=LOWER_RED,
     upper_red=UPPER_RED,
     lower_green=LOWER_GREEN,
@@ -243,7 +243,6 @@ def main():
             red_area = red_result.area
             reverse_area = reverse_result.area
             front_wall_area = front_wall_result.area
-            
 
             # Debug view
             if DEBUG:
@@ -305,7 +304,7 @@ def main():
             ):
                 # get object coordinates
                 green_obj_x, green_obj_y = get_max_y_coord(green_result.contours)
-                red_obj_x, red_obj_y = get_max_y_coord(red_result.contours)                
+                red_obj_x, red_obj_y = get_max_y_coord(red_result.contours)
 
                 # set inf if no object detected
                 if green_obj_y is None or green_obj_x is None:
@@ -322,7 +321,9 @@ def main():
                     and (red_obj_x == -1 and red_obj_y == -1)
                 ):
 
-                    print(f"Red: {red_obj_x}, {red_obj_y} | Green: {green_obj_x}, {green_obj_y}")
+                    print(
+                        f"Red: {red_obj_x}, {red_obj_y} | Green: {green_obj_x}, {green_obj_y}"
+                    )
                     # if object is too close, back off (convert to global coords and compare)
                     if (
                         (red_obj_y + OBS_REGION[1]) > REVERSE_REGION[1]
@@ -336,17 +337,25 @@ def main():
                         print("Object too close! Backing off.")
                         trigger_reverse = True
                         reverse_start_time = time.time()
-                    
+
                     direction_turing = ""
 
                     # if red obj is closer
                     if red_obj_y > green_obj_y:
                         if front_wall_area > 500:
                             print("Front wall is priority, ignoring side walls")
-                            r_wall_x = FRONT_WALL_REGION[0] + (FRONT_WALL_REGION[2] - FRONT_WALL_REGION[0]) // 2
-                            r_wall_y = FRONT_WALL_REGION[1] + (FRONT_WALL_REGION[3] - FRONT_WALL_REGION[1]) // 2
+                            r_wall_x = (
+                                FRONT_WALL_REGION[0]
+                                + (FRONT_WALL_REGION[2] - FRONT_WALL_REGION[0]) // 2
+                            )
+                            r_wall_y = (
+                                FRONT_WALL_REGION[1]
+                                + (FRONT_WALL_REGION[3] - FRONT_WALL_REGION[1]) // 2
+                            )
                         else:
-                            r_wall_x, r_wall_y = get_overall_centroid(right_result.contours)
+                            r_wall_x, r_wall_y = get_overall_centroid(
+                                right_result.contours
+                            )
 
                             if r_wall_x is None:
                                 print("No wall detected!")
@@ -378,10 +387,18 @@ def main():
                     elif green_obj_y > red_obj_y:
                         if front_wall_area > 500:
                             print("Front wall is priority, ignoring side walls")
-                            l_wall_x = FRONT_WALL_REGION[0] + (FRONT_WALL_REGION[2] - FRONT_WALL_REGION[0]) // 2
-                            l_wall_y = FRONT_WALL_REGION[1] + (FRONT_WALL_REGION[3] - FRONT_WALL_REGION[1]) // 2
+                            l_wall_x = (
+                                FRONT_WALL_REGION[0]
+                                + (FRONT_WALL_REGION[2] - FRONT_WALL_REGION[0]) // 2
+                            )
+                            l_wall_y = (
+                                FRONT_WALL_REGION[1]
+                                + (FRONT_WALL_REGION[3] - FRONT_WALL_REGION[1]) // 2
+                            )
                         else:
-                            l_wall_x, l_wall_y = get_overall_centroid(left_result.contours)
+                            l_wall_x, l_wall_y = get_overall_centroid(
+                                left_result.contours
+                            )
 
                             if l_wall_x is None:
                                 print("No wall detected!")
@@ -407,17 +424,19 @@ def main():
                         )
 
                         obj_error = offset_x / (CAM_WIDTH // 2)  # normalized [-1, 1]
-                        direction_turing = "left"                        
+                        direction_turing = "left"
 
                     # amplify to make it more responsive
-                    obj_error = -np.clip(
-                        obj_error * 7.5, -1, 1
-                    )  
+                    obj_error = -np.clip(obj_error * 7.5, -1, 1)
                     normalized_angle_offset = pid(obj_error)
 
                     # steer more aggressively when closer to object
                     y_gain = np.interp(
-                        red_obj_y if direction_turing == "right" else (green_obj_y if direction_turing == "left" else 0),
+                        (
+                            red_obj_y
+                            if direction_turing == "right"
+                            else (green_obj_y if direction_turing == "left" else 0)
+                        ),
                         [
                             0,
                             (CAM_HEIGHT // 2) - 50,
@@ -428,7 +447,9 @@ def main():
                     )
                     normalized_angle_offset *= y_gain
                     speed_factor = 1 - (0.3 * y_gain)  # slow down when closer to object
-                    print(f"Norm: {normalized_angle_offset} | Ygain: {y_gain} | OBJ error: {obj_error}")
+                    print(
+                        f"Norm: {normalized_angle_offset} | Ygain: {y_gain} | OBJ error: {obj_error}"
+                    )
 
                 # print(f"Obj: {red_obj_x}, {red_obj_y} | Wall: {r_wall_x}, {r_wall_y}")
 
@@ -444,7 +465,7 @@ def main():
                 error = aDiff / (aSum + 1e-6)  # normalized between roughly [-1,1]
                 normalized_angle_offset = pid(error)
 
-            # --- Map normalized control to servo angle ---            
+            # --- Map normalized control to servo angle ---
             angle = int(
                 max(
                     min(
