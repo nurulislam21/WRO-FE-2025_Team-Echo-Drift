@@ -249,7 +249,7 @@ def main():
             reverse_area = reverse_result.area
             front_wall_area = front_wall_result.area
 
-            parking_walls = parking.process_parking(parking_result=parking_result)
+            parking_walls, parking_walls_count = parking.process_parking(parking_result=parking_result)
 
             # Debug view
             if DEBUG:
@@ -280,7 +280,9 @@ def main():
                     parking_walls=parking_walls,
                 )
 
-            if len(parking_walls) == 2:
+            if parking_walls_count == 2:
+                if cv2.waitKey(1) & 0xFF == ord("q"):
+                    break                
                 continue
 
             # --- Reversing logic ---
@@ -295,6 +297,7 @@ def main():
                 print(f"Reversing... Speed: {speed}, Angle: {angle}")
                 if cv2.waitKey(1) & 0xFF == ord("q"):
                     break
+                print("continue")
                 continue
 
             elif reverse_area > 1500:
@@ -305,6 +308,8 @@ def main():
                 arduino.write(f"{speed},{angle}\n".encode())
                 if cv2.waitKey(1) & 0xFF == ord("q"):
                     break
+                
+                print("continue")
                 continue
 
             # --- Obstacle avoidance ---

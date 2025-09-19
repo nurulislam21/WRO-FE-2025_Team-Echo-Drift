@@ -1,13 +1,13 @@
 import cv2
 from serial import Serial
 from contour_workers import ContourResult
-
+from simple_pid import PID
 
 class Parking:
     def __init__(self, arduino: Serial):
         self.arduino = arduino
 
-    def process_parking(self, parking_result: ContourResult):
+    def process_parking(self, parking_result: ContourResult, pid: PID):
         parking_walls = []
         parking_wall_count = 0
 
@@ -20,4 +20,4 @@ class Parking:
                     parking_wall_count += 1
                     parking_walls.append((x, y, w, h))
         
-        return parking_walls
+        return parking_walls, parking_wall_count
