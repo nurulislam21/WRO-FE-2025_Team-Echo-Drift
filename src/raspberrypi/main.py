@@ -151,7 +151,17 @@ time.sleep(2)
 arduino.write(b"0,95\n")
 
 # parking
-parking = Parking(arduino=arduino)
+parking = Parking(
+    parking_speed=30,
+    arduino=arduino,
+    camera_width=CAM_WIDTH,
+    camera_height=CAM_HEIGHT,
+    parking_lot_region=PARKING_LOT_REGION,
+    maxLeft=maxLeft,
+    maxRight=maxRight,
+    STRAIGHT_CONST=STRAIGHT_CONST,
+    MAX_OFFSET_DEGREE=MAX_OFFSET_DEGREE,
+)
 
 
 # Threading variables - separate queues for each detection task
@@ -249,7 +259,9 @@ def main():
             reverse_area = reverse_result.area
             front_wall_area = front_wall_result.area
 
-            parking_walls, parking_walls_count = parking.process_parking(parking_result=parking_result)
+            parking_walls, parking_walls_count, parking_wall_pivot = parking.process_parking(
+                parking_result=parking_result
+            )
 
             # Debug view
             if DEBUG:
@@ -281,8 +293,9 @@ def main():
                 )
 
             if parking_walls_count == 2:
+                obstacle_wall_pivot = parking_wall_pivot
                 if cv2.waitKey(1) & 0xFF == ord("q"):
-                    break                
+                    break
                 continue
 
             # --- Reversing logic ---
@@ -308,7 +321,7 @@ def main():
                 arduino.write(f"{speed},{angle}\n".encode())
                 if cv2.waitKey(1) & 0xFF == ord("q"):
                     break
-                
+
                 print("continue")
                 continue
 
