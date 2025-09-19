@@ -260,7 +260,7 @@ def main():
             front_wall_area = front_wall_result.area
 
             parking_walls, parking_walls_count, parking_wall_pivot = parking.process_parking(
-                parking_result=parking_result
+                parking_result=parking_result, pid=pid
             )
 
             # Debug view
