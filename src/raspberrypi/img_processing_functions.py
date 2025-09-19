@@ -168,6 +168,15 @@ def display_debug_screen(
             2,
         )
 
+    if parking_mode and parking_result and parking_result.contours:
+        cv2.drawContours(
+            debug_frame[parking_lot_region[1] : parking_lot_region[3], parking_lot_region[0] : parking_lot_region[2]],
+            parking_result.contours,
+            -1,
+            (0, 255, 0),
+            2,
+        )
+
     status = f"Angle: {angle} | Turns: {current_intersections/4} | L: {left_area} | R: {right_area}"
     cv2.putText(
         debug_frame,
@@ -178,6 +187,8 @@ def display_debug_screen(
         (255, 0, 255),
         2,
     )
+
+
     cv2.imshow("Debug View", debug_frame)
 
 

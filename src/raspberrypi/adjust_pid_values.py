@@ -384,6 +384,9 @@ def main():
                     _,
                     _,
                     _,
+                    _,
+                    _,
+                    _,
                 ) = contour_workers.collect_results()
 
                 left_area = left_result.area
