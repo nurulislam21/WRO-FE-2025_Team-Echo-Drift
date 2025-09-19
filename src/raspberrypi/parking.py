@@ -55,7 +55,7 @@ class Parking:
                 x, y, w, h = cv2.boundingRect(contour)
                 area = w * h
 
-                if area > 1500 and self.distance_between_walls(parking_walls):
+                if area > 1500 and self.distance_between_walls_is_valid(parking_walls):
                     current_wall_count += 1
                     parking_walls.append((x, y, w, h))
             
