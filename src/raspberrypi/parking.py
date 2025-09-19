@@ -33,6 +33,17 @@ class Parking:
         # state
         self.last_wall_count = 0
 
+    def distance_between_walls_is_valid(self, parking_walls: list):
+        if len(parking_walls) != 2:
+            return False
+        wall_1_x, wall_1_y, wall_1_w, wall_1_h = parking_walls[0]
+        wall_1_cx = wall_1_x + (wall_1_w // 2)
+        wall_2_x, wall_2_y, wall_2_w, wall_2_h = parking_walls[1]
+        wall_2_cx = wall_2_x + (wall_2_w // 2)
+        if abs(wall_2_cx - wall_1_cx) < 200:
+            print("valid distance between walls")
+            return True
+        return False
 
     def process_parking(self, parking_result: ContourResult, pid: PID):
         parking_walls = []
@@ -44,7 +55,7 @@ class Parking:
                 x, y, w, h = cv2.boundingRect(contour)
                 area = w * h
 
-                if area > 1000:
+                if area > 1500 and self.distance_between_walls(parking_walls):
                     current_wall_count += 1
                     parking_walls.append((x, y, w, h))
             
