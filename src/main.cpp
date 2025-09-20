@@ -14,6 +14,9 @@ int currentAngle = 95;              // Default to 90
 #define BUTTON_PIN 4                // D4
 int servo_max_L = 20;
 int servo_max_R = 170;
+#define sharp_ir A4
+#define trigger_pin A2
+#define echo_pin A3
 void motor(int speedPercent);
 void sw();
 void updateEncoder();
@@ -35,10 +38,11 @@ void setup()
   attachInterrupt(0, updateEncoder, CHANGE);
   attachInterrupt(1, updateEncoder, CHANGE);
   // Wait for serial data
-  while (!Serial.available()) {
+  while (!Serial.available())
+  {
     delay(10);
   }
-  
+
   // Once serial is available, perform the servo movement
   steeringServo.write(120);
   delay(500);
@@ -158,20 +162,92 @@ void motor(int speedPercent)
   }
 }
 
-void updateEncoder(){
-  int MSB = digitalRead(encoderPin1); //MSB = most significant bit
-  int LSB = digitalRead(encoderPin2); //LSB = least significant bit
+void updateEncoder()
+{
+  int MSB = digitalRead(encoderPin1); // MSB = most significant bit
+  int LSB = digitalRead(encoderPin2); // LSB = least significant bit
 
-  int encoded = (MSB << 1) |LSB; //converting the 2 pin value to single number
-  int sum  = (lastEncoded << 2) | encoded; //adding it to the previous encoded value
+  int encoded = (MSB << 1) | LSB;         // converting the 2 pin value to single number
+  int sum = (lastEncoded << 2) | encoded; // adding it to the previous encoded value
 
-  if(sum == 0b1101 || sum == 0b0100 || sum == 0b0010 || sum == 0b1011) encoderValue --;
-  if(sum == 0b1110 || sum == 0b0111 || sum == 0b0001 || sum == 0b1000) encoderValue ++;
+  if (sum == 0b1101 || sum == 0b0100 || sum == 0b0010 || sum == 0b1011)
+    encoderValue--;
+  if (sum == 0b1110 || sum == 0b0111 || sum == 0b0001 || sum == 0b1000)
+    encoderValue++;
 
-  lastEncoded = encoded; //store this value for next time
-
+  lastEncoded = encoded; // store this value for next time
 }
-void start_parking(){
+volatile long encoderCount = 0;
+
+void encoderISR()
+{
+  encoderCount++;
+}
+void resetEncoder()
+{
+  noInterrupts();
+  encoderValue = 0;
+  interrupts();
+}
+
+long getEncoder()
+{
+  long val;
+  noInterrupts();
+  val = encoderValue;
+  interrupts();
+  return val;
+}
+
+void moveEncoder(int speed, long targetPulses)
+{
+  resetEncoder();
+  motor(speed);
+  if (speed > 0)
+  {
+    while (getEncoder() < targetPulses)
+    {
+      // forward until reached
+    }
+  }
+  else
+  {
+    while (getEncoder() > -targetPulses)
+    {
+      // backward until reached
+    }
+  }
+  motor(0);
+}
+
+void start_parking()
+{
+  delay(500);
+
+  // Step 1: Turn Right + Forward
+  steeringServo.write(servo_max_R);
+  delay(50);
+  moveEncoder(50, 100); // forward until ~100 pulses
+
+  // Step 2: Turn Left + Backward
+  steeringServo.write(servo_max_L);
+  delay(50);
+  moveEncoder(-50, 80); // backward until ~80 pulses
+
+  // Step 3: Turn Right + Forward
+  steeringServo.write(servo_max_R);
+  delay(50);
+  moveEncoder(50, 120); // forward until ~120 pulses
+
+  // Step 4: Straighten Wheels + Forward
+  steeringServo.write(50);
+  moveEncoder(50, 200); // forward until ~200 pulses
+
+  motor(0);
+  steeringServo.write(95); // center
+}
+
+/*void start_parking(){
   delay(500);
   steeringServo.write(servo_max_R);
   delay(50);
@@ -195,4 +271,4 @@ void start_parking(){
   delay(1000);
   motor(0);
   steeringServo.write(95);
-}
+}*/
