@@ -61,10 +61,7 @@ The hardware design balances **mechanical precision** with **reliable electronic
 - **Differential Gear:** Custom 3D-printed with **herringbone outer gear**  
 - **Steering:** Ackermann system with MG995 servo for precise control  
 
-<p align="center">
-  <img src="v-photos/IMG_20250618_162815.jpg" alt="Vehicle Side View" width="400"/>
-  <img src="v-photos/Screenshot_2025-03-10_004102.png" alt="SolidWorks Design" width="400"/>
-</p>
+<p align="left"> <img src="v-photos/IMG_20250618_162815.jpg" alt="Vehicle Side View" width="500" style="display:inline-block; vertical-align: top; margin-right:10px;"/> <img src="v-photos/Screenshot 2025-03-10 004102.png" alt="SolidWorks Design" width="500" style="display:inline-block; vertical-align: top;"/> </p>
 
 | Component                    | Model / Specification                                          | Purpose |
 | ---------------------------- | -------------------------------------------------------------- | ------- |
