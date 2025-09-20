@@ -47,7 +47,8 @@ void setup()
   steeringServo.write(95);
   delay(50);
   sw();
-  parking_start();
+
+  start_parking();
 }
 void loop()
 {
@@ -170,7 +171,7 @@ void updateEncoder(){
   lastEncoded = encoded; //store this value for next time
 
 }
-void parking_start(){
+void start_parking(){
   delay(500);
   steeringServo.write(servo_max_R);
   delay(50);
