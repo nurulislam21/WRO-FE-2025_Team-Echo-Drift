@@ -12,9 +12,12 @@ unsigned long lastReceivedTime = 0; // Time of last valid serial input
 const unsigned long timeout = 1000; // 1 second timeout
 int currentAngle = 95;              // Default to 90
 #define BUTTON_PIN 4                // D4
+int servo_max_L = 20;
+int servo_max_R = 170;
 void motor(int speedPercent);
 void sw();
 void updateEncoder();
+void parking_start();
 void setup()
 {
   Serial.begin(115200);
@@ -44,6 +47,7 @@ void setup()
   steeringServo.write(95);
   delay(50);
   sw();
+  parking_start();
 }
 void loop()
 {
@@ -165,4 +169,29 @@ void updateEncoder(){
 
   lastEncoded = encoded; //store this value for next time
 
+}
+void parking_start(){
+  delay(500);
+  steeringServo.write(servo_max_R);
+  delay(50);
+  motor(50);
+  delay(250);
+  motor(0);
+  delay(1000);
+  steeringServo.write(servo_max_L);
+  delay(50);
+  motor(-50);
+  delay(200);
+  motor(0);
+  delay(1000);
+  steeringServo.write(servo_max_R);
+  delay(50);
+  motor(50);
+  delay(300);
+  motor(0);
+  steeringServo.write(50);
+  motor(50);
+  delay(1000);
+  motor(0);
+  steeringServo.write(95);
 }
