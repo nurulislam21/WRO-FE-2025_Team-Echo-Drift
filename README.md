@@ -15,7 +15,7 @@
 
 ### Core Team Members & Roles
 
-* **Nurul Islam** – Mechanical Engineering
+* **Nurul Islam Noman** – Mechanical Engineering
 * **Tanim SK** – Programming & Software Architecture
 * **Majedul Islam Nayem** – Electronics & Circuit Design
 
