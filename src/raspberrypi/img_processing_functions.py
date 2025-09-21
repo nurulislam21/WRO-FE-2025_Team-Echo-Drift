@@ -13,7 +13,7 @@ def replace_closest(polygon, new_point):
     return polygon
 
 
-def find_contours(frame, lower_color, upper_color, roi, direction=None):
+def find_contours(frame, lower_color, upper_color, roi, direction=None, use_convex_hull=False):
     x1, y1, x2, y2 = roi
     roi_frame = frame[y1:y2, x1:x2]
     labImg = cv2.cvtColor(roi_frame, cv2.COLOR_RGB2Lab)
@@ -23,6 +23,11 @@ def find_contours(frame, lower_color, upper_color, roi, direction=None):
     mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
     mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    if use_convex_hull and len(contours) > 0:
+        all_points = np.concatenate(contours, axis=0)
+        hull = cv2.convexHull(all_points)
+        contours = [hull]
 
     if direction is not None and contours:
         if max_contour_area(contours)[0] < 1700:
@@ -221,8 +226,6 @@ def get_max_x_coord(contours) -> tuple[int, int] | tuple[None, None]:
     max_idx = np.argmax(all_points[:, 0])  # index of largest x
     return tuple(all_points[max_idx])  # (x, y)
 
-
-import cv2
 
 
 def get_overall_centroid(contours):

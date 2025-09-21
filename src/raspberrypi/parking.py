@@ -1,6 +1,7 @@
 import cv2
 from serial import Serial
 from contour_workers import ContourResult
+from img_processing_functions import get_min_x_coord, get_max_x_coord, get_overall_centroid
 from simple_pid import PID
 import numpy as np
 import time
@@ -37,6 +38,8 @@ class Parking:
         self.last_wall_count = 0
         self.stop_tolerance = 5
 
+        self.seen_parking_lot = "NOT_SEEN"
+
         # reverse
         self.REVERSE_REGION = REVERSE_REGION
         self.reverse_start_time = 0
@@ -44,16 +47,60 @@ class Parking:
         self.is_reversing = False
 
         # parking out instructions
-        self.parking_out_instructions = [
-              # speed, steps, angle
+        self.parking_out_instructions = {
+            "left": [
+                [
+                    # speed, steps, angle
+                    (self.parking_speed, 500, 30),
+                    (-self.parking_speed, 1300, 160),
+                    (self.parking_speed, 1500, 30),
+                    (self.parking_speed, 1500, 130),
+                ]
+            ],
+            "right": [
+                [
+                    # speed, steps, angle
+                    (self.parking_speed, 500, 150),
+                    (-self.parking_speed, 1300, 20),
+                    (self.parking_speed, 1500, 150),
+                    (self.parking_speed, 1500, 30),
+                ]
+            ],
+        }
+
+        self.parking_in_instructions = [
+            # speed, steps, angle
             (self.parking_speed, 500, 30),
-            (-self.parking_speed, 1300, 160),
-            (self.parking_speed, 1500, 30),
             (self.parking_speed, 1500, 130),
+            (self.parking_speed, 1500, 30),
+            (self.parking_speed, 1500, 160),
         ]
 
-    def process_parking_out(self):        
-        for speed, steps, angle in self.parking_out_instructions:            
+    def process_parking_out(
+        self, left_result: ContourResult, right_result: ContourResult
+    ):
+        left_area = 0
+        right_area = 0
+        avg_times = 5
+
+        for _ in range(avg_times):
+            if left_result and left_result.area > 800:
+                left_area += left_result.area
+            if right_result and right_result.area > 800:
+                right_area += right_result.area
+            time.sleep(0.01)
+
+        left_area = left_area / avg_times
+        right_area = right_area / avg_times
+
+        if left_area > right_area:
+            print(f"Parking Out | Left Area: {left_area}, Right Area: {right_area}")
+            parking_out_instructions = self.parking_out_instructions["left"]
+        else:
+            print(f"Parking Out | Left Area: {left_area}, Right Area: {right_area}")
+            parking_out_instructions = self.parking_out_instructions["right"]
+
+        for speed, steps, angle in parking_out_instructions:
             self.arduino.write(f"{speed},{steps},{angle}\n".encode())
             time.sleep(0.1)
             print(f"Parking Out | Speed: {speed}, Steps: {steps}, Angle: {angle}")
@@ -74,7 +121,69 @@ class Parking:
             #         startProcessing = True
 
     def process_parking(self, parking_result: ContourResult, pid: PID):
-        ...
+
+        # step 01
+        if parking_result and parking_result.area > 800:
+            cx, cy = get_overall_centroid(parking_result.contours)
+            # transform to global coordinates
+            cx = cx + self.parking_lot_region[0]
+            cy = cy + self.parking_lot_region[1]
+
+            if cx and cy:
+                self.seen_parking_lot = "SEEN"
+                # check which side the object is closer to
+                if cx < (self.camera_width // 2):
+                    # left side
+                    parking_lot_x = get_min_x_coord(parking_result.contours)[0] + 150
+                else:
+                    # right side
+                    parking_lot_x = get_max_x_coord(parking_result.contours)[0] - 150
+
+                # transform to global coordinates
+                parking_lot_x = parking_lot_x + self.parking_lot_region[0]
+                offset_x = parking_lot_x - (self.camera_width // 2)
+                # show a circle dot on the centroid
+                obstacle_wall_pivot = (parking_lot_x, cy)
+
+                obj_error = offset_x / (self.camera_width // 2)
+                obj_error = -np.clip(obj_error * 10, -1, 1)
+                normalized_angle_offset = pid(obj_error)
+
+                # --- Map normalized control to servo angle ---
+                angle = int(
+                    max(
+                        min(
+                            self.STRAIGHT_CONST
+                            + normalized_angle_offset * self.MAX_OFFSET_DEGREE,
+                            self.maxRight,
+                        ),
+                        self.maxLeft,
+                    )
+                )
+
+                self.arduino.write(f"{self.parking_speed},-1,{angle}\n".encode())
+
+
+        # step 02
+        elif self.seen_parking_lot == "SEEN":
+            print("Parking | No longer see parking lot, stopping")
+            self.arduino.write(f"0,-1,{self.STRAIGHT_CONST}\n".encode())
+            
+            for speed, steps, angle in self.parking_in_instructions:
+                self.arduino.write(f"{speed},{steps},{angle}\n".encode())
+                time.sleep(0.1)
+                print(f"Parking In | Speed: {speed}, Steps: {steps}, Angle: {angle}")
+
+                # wait for arduino to respond
+                while True:
+                    if self.arduino.in_waiting > 0:
+                        line = self.arduino.readline().decode("utf-8").rstrip()
+                        print(f"Arduino: {line}")
+                        if "DONE" in line:
+                            print("found DONE")
+                            break
+            
+
         # parking_walls = []
         # current_wall_count = 0
         # obstacle_wall_pivot = (None, None)
