@@ -8,9 +8,7 @@
 ---
 
 
-This repository documents the journey of **Team Echo Drift** at the **WRO Bangladesh National 2025 – Future Engineers category**.  
-
-Here you’ll find the **complete documentation of our robot** — an innovation imagined, designed, and brought to life by three passionate students pushing the limits of **creativity and engineering**.  
+This repository documents the journey of **Team Echo Drift** at the **WRO Bangladesh National 2025 – Future Engineers category**.Here you’ll find the **complete documentation of our robot** — an innovation imagined, designed, and brought to life by three passionate students pushing the limits of **creativity and engineering**.  
 
 
  
