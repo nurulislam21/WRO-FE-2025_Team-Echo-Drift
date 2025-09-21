@@ -111,7 +111,7 @@ turnThresh = 150
 exitThresh = 1500
 
 
-MAX_OFFSET_DEGREE = 30
+MAX_OFFSET_DEGREE = 40
 maxRight = STRAIGHT_CONST + MAX_OFFSET_DEGREE
 maxLeft = STRAIGHT_CONST - MAX_OFFSET_DEGREE
 slightRight = STRAIGHT_CONST + 20
@@ -148,7 +148,7 @@ intersection_detected = False
 # Serial communication
 arduino = serial.Serial(port="/dev/ttyUSB0", baudrate=115200, dsrdtr=True)
 time.sleep(2)
-arduino.write(b"0,95\n")
+arduino.write(b"0,-1,95\n")
 
 # parking
 parking = Parking(
@@ -260,9 +260,19 @@ def main():
             reverse_area = reverse_result.area
             front_wall_area = front_wall_result.area
 
-            parking_walls, parking_walls_count, parking_wall_pivot = parking.process_parking(
-                parking_result=parking_result, pid=pid
-            )          
+            # only process parking if in parking mode and mode is obstacle
+            if contour_workers.mode == "OBSTACLE":
+
+                # process parking out first if not yet done
+                if not parking.has_parked_out:
+                    parking.process_parking_out()
+                    parking.has_parked_out = True
+
+                # process parking, when parking mode is active
+                if contour_workers.parking_mode:
+                    parking_walls, parking_walls_count, parking_wall_pivot = (
+                        parking.process_parking(parking_result=parking_result, pid=pid)
+                    )
 
             # Debug view
             if DEBUG:
@@ -291,7 +301,7 @@ def main():
                     parking_mode=contour_workers.parking_mode,
                     parking_lot_region=PARKING_LOT_REGION,
                     parking_walls=parking_walls,
-                )            
+                )
 
             # --- Reversing logic ---
             if trigger_reverse:
@@ -301,7 +311,7 @@ def main():
                     speed = 0  # stop after reversing
                 else:
                     angle = STRAIGHT_CONST  # go straight when reversing
-                arduino.write(f"{speed},{angle}\n".encode())
+                arduino.write(f"{speed},-1,{angle}\n".encode())
                 print(f"Reversing... Speed: {speed}, Angle: {angle}")
                 if cv2.waitKey(1) & 0xFF == ord("q"):
                     break
@@ -313,12 +323,12 @@ def main():
                 trigger_reverse = True
                 reverse_start_time = time.time()
                 speed = 0  # stop before reversing
-                arduino.write(f"{speed},{angle}\n".encode())
+                arduino.write(f"{speed},-1,{angle}\n".encode())
                 if cv2.waitKey(1) & 0xFF == ord("q"):
                     break
 
                 print("continue")
-                continue            
+                continue
 
             if parking_walls_count == 2:
                 obstacle_wall_pivot = parking_wall_pivot
@@ -514,7 +524,7 @@ def main():
             # speed = 0
 
             # Send to Arduino
-            arduino.write(f"{speed},{angle}\n".encode())
+            arduino.write(f"{speed},-1,{angle}\n".encode())
 
             # intersection detection
             # work here
@@ -539,7 +549,7 @@ def main():
             # Stopping logic
             if stopFlag and (int(time.time()) - stopTime) > 1.7:
                 print("Lap completed!")
-                arduino.write(f"0,{angle}\n".encode())
+                arduino.write(f"0,-1,{angle}\n".encode())
                 print(angle)
                 break
 

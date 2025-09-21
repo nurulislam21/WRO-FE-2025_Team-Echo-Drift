@@ -26,6 +26,7 @@ int servoMaxRight = 170;
 void motor(int speedPercent);
 void sw();
 void updateEncoder();
+void moveEncoder(int speed, long steps);
 void setup()
 {
     Serial.begin(115200);
@@ -72,7 +73,7 @@ void loop()
         String angleStr = strtok(NULL, ",");
 
         int speedValue = atoi(speed.c_str());
-        int stepsValue = atoi(stepsStr.c_str());
+        long int stepsValue = atol(stepsStr.c_str());
         int angle = atoi(angleStr.c_str());
 
         currentAngle = constrain(angle, servoMaxLeft, servoMaxRight);
@@ -205,7 +206,7 @@ long getEncoder()
     return val;
 }
 
-void moveEncoder(int speed, long targetPulses)
+void moveEncoder(int speed, long int targetPulses)
 {
     resetEncoder();
     motor(speed);

@@ -32,7 +32,8 @@ class Parking:
         self.STRAIGHT_CONST = STRAIGHT_CONST
         self.MAX_OFFSET_DEGREE = MAX_OFFSET_DEGREE
 
-        # state
+        # states
+        self.has_parked_out = False
         self.last_wall_count = 0
         self.stop_tolerance = 5
 
@@ -41,6 +42,37 @@ class Parking:
         self.reverse_start_time = 0
         self.reverse_duration = 0.2  # seconds
         self.is_reversing = False
+
+        # parking out instructions
+        self.parking_out_instructions = [
+            (-self.parking_speed, 100, 160), # speed, steps, angle
+            (self.parking_speed, 100, 45),
+            (self.parking_speed, 100, 150),
+        ]
+
+    
+
+    def process_parking_out(self):        
+        for speed, steps, angle in self.parking_out_instructions:
+            for _ in range(steps):
+                self.arduino.write(f"{speed},{steps},{angle}\n".encode())
+                time.sleep(0.1)
+
+                # wait for arduino to respond
+                while True:
+                    if self.arduino.in_waiting > 0:
+                        line = self.arduino.readline().decode("utf-8").rstrip()
+                        print(f"Arduino: {line}")
+                        if line == "DONE":
+                            break
+                    time.sleep(0.01)
+
+                # if arduino.in_waiting > 0:
+            #     line = arduino.readline().decode("utf-8").rstrip()
+            #     print(f"Arduino: {line}")
+            #     if not line == "START":
+            #         startProcessing = True
+
 
     def process_parking(self, parking_result: ContourResult, pid: PID):
         ...
