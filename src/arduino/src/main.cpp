@@ -1,10 +1,13 @@
 #include <Arduino.h>
 #include <Servo.h>
 
+#define BUTTON_PIN 4 // D4
+#define SHARP_IR A4
+#define TRIGGER_PIN A2
+#define ECHO_PIN A3
 #define PWML 11
 #define IN1L 6
 #define IN2L 7
-#define BUTTON_PIN 4 // D4
 
 Servo steeringServo;
 
@@ -16,6 +19,9 @@ volatile long encoderValue = 0; // Raw encoder value
 unsigned long lastReceivedTime = 0; // Time of last valid serial input
 const unsigned long timeout = 1000; // 1 second timeout
 int currentAngle = 95;              // Default to 90
+
+int servoMaxLeft = 20;
+int servoMaxRight = 170;
 
 void motor(int speedPercent);
 void sw();
@@ -54,38 +60,43 @@ void setup()
 void loop()
 {
     String inputData = "";
-    static byte pos = 0;
-
     // Read serial input if available
     while (Serial.available())
     {
         inputData = Serial.readStringUntil('\n');
 
-        // parse space separated values, e.g., "speed,angle"
+        // parse space separated values, e.g., "speed,steps,angle"
         char *payload = strdup(inputData.c_str()); // Copy data to mutable string
         String speed = strtok(payload, ",");
+        String stepsStr = strtok(NULL, ",");
         String angleStr = strtok(NULL, ",");
 
         int speedValue = atoi(speed.c_str());
+        int stepsValue = atoi(stepsStr.c_str());
         int angle = atoi(angleStr.c_str());
-        if (angle > 140)
+
+        currentAngle = constrain(angle, servoMaxLeft, servoMaxRight);
+
+        if (stepsValue > 0)
         {
-            angle = 140;
-        }
-        if (angle < 50)
-        {
-            angle = 50;
+            steeringServo.write(currentAngle);
+            delay(100);
+            moveEncoder(speedValue, stepsValue);
+            delay(100);
+            Serial.println("DONE");
         }
 
-        currentAngle = angle; // Update current angle
         steeringServo.write(currentAngle);
-        Serial.print("Got angle: ");
-        Serial.println(currentAngle);
-        pos = 0;
         lastReceivedTime = millis(); // Reset timeout timer
 
         motor(speedValue);
         free(payload); // Free allocated memory
+
+        if (digitalRead(BUTTON_PIN) == LOW)
+        {
+            delay(200);
+            sw(); // Wait for button press to restart
+        }
     }
 
     // Timeout logic: no data received recently
@@ -101,14 +112,9 @@ void loop()
         delay(100);
         motor(0);
         delay(100);
-        sw();
-        lastReceivedTime = millis(); // Reset timer after handling timeout
-    }
-
-    if (digitalRead(BUTTON_PIN) == LOW)
-    {
-        sw();
-        lastReceivedTime = millis(); // Reset timer after handling button press
+        while (true)
+        {
+        }
     }
 }
 
@@ -128,6 +134,7 @@ void sw()
     {
         delay(10); // Small delay to reduce CPU load
     }
+
     Serial.println("START");
     // Final debounce delay to ensure clean button release
     delay(50);
@@ -175,4 +182,46 @@ void updateEncoder()
         encoderValue++;
 
     lastEncoded = encoded; // store this value for next time
+}
+volatile long encoderCount = 0;
+
+void encoderISR()
+{
+    encoderCount++;
+}
+void resetEncoder()
+{
+    noInterrupts();
+    encoderValue = 0;
+    interrupts();
+}
+
+long getEncoder()
+{
+    long val;
+    noInterrupts();
+    val = encoderValue;
+    interrupts();
+    return val;
+}
+
+void moveEncoder(int speed, long targetPulses)
+{
+    resetEncoder();
+    motor(speed);
+    if (speed > 0)
+    {
+        while (getEncoder() < targetPulses)
+        {
+            // forward until reached
+        }
+    }
+    else
+    {
+        while (getEncoder() > -targetPulses)
+        {
+            // backward until reached
+        }
+    }
+    motor(0);
 }
