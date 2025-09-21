@@ -1,4 +1,6 @@
 # Team Echo Drift — WRO Future Engineers 2025
+<img src="https://github.com/majednaeem/WRO/blob/main/Assets/wro2.gif" alt="About Me GIF" width="1021" height="300">
+
 
 ![WRO Future Engineers](https://img.shields.io/badge/WRO-Future_Engineers-orange?style=for-the-badge)
 ![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)
