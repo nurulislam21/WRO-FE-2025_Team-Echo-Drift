@@ -55,6 +55,7 @@ class Parking:
             for _ in range(steps):
                 self.arduino.write(f"{speed},{steps},{angle}\n".encode())
                 time.sleep(0.1)
+                print(f"Parking Out | Speed: {speed}, Steps: {steps}, Angle: {angle}")
 
                 # wait for arduino to respond
                 while True:

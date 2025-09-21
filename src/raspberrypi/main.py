@@ -219,24 +219,22 @@ def main():
     try:
         while True:
             # dont start until start button pressed
-            # if arduino.in_waiting > 0:
-            #     line = arduino.readline().decode("utf-8").rstrip()
-            #     print(f"Arduino: {line}")
-            #     if not line == "START":
-            #         startProcessing = True
-            # if not startProcessing:
-            #     continue
+            if arduino.in_waiting > 0 and not startProcessing:
+                line = arduino.readline().decode("utf-8").rstrip()
+                print(f"Arduino: {line}")
+                if not line == "START":
+                    startProcessing = True
 
             # Capture frame
             frame = picam2.capture_array()
 
             # Distribute frame to all processing threads (non-blocking)
             frame_copy = copy.deepcopy(frame)
+            contour_workers.put_frames_in_queues(frame_copy)
 
             # default values
             speed_factor = 1.0
 
-            contour_workers.put_frames_in_queues(frame_copy)
             # Retrieve all results from queues (non-blocking)
             (
                 left_result,
@@ -258,21 +256,7 @@ def main():
             green_area = green_result.area
             red_area = red_result.area
             reverse_area = reverse_result.area
-            front_wall_area = front_wall_result.area
-
-            # only process parking if in parking mode and mode is obstacle
-            if contour_workers.mode == "OBSTACLE":
-
-                # process parking out first if not yet done
-                if not parking.has_parked_out:
-                    parking.process_parking_out()
-                    parking.has_parked_out = True
-
-                # process parking, when parking mode is active
-                if contour_workers.parking_mode:
-                    parking_walls, parking_walls_count, parking_wall_pivot = (
-                        parking.process_parking(parking_result=parking_result, pid=pid)
-                    )
+            front_wall_area = front_wall_result.area            
 
             # Debug view
             if DEBUG:
@@ -301,7 +285,28 @@ def main():
                     parking_mode=contour_workers.parking_mode,
                     parking_lot_region=PARKING_LOT_REGION,
                     parking_walls=parking_walls,
-                )
+                )            
+
+            if not startProcessing:
+                if cv2.waitKey(1) & 0xFF == ord("q"):
+                    break
+                # Dont start moving until start signal received
+                continue
+            
+
+            # --- PARKING LOGIC ---
+            if contour_workers.mode == "OBSTACLE":
+
+                # process parking out first if not yet done
+                if not parking.has_parked_out:
+                    parking.process_parking_out()
+                    parking.has_parked_out = True
+
+                # process parking, when parking mode is active
+                if contour_workers.parking_mode:
+                    parking_walls, parking_walls_count, parking_wall_pivot = (
+                        parking.process_parking(parking_result=parking_result, pid=pid)
+                    )
 
             # --- Reversing logic ---
             if trigger_reverse:
