@@ -210,18 +210,19 @@ void moveEncoder(int speed, long int targetPulses)
 {
     resetEncoder();
     motor(speed);
+
     if (speed > 0)
     {
         while (getEncoder() < targetPulses)
         {
-            // forward until reached
+            Serial.println(getEncoder());
         }
     }
     else
     {
         while (getEncoder() > -targetPulses)
         {
-            // backward until reached
+            Serial.println(getEncoder());
         }
     }
     motor(0);

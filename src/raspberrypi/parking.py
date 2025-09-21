@@ -45,14 +45,12 @@ class Parking:
 
         # parking out instructions
         self.parking_out_instructions = [
-            (-self.parking_speed, 100, 160), # speed, steps, angle
+            (-self.parking_speed, 100, 160),  # speed, steps, angle
             (self.parking_speed, 100, 45),
             (self.parking_speed, 100, 150),
         ]
 
-    
-
-    def process_parking_out(self):        
+    def process_parking_out(self):
         for speed, steps, angle in self.parking_out_instructions:
             for _ in range(steps):
                 self.arduino.write(f"{speed},{steps},{angle}\n".encode())
@@ -65,14 +63,12 @@ class Parking:
                         print(f"Arduino: {line}")
                         if line == "DONE":
                             break
-                    time.sleep(0.01)
 
                 # if arduino.in_waiting > 0:
             #     line = arduino.readline().decode("utf-8").rstrip()
             #     print(f"Arduino: {line}")
             #     if not line == "START":
             #         startProcessing = True
-
 
     def process_parking(self, parking_result: ContourResult, pid: PID):
         ...
