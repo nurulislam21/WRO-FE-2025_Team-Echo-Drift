@@ -104,7 +104,7 @@ contour_workers = ContourWorkers(
     parking_lot_region=PARKING_LOT_REGION,
 )
 
-contour_workers.parking_mode = True
+contour_workers.parking_mode = False
 
 STRAIGHT_CONST = 95
 turnThresh = 150
@@ -152,7 +152,7 @@ arduino.write(b"0,-1,95\n")
 
 # parking
 parking = Parking(
-    parking_speed=30,
+    parking_speed=40,
     arduino=arduino,
     camera_width=CAM_WIDTH,
     camera_height=CAM_HEIGHT,
@@ -170,6 +170,10 @@ def main():
     global stopFlag, stopTime, speed, trigger_reverse
     global current_intersections, intersection_detected, intersection_crossing_start
     global startProcessing, obstacle_wall_pivot
+    
+    parking_walls = []
+    parking_walls_count = 0
+    parking_wall_pivot = (None, None)
 
     # Initialize PiCamera2
     picam2 = Picamera2()
@@ -219,10 +223,10 @@ def main():
     try:
         while True:
             # dont start until start button pressed
-            if arduino.in_waiting > 0 and not startProcessing:
+            if not startProcessing and arduino.in_waiting > 0:
                 line = arduino.readline().decode("utf-8").rstrip()
                 print(f"Arduino: {line}")
-                if not line == "START":
+                if line == "START":
                     startProcessing = True
 
             # Capture frame
@@ -296,9 +300,8 @@ def main():
 
             # --- PARKING LOGIC ---
             if contour_workers.mode == "OBSTACLE":
-
                 # process parking out first if not yet done
-                if not parking.has_parked_out:
+                if not parking.has_parked_out:                    
                     parking.process_parking_out()
                     parking.has_parked_out = True
 
@@ -307,6 +310,8 @@ def main():
                     parking_walls, parking_walls_count, parking_wall_pivot = (
                         parking.process_parking(parking_result=parking_result, pid=pid)
                     )
+            
+            continue
 
             # --- Reversing logic ---
             if trigger_reverse:

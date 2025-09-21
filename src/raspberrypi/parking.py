@@ -45,25 +45,27 @@ class Parking:
 
         # parking out instructions
         self.parking_out_instructions = [
-            (-self.parking_speed, 100, 160),  # speed, steps, angle
-            (self.parking_speed, 100, 45),
-            (self.parking_speed, 100, 150),
+              # speed, steps, angle
+            (self.parking_speed, 500, 30),
+            (-self.parking_speed, 1300, 160),
+            (self.parking_speed, 1500, 30),
+            (self.parking_speed, 1500, 130),
         ]
 
-    def process_parking_out(self):
-        for speed, steps, angle in self.parking_out_instructions:
-            for _ in range(steps):
-                self.arduino.write(f"{speed},{steps},{angle}\n".encode())
-                time.sleep(0.1)
-                print(f"Parking Out | Speed: {speed}, Steps: {steps}, Angle: {angle}")
+    def process_parking_out(self):        
+        for speed, steps, angle in self.parking_out_instructions:            
+            self.arduino.write(f"{speed},{steps},{angle}\n".encode())
+            time.sleep(0.1)
+            print(f"Parking Out | Speed: {speed}, Steps: {steps}, Angle: {angle}")
 
-                # wait for arduino to respond
-                while True:
-                    if self.arduino.in_waiting > 0:
-                        line = self.arduino.readline().decode("utf-8").rstrip()
-                        print(f"Arduino: {line}")
-                        if line == "DONE":
-                            break
+            # wait for arduino to respond
+            while True:
+                if self.arduino.in_waiting > 0:
+                    line = self.arduino.readline().decode("utf-8").rstrip()
+                    print(f"Arduino: {line}")
+                    if "DONE" in line:
+                        print("found DONE")
+                        break
 
                 # if arduino.in_waiting > 0:
             #     line = arduino.readline().decode("utf-8").rstrip()
