@@ -1,7 +1,11 @@
 import cv2
 from serial import Serial
 from contour_workers import ContourResult
-from img_processing_functions import get_min_x_coord, get_max_x_coord, get_overall_centroid
+from img_processing_functions import (
+    get_min_x_coord,
+    get_max_x_coord,
+    get_overall_centroid,
+)
 from simple_pid import PID
 import numpy as np
 import time
@@ -39,6 +43,8 @@ class Parking:
         self.stop_tolerance = 5
 
         self.seen_parking_lot = "NOT_SEEN"
+        self.last_seen_time = time.time()
+        self.wait_after_seen = 0.6  # seconds
 
         # reverse
         self.REVERSE_REGION = REVERSE_REGION
@@ -132,15 +138,16 @@ class Parking:
 
             if cx and cy:
                 self.seen_parking_lot = "SEEN"
+                self.last_seen_time = time.time()
                 # check which side the object is closer to
                 if cx < (self.camera_width // 2):
                     print("left side")
                     # left side
-                    parking_lot_x = get_max_x_coord(parking_result.contours)[0] + 150
+                    parking_lot_x = get_max_x_coord(parking_result.contours)[0] + 50
                 else:
                     # right side
                     print("right side")
-                    parking_lot_x = get_min_x_coord(parking_result.contours)[0] - 150
+                    parking_lot_x = get_min_x_coord(parking_result.contours)[0] - 50
 
                 # transform to global coordinates
                 parking_lot_x = parking_lot_x + self.parking_lot_region[0]
@@ -168,12 +175,16 @@ class Parking:
 
                 return obstacle_wall_pivot
 
-
         # step 02
-        # elif self.seen_parking_lot == "SEEN":
+        elif self.seen_parking_lot == "SEEN" and (
+            (time.time() - self.last_seen_time) < self.wait_after_seen
+        ):
+            print("Parking | Last seen parking lot, continuing")
+            self.arduino.write(f"0,-1,{self.STRAIGHT_CONST}\n".encode())
+            return (None, None)
         #     print("Parking | No longer see parking lot, stopping")
         #     self.arduino.write(f"0,-1,{self.STRAIGHT_CONST}\n".encode())
-            
+
         #     for speed, steps, angle in self.parking_in_instructions:
         #         self.arduino.write(f"{speed},{steps},{angle}\n".encode())
         #         time.sleep(0.1)
@@ -187,7 +198,6 @@ class Parking:
         #                 if "DONE" in line:
         #                     print("found DONE")
         #                     break
-            
 
         # parking_walls = []
         # current_wall_count = 0
