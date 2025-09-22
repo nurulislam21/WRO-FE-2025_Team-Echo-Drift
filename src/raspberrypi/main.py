@@ -81,6 +81,7 @@ UPPER_MAGENTA = np.array([160, 129, 145])
 contour_workers = ContourWorkers(
     # mode="NO_OBSTACLE",
     mode="OBSTACLE",
+    has_parked_out=False,
     # color ranges
     lower_blue=LOWER_BLUE,
     upper_blue=UPPER_BLUE,
@@ -303,7 +304,7 @@ def main():
                 # process parking out first if not yet done
                 if not parking.has_parked_out:
                     parking.process_parking_out()
-                    parking.has_parked_out = True
+                    parking.has_parked_out = contour_workers.has_parked_out = True
 
                 # process parking, when parking mode is active
                 if contour_workers.parking_mode:

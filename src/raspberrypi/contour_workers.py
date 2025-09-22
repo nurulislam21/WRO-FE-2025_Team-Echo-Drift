@@ -17,6 +17,7 @@ class ContourWorkers:
     def __init__(
         self,
         mode: Literal["OBSTACLE", "NO_OBSTACLE"],
+        has_parked_out: bool,
         # color ranges
         lower_blue: np.ndarray,
         upper_blue: np.ndarray,
@@ -41,6 +42,7 @@ class ContourWorkers:
     ):
         self.mode = mode
         self.parking_mode = False
+        self.has_parked_out = has_parked_out
 
         # colors
         self.LOWER_BLUE = lower_blue
@@ -232,7 +234,7 @@ class ContourWorkers:
                 black_area, _ = max_contour_area(contours)
                 result = ContourResult(black_area, contours, "black_left")
 
-                if self.mode == "OBSTACLE":
+                if self.mode == "OBSTACLE" and self.has_parked_out:
                     frame = self.frame_queue_left.get(timeout=0.1)
                     contours = find_contours(
                         frame,
@@ -280,7 +282,7 @@ class ContourWorkers:
                 black_area, _ = max_contour_area(contours)
                 result = ContourResult(black_area, contours, "black_right")
 
-                if self.mode == "OBSTACLE":
+                if self.mode == "OBSTACLE" and self.has_parked_out:
                     frame = self.frame_queue_right.get(timeout=0.1)
                     contours = find_contours(
                         frame,
