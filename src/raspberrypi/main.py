@@ -104,7 +104,7 @@ contour_workers = ContourWorkers(
     parking_lot_region=PARKING_LOT_REGION,
 )
 
-contour_workers.parking_mode = True
+contour_workers.parking_mode = False
 
 STRAIGHT_CONST = 95
 turnThresh = 150
@@ -171,7 +171,7 @@ def main():
     global stopFlag, stopTime, speed, trigger_reverse
     global current_intersections, intersection_detected, intersection_crossing_start
     global startProcessing, obstacle_wall_pivot
-    
+
     parking_walls = []
     parking_walls_count = 0
     parking_wall_pivot = (None, None)
@@ -261,7 +261,7 @@ def main():
             green_area = green_result.area
             red_area = red_result.area
             reverse_area = reverse_result.area
-            front_wall_area = front_wall_result.area            
+            front_wall_area = front_wall_result.area
 
             # Debug view
             if DEBUG:
@@ -290,29 +290,31 @@ def main():
                     parking_mode=contour_workers.parking_mode,
                     parking_lot_region=PARKING_LOT_REGION,
                     parking_result=parking_result,
-                )            
+                )
 
             if not startProcessing:
                 if cv2.waitKey(1) & 0xFF == ord("q"):
                     break
                 # Dont start moving until start signal received
                 continue
-            
 
             # --- PARKING LOGIC ---
             if contour_workers.mode == "OBSTACLE":
                 # process parking out first if not yet done
-                if not parking.has_parked_out:                    
+                if not parking.has_parked_out:
                     parking.process_parking_out()
                     parking.has_parked_out = True
 
                 # process parking, when parking mode is active
                 if contour_workers.parking_mode:
-                    angle = parking.process_parking(parking_result=parking_result, pid=pid, left_result=left_result, right_result=right_result)
+                    angle = parking.process_parking(
+                        parking_result=parking_result,
+                        pid=pid,
+                        left_result=left_result,
+                        right_result=right_result,
+                    )
                     if cv2.waitKey(1) & 0xFF == ord("q"):
                         break
-                    
-            
             continue
 
             # --- Reversing logic ---
@@ -342,11 +344,11 @@ def main():
                 print("continue")
                 continue
 
-            if parking_walls_count == 2:
-                obstacle_wall_pivot = parking_wall_pivot
-                if cv2.waitKey(1) & 0xFF == ord("q"):
-                    break
-                continue
+            # if parking_walls_count == 2:
+            #     obstacle_wall_pivot = parking_wall_pivot
+            #     if cv2.waitKey(1) & 0xFF == ord("q"):
+            #         break
+            #     continue
 
             # --- Obstacle avoidance ---
             if contour_workers.mode == "OBSTACLE" and (

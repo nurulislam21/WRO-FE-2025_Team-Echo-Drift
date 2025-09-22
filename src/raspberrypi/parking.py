@@ -44,6 +44,7 @@ class Parking:
         self.stop_tolerance = 5
 
         self.seen_parking_lot = "NOT_SEEN"
+        self.parking_lot_side = None
         self.last_seen_time = time.time()
         self.wait_after_seen = 0.6  # seconds
 
@@ -59,35 +60,50 @@ class Parking:
 
         # parking out instructions
         self.parking_out_instructions = {
+            # left -> exit to left
+            # right -> exit to right
             "left": [
                 [
                     # speed, steps, angle
                     (-self.parking_speed, 600, 95),
-                    (self.parking_speed, 1800, 20),
+                    (self.parking_speed, 2500, 20),
                     (self.parking_speed, 2000, 170),
-                    (-self.parking_speed, 600, 95),                    
+                    (-self.parking_speed, 600, 95),
                 ]
             ],
             "right": [
                 [
                     # speed, steps, angle
                     (-self.parking_speed, 600, 95),
-                    (self.parking_speed, 1800, 170),
+                    (self.parking_speed, 2500, 170),
                     (self.parking_speed, 2000, 20),
                     (-self.parking_speed, 600, 95),
                 ]
             ],
         }
 
-        self.parking_in_instructions = [
-            # speed, steps, angle
-            (self.parking_speed, 1200, 95),
-            (-self.parking_speed, 3500, 170),
-            (-self.parking_speed, 1250, 95),
-            (-self.parking_speed, 2300, 20),
-            # (self.parking_speed, 800, 170),
-            (self.parking_speed, 800, 95),
-        ]
+        self.parking_in_instructions = {
+            # right -> parking lot is on the right
+            # left -> parking lot is on the left
+            "left": [
+                # speed, steps, angle
+                (self.parking_speed, 1200, 95),
+                (-self.parking_speed, 3500, 20),
+                (-self.parking_speed, 1250, 95),
+                (-self.parking_speed, 2300, 170),
+                # (self.parking_speed, 800, 20),
+                (self.parking_speed, 800, 95),
+            ],
+            "right": [
+                # speed, steps, angle
+                (self.parking_speed, 1200, 95),
+                (-self.parking_speed, 3500, 170),
+                (-self.parking_speed, 1250, 95),
+                (-self.parking_speed, 2300, 20),
+                # (self.parking_speed, 800, 170),
+                (self.parking_speed, 800, 95),
+            ],
+        }
 
     def process_parking_out(
         self, left_result: ContourResult, right_result: ContourResult
@@ -169,9 +185,18 @@ class Parking:
         if parking_result and parking_result.area > 800:
             self.seen_parking_lot = "SEEN"
             self.last_seen_time = time.time()
-            print("seen parking lot")            
+
+            # determine which side the parking lot is on
+            parking_x, _ = get_overall_centroid(parking_result.contours)
+            if parking_x is not None:
+                if parking_x < (self.camera_width // 2):
+                    self.parking_lot_side = "left"
+                else:
+                    self.parking_lot_side = "right"
+
+            print("seen parking lot")
             return angle
-        
+
         # # step 02
         elif self.seen_parking_lot == "SEEN" and (
             (time.time() - self.last_seen_time) < self.wait_after_seen
@@ -180,7 +205,7 @@ class Parking:
             self.arduino.write(f"-10,-1,{self.STRAIGHT_CONST}\n".encode())
             time.sleep(0.8)
 
-            for speed, steps, angle in self.parking_in_instructions:
+            for speed, steps, angle in self.parking_in_instructions[self.parking_lot_side]:
                 self.arduino.write(f"{speed},{steps},{angle}\n".encode())
                 time.sleep(0.1)
                 print(f"Parking In | Speed: {speed}, Steps: {steps}, Angle: {angle}")
@@ -193,11 +218,10 @@ class Parking:
                         if "DONE" in line:
                             print("found DONE")
                             break
-                
+
             while True:
                 self.arduino.write(f"0,-1,{self.STRAIGHT_CONST}\n".encode())
                 time.sleep(0.5)
-
 
         #     return (None, None)
         #     print("Parking | No longer see parking lot, stopping")
