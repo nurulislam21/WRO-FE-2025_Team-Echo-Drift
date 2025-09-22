@@ -13,7 +13,7 @@ def replace_closest(polygon, new_point):
     return polygon
 
 
-def find_contours(frame, lower_color, upper_color, roi, direction=None, use_convex_hull=False):
+def find_contours(frame, lower_color, upper_color, roi, direction=None, use_convex_hull=False, consider_area=None):
     x1, y1, x2, y2 = roi
     roi_frame = frame[y1:y2, x1:x2]
     labImg = cv2.cvtColor(roi_frame, cv2.COLOR_RGB2Lab)
@@ -23,6 +23,9 @@ def find_contours(frame, lower_color, upper_color, roi, direction=None, use_conv
     mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
     mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    if consider_area is not None:
+        contours = [cnt for cnt in contours if cv2.contourArea(cnt) >= consider_area]
 
     if use_convex_hull and len(contours) > 0:
         all_points = np.concatenate(contours, axis=0)
@@ -89,7 +92,7 @@ def display_debug_screen(
     obstacle_wall_pivot,
     parking_mode,
     parking_lot_region,
-    parking_walls,
+    parking_result,
 ):
     debug_frame = frame.copy()
     debug_frame = display_roi(debug_frame, [LEFT_REGION, RIGHT_REGION, LAP_REGION, OBS_REGION], (255, 0, 255))
@@ -173,15 +176,14 @@ def display_debug_screen(
             2,
         )
 
-    if parking_mode and len(parking_walls) > 0:
-        for (x, y, w, h) in parking_walls:
-            cv2.rectangle(
-                debug_frame[parking_lot_region[1] : parking_lot_region[3], parking_lot_region[0] : parking_lot_region[2]],
-                (x, y),
-                (x + w, y + h),
-                (255, 0, 0),
-                2,
-            )
+    if parking_mode and parking_result.contours:
+        cv2.drawContours(
+            debug_frame[parking_lot_region[1] : parking_lot_region[3], parking_lot_region[0] : parking_lot_region[2]],
+            parking_result.contours,
+            -1,
+            (255, 255, 0),
+            2,
+        )
 
     status = f"Angle: {angle} | Turns: {current_intersections/4} | L: {left_area} | R: {right_area}"
     cv2.putText(

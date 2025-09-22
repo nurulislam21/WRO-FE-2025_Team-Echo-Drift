@@ -424,6 +424,8 @@ class ContourWorkers:
                     self.LOWER_MAGENTA,
                     self.UPPER_MAGENTA,
                     self.PARKING_LOT_REGION,
+                    use_convex_hull=True,
+                    consider_area=800,
                 )
                 area, _ = max_contour_area(contours)
                 result = ContourResult(area, contours, "magenta_parking_lot")

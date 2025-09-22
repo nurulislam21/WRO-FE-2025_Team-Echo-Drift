@@ -128,6 +128,7 @@ class Parking:
             # transform to global coordinates
             cx = cx + self.parking_lot_region[0]
             cy = cy + self.parking_lot_region[1]
+            print(self.seen_parking_lot)
 
             if cx and cy:
                 self.seen_parking_lot = "SEEN"
@@ -163,25 +164,27 @@ class Parking:
 
                 self.arduino.write(f"{self.parking_speed},-1,{angle}\n".encode())
 
+                return obstacle_wall_pivot
+
 
         # step 02
-        elif self.seen_parking_lot == "SEEN":
-            print("Parking | No longer see parking lot, stopping")
-            self.arduino.write(f"0,-1,{self.STRAIGHT_CONST}\n".encode())
+        # elif self.seen_parking_lot == "SEEN":
+        #     print("Parking | No longer see parking lot, stopping")
+        #     self.arduino.write(f"0,-1,{self.STRAIGHT_CONST}\n".encode())
             
-            for speed, steps, angle in self.parking_in_instructions:
-                self.arduino.write(f"{speed},{steps},{angle}\n".encode())
-                time.sleep(0.1)
-                print(f"Parking In | Speed: {speed}, Steps: {steps}, Angle: {angle}")
+        #     for speed, steps, angle in self.parking_in_instructions:
+        #         self.arduino.write(f"{speed},{steps},{angle}\n".encode())
+        #         time.sleep(0.1)
+        #         print(f"Parking In | Speed: {speed}, Steps: {steps}, Angle: {angle}")
 
-                # wait for arduino to respond
-                while True:
-                    if self.arduino.in_waiting > 0:
-                        line = self.arduino.readline().decode("utf-8").rstrip()
-                        print(f"Arduino: {line}")
-                        if "DONE" in line:
-                            print("found DONE")
-                            break
+        #         # wait for arduino to respond
+        #         while True:
+        #             if self.arduino.in_waiting > 0:
+        #                 line = self.arduino.readline().decode("utf-8").rstrip()
+        #                 print(f"Arduino: {line}")
+        #                 if "DONE" in line:
+        #                     print("found DONE")
+        #                     break
             
 
         # parking_walls = []

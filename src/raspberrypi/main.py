@@ -47,7 +47,7 @@ LAP_REGION = [200, 300, 440, 350]  # lap detection
 OBS_REGION = [95, 140, 545, 320]  # obstacle detection
 REVERSE_REGION = [200, 300, 440, 320]  # reverse trigger area
 FRONT_WALL_REGION = [300, 200, 340, 220]  # front wall detection
-PARKING_LOT_REGION = [0, 185, CAM_WIDTH, 440]  # parking lot detection
+PARKING_LOT_REGION = [0, 185, CAM_WIDTH, 400]  # parking lot detection
 
 BLACK_WALL_DETECTOR_AREA = (LEFT_REGION[2] - LEFT_REGION[0]) * (
     LEFT_REGION[3] - LEFT_REGION[1]
@@ -74,8 +74,8 @@ LOWER_GREEN = np.array([110, 72, 168])
 UPPER_GREEN = np.array([176, 112, 208])
 
 # parking color ranges
-LOWER_MAGENTA = np.array([120, 86, 98])
-UPPER_MAGENTA = np.array([190, 126, 138])
+LOWER_MAGENTA = np.array([90, 89, 105])
+UPPER_MAGENTA = np.array([160, 129, 145])
 
 
 contour_workers = ContourWorkers(
@@ -104,7 +104,7 @@ contour_workers = ContourWorkers(
     parking_lot_region=PARKING_LOT_REGION,
 )
 
-contour_workers.parking_mode = False
+contour_workers.parking_mode = True
 
 STRAIGHT_CONST = 95
 turnThresh = 150
@@ -163,6 +163,7 @@ parking = Parking(
     MAX_OFFSET_DEGREE=MAX_OFFSET_DEGREE,
     REVERSE_REGION=REVERSE_REGION,
 )
+parking.has_parked_out = True
 
 
 # Threading variables - separate queues for each detection task
@@ -288,7 +289,7 @@ def main():
                     obstacle_wall_pivot=obstacle_wall_pivot,
                     parking_mode=contour_workers.parking_mode,
                     parking_lot_region=PARKING_LOT_REGION,
-                    parking_walls=parking_walls,
+                    parking_result=parking_result,
                 )            
 
             if not startProcessing:
@@ -307,9 +308,10 @@ def main():
 
                 # process parking, when parking mode is active
                 if contour_workers.parking_mode:
-                    parking_walls, parking_walls_count, parking_wall_pivot = (
-                        parking.process_parking(parking_result=parking_result, pid=pid)
-                    )
+                    obstacle_wall_pivot = parking.process_parking(parking_result=parking_result, pid=pid)
+                    if cv2.waitKey(1) & 0xFF == ord("q"):
+                        break
+                    
             
             continue
 
