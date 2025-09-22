@@ -7,6 +7,7 @@ from img_processing_functions import (
     get_overall_centroid,
 )
 from simple_pid import PID
+from collections import deque
 import numpy as np
 import time
 
@@ -45,6 +46,10 @@ class Parking:
         self.seen_parking_lot = "NOT_SEEN"
         self.last_seen_time = time.time()
         self.wait_after_seen = 0.6  # seconds
+
+        self.SMOOTH_WINDOW = 3
+        self.left_buf = deque(maxlen=self.SMOOTH_WINDOW)
+        self.right_buf = deque(maxlen=self.SMOOTH_WINDOW)
 
         # reverse
         self.REVERSE_REGION = REVERSE_REGION
@@ -126,62 +131,50 @@ class Parking:
             #     if not line == "START":
             #         startProcessing = True
 
-    def process_parking(self, parking_result: ContourResult, pid: PID):
+    def process_parking(
+        self,
+        parking_result: ContourResult,
+        left_result: ContourResult,
+        right_result: ContourResult,
+        pid: PID,
+    ):
 
-        # step 01
+        self.left_buf.append(left_result.area)
+        self.right_buf.append(right_result.area)
+        left_s = sum(self.left_buf) / len(self.left_buf)
+        right_s = sum(self.right_buf) / len(self.right_buf)
+        aDiff = right_s - left_s
+        aSum = left_s + right_s
+        error = aDiff / (aSum + 1e-6)  # normalized between roughly [-1,1]
+        normalized_angle_offset = pid(error)
+
+        angle = int(
+            max(
+                min(
+                    self.STRAIGHT_CONST
+                    + normalized_angle_offset * self.MAX_OFFSET_DEGREE,
+                    self.maxRight,
+                ),
+                self.maxLeft,
+            )
+        )
+
+        self.arduino.write(f"{self.parking_speed},{angle}\n".encode())
+
+        # # step 01
         if parking_result and parking_result.area > 800:
-            cx, cy = get_overall_centroid(parking_result.contours)
-            # transform to global coordinates
-            cx = cx + self.parking_lot_region[0]
-            cy = cy + self.parking_lot_region[1]
-            print(self.seen_parking_lot)
+            self.seen_parking_lot = "SEEN"
+            self.last_seen_time = time.time()
+            print(f"Parking | Seen parking lot, Area: {parking_result.area}")
+            return (None, None)
 
-            if cx and cy:
-                self.seen_parking_lot = "SEEN"
-                self.last_seen_time = time.time()
-                # check which side the object is closer to
-                if cx < (self.camera_width // 2):
-                    print("left side")
-                    # left side
-                    parking_lot_x = get_max_x_coord(parking_result.contours)[0] + 50
-                else:
-                    # right side
-                    print("right side")
-                    parking_lot_x = get_min_x_coord(parking_result.contours)[0] - 50
-
-                # transform to global coordinates
-                parking_lot_x = parking_lot_x + self.parking_lot_region[0]
-                offset_x = parking_lot_x - (self.camera_width // 2)
-                # show a circle dot on the centroid
-                obstacle_wall_pivot = (parking_lot_x, cy)
-
-                obj_error = offset_x / (self.camera_width // 2)
-                obj_error = -np.clip(obj_error * 10, -1, 1)
-                normalized_angle_offset = pid(obj_error)
-
-                # --- Map normalized control to servo angle ---
-                angle = int(
-                    max(
-                        min(
-                            self.STRAIGHT_CONST
-                            + normalized_angle_offset * self.MAX_OFFSET_DEGREE,
-                            self.maxRight,
-                        ),
-                        self.maxLeft,
-                    )
-                )
-
-                self.arduino.write(f"{self.parking_speed},-1,{angle}\n".encode())
-
-                return obstacle_wall_pivot
-
-        # step 02
+        # # step 02
         elif self.seen_parking_lot == "SEEN" and (
             (time.time() - self.last_seen_time) < self.wait_after_seen
         ):
-            print("Parking | Last seen parking lot, continuing")
+            print("Parking | Last seen parking lot, STOP")
             self.arduino.write(f"0,-1,{self.STRAIGHT_CONST}\n".encode())
-            return (None, None)
+        #     return (None, None)
         #     print("Parking | No longer see parking lot, stopping")
         #     self.arduino.write(f"0,-1,{self.STRAIGHT_CONST}\n".encode())
 

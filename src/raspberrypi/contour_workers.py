@@ -231,7 +231,7 @@ class ContourWorkers:
                 black_area, _ = max_contour_area(contours)
                 result = ContourResult(black_area, contours, "black_left")
 
-                if self.parking_mode:
+                if self.mode == "OBSTACLE":
                     frame = self.frame_queue_left.get(timeout=0.1)
                     contours = find_contours(
                         frame,
@@ -239,10 +239,12 @@ class ContourWorkers:
                         self.UPPER_MAGENTA,
                         self.LEFT_REGION,
                         direction="left",
+                        use_convex_hull=True,
+                        consider_area=800,
                     )
                     magenta_area, _ = max_contour_area(contours)
 
-                    if magenta_area > 0:
+                    if magenta_area > black_area:
                         result = ContourResult(magenta_area, contours, "magenta_left")
 
                 try:
@@ -276,7 +278,7 @@ class ContourWorkers:
                 black_area, _ = max_contour_area(contours)
                 result = ContourResult(black_area, contours, "black_right")
 
-                if self.parking_mode:
+                if self.mode == "OBSTACLE":
                     frame = self.frame_queue_right.get(timeout=0.1)
                     contours = find_contours(
                         frame,
@@ -284,10 +286,12 @@ class ContourWorkers:
                         self.UPPER_MAGENTA,
                         self.RIGHT_REGION,
                         direction="right",
+                        use_convex_hull=True,
+                        consider_area=800,
                     )
                     magenta_area, _ = max_contour_area(contours)
 
-                    if magenta_area > 0:
+                    if magenta_area > black_area:
                         result = ContourResult(magenta_area, contours, "magenta_right")
 
                 try:
