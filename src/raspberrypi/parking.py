@@ -134,11 +134,13 @@ class Parking:
                 self.seen_parking_lot = "SEEN"
                 # check which side the object is closer to
                 if cx < (self.camera_width // 2):
+                    print("left side")
                     # left side
-                    parking_lot_x = get_min_x_coord(parking_result.contours)[0] + 150
+                    parking_lot_x = get_max_x_coord(parking_result.contours)[0] + 150
                 else:
                     # right side
-                    parking_lot_x = get_max_x_coord(parking_result.contours)[0] - 150
+                    print("right side")
+                    parking_lot_x = get_min_x_coord(parking_result.contours)[0] - 150
 
                 # transform to global coordinates
                 parking_lot_x = parking_lot_x + self.parking_lot_region[0]
