@@ -301,6 +301,8 @@ def main():
 
             # --- PARKING LOGIC ---
             if contour_workers.mode == "OBSTACLE":
+                if cv2.waitKey(1) & 0xFF == ord("q"):
+                    break
                 # process parking out first if not yet done
                 if not parking.has_parked_out:
                     parking.process_parking_out()
@@ -313,9 +315,7 @@ def main():
                         pid=pid,
                         left_result=left_result,
                         right_result=right_result,
-                    )
-                    if cv2.waitKey(1) & 0xFF == ord("q"):
-                        break
+                    )                    
             continue
 
             # --- Reversing logic ---
