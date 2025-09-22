@@ -62,29 +62,30 @@ class Parking:
             "left": [
                 [
                     # speed, steps, angle
-                    (self.parking_speed, 500, 30),
-                    (-self.parking_speed, 1300, 160),
-                    (self.parking_speed, 1500, 30),
-                    (self.parking_speed, 1500, 130),
+                    (-self.parking_speed, 600, 95),
+                    (self.parking_speed, 1800, 20),
+                    (self.parking_speed, 2000, 170),
+                    (-self.parking_speed, 600, 95),                    
                 ]
             ],
             "right": [
                 [
                     # speed, steps, angle
-                    (self.parking_speed, 500, 150),
-                    (-self.parking_speed, 1300, 20),
-                    (self.parking_speed, 1500, 150),
-                    (self.parking_speed, 1500, 30),
+                    (-self.parking_speed, 600, 95),
+                    (self.parking_speed, 1800, 170),
+                    (self.parking_speed, 2000, 20),
+                    (-self.parking_speed, 600, 95),
                 ]
             ],
         }
 
         self.parking_in_instructions = [
             # speed, steps, angle
-            (-self.parking_speed, 1800, 150),
+            (-self.parking_speed, 2000, 170),
+            (-self.parking_speed, 600, 95),
+            (-self.parking_speed, 1700, 20),
+            (self.parking_speed, 800, 170),
             (-self.parking_speed, 500, 95),
-            (-self.parking_speed, 1500, 30),
-            (self.parking_speed, 700, 95),
         ]
 
     def process_parking_out(
