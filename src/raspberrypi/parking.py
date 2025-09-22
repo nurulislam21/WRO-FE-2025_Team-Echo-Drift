@@ -159,7 +159,7 @@ class Parking:
             )
         )
 
-        self.arduino.write(f"{self.parking_speed},{angle}\n".encode())
+        self.arduino.write(f"{self.parking_speed},-1,{angle}\n".encode())
 
         # # step 01
         if parking_result and parking_result.area > 800:
