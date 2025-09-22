@@ -10,7 +10,31 @@
 ---
 
 
-This repository documents the journey of **Team Echo Drift** at the **WRO Bangladesh National 2025 – Future Engineers category**.Here you’ll find the **complete documentation of our robot** — an innovation imagined, designed, and brought to life by three passionate students pushing the limits of **creativity and engineering**.  
+Welcome to the official GitHub repository of **Team Echo Drift**. This repository documents the journey of **Team Echo Drift** at the **WRO Bangladesh National 2025 – Future Engineers category**.Here you’ll find the **complete documentation of our robot** — an innovation imagined, designed, and brought to life by three passionate students pushing the limits of creativity and engineering.  
+
+# Table of Contents  
+
+---
+
+### Ⅰ. [About the Team](#about-the-team)  
+### Ⅱ. [Competition Overview](#competition-overview)  
+### Ⅲ. [Project Goals](#project-goals)  
+### Ⅳ. [System Architecture](#system-architecture)  
+### Ⅴ. [Hardware Components](#hardware-components)  
+### Ⅵ. [Software & Algorithms](#software--algorithms)  
+### Ⅶ. [CAD & Mechanical Design](#cad--mechanical-design)  
+### Ⅷ. [Electronics & Wiring](#electronics--wiring)  
+### Ⅸ. [Testing & Validation](#testing--validation)  
+### Ⅹ. [Results & Performance](#results--performance)  
+### Ⅺ. [Future Improvements](#future-improvements)  
+### Ⅻ. [How to Run the Code](#how-to-run-the-code)  
+### XIII. [Contributors](#contributors)  
+### XIV. [License](#license)  
+
+---
+
+
+
 
 
  
@@ -74,16 +98,9 @@ Driven by curiosity and creativity, Naeem thrives in collaborative environments 
 - [Resources & Media](#resources--media)
 
 ---
+## Our Robot
 
-## Photos Of Our Robot 
-
-
-
-## Videos Of Our Robot 
-
-
-
-## Project Overview
+### Robot Overview
 
 Team **Echo Drift** is participating in **WRO Future Engineers 2025** with a **state-of-the-art autonomous drift-capable vehicle**.
 
@@ -92,6 +109,16 @@ Our vehicle is engineered to:
 - Detect and avoid dynamic obstacles in real time  
 - Execute controlled drift maneuvers for competitive advantage  
 - Maintain robust, repeatable, and safe performance  
+
+### Photos Of Our Robot 
+
+
+
+### Videos Of Our Robot 
+
+
+
+
 
 The entire chassis and drivetrain are **fully 3D-printed** in **STL format**, designed in **SolidWorks**, enabling a lightweight, modular, and customizable structure.
 
