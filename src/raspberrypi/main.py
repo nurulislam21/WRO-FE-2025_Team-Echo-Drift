@@ -164,7 +164,7 @@ parking = Parking(
     MAX_OFFSET_DEGREE=MAX_OFFSET_DEGREE,
     REVERSE_REGION=REVERSE_REGION,
 )
-parking.has_parked_out = True
+parking.has_parked_out = False
 
 
 # Threading variables - separate queues for each detection task
@@ -305,7 +305,7 @@ def main():
                     break
                 # process parking out first if not yet done
                 if not parking.has_parked_out:
-                    parking.process_parking_out()
+                    parking.process_parking_out(left_result=left_result, right_result=right_result)
                     parking.has_parked_out = contour_workers.has_parked_out = True
 
                 # process parking, when parking mode is active

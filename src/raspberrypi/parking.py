@@ -63,22 +63,22 @@ class Parking:
             # left -> exit to left
             # right -> exit to right
             "left": [
-                [
-                    # speed, steps, angle
-                    (-self.parking_speed, 600, 95),
-                    (self.parking_speed, 2500, 20),
-                    (self.parking_speed, 2000, 170),
-                    (-self.parking_speed, 600, 95),
-                ]
+                # speed, steps, angle
+                (-self.parking_speed, 600, 170),
+                (self.parking_speed, 900, 20),
+                (-self.parking_speed, 1000, 170),
+                (self.parking_speed, 1000, 40),
+                (self.parking_speed, 2500, 170),
+                (-self.parking_speed, 1000, 95),
             ],
             "right": [
-                [
-                    # speed, steps, angle
-                    (-self.parking_speed, 600, 95),
-                    (self.parking_speed, 2500, 170),
-                    (self.parking_speed, 2000, 20),
-                    (-self.parking_speed, 600, 95),
-                ]
+                # speed, steps, angle
+                (-self.parking_speed, 600, 20),
+                (self.parking_speed, 900, 170),
+                (-self.parking_speed, 1000, 20),
+                (self.parking_speed, 1000, 150),
+                (self.parking_speed, 2500, 20),
+                (-self.parking_speed, 1000, 95),
             ],
         }
 
@@ -123,11 +123,13 @@ class Parking:
         right_area = right_area / avg_times
 
         if left_area > right_area:
-            print(f"Parking Out | Left Area: {left_area}, Right Area: {right_area}")
-            parking_out_instructions = self.parking_out_instructions["left"]
-        else:
+            # exit to the right
             print(f"Parking Out | Left Area: {left_area}, Right Area: {right_area}")
             parking_out_instructions = self.parking_out_instructions["right"]
+        else:
+            # exit to the left
+            print(f"Parking Out | Left Area: {left_area}, Right Area: {right_area}")
+            parking_out_instructions = self.parking_out_instructions["left"]
 
         for speed, steps, angle in parking_out_instructions:
             self.arduino.write(f"{speed},{steps},{angle}\n".encode())
