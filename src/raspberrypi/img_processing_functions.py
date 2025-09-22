@@ -33,8 +33,8 @@ def find_contours(frame, lower_color, upper_color, roi, direction=None, use_conv
         contours = [hull]
 
     if direction is not None and contours:
-        if max_contour_area(contours)[0] < 1700:
-            return contours
+        # if max_contour_area(contours)[0] < 1700:
+        #     return contours
 
         # Combine all points into one array safely
         all_points = np.concatenate(contours, axis=0)

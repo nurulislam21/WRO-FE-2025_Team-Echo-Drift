@@ -303,12 +303,12 @@ def main():
             if contour_workers.mode == "OBSTACLE":
                 # process parking out first if not yet done
                 if not parking.has_parked_out:                    
-                    angle = parking.process_parking_out()
+                    parking.process_parking_out()
                     parking.has_parked_out = True
 
                 # process parking, when parking mode is active
                 if contour_workers.parking_mode:
-                    obstacle_wall_pivot = parking.process_parking(parking_result=parking_result, pid=pid, left_result=left_result, right_result=right_result)
+                    angle = parking.process_parking(parking_result=parking_result, pid=pid, left_result=left_result, right_result=right_result)
                     if cv2.waitKey(1) & 0xFF == ord("q"):
                         break
                     

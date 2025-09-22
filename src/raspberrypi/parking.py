@@ -81,10 +81,10 @@ class Parking:
 
         self.parking_in_instructions = [
             # speed, steps, angle
-            (self.parking_speed, 500, 30),
-            (self.parking_speed, 1500, 130),
-            (self.parking_speed, 1500, 30),
-            (self.parking_speed, 1500, 160),
+            (-self.parking_speed, 1800, 150),
+            (-self.parking_speed, 500, 95),
+            (-self.parking_speed, 1500, 30),
+            (self.parking_speed, 700, 95),
         ]
 
     def process_parking_out(
@@ -138,6 +138,8 @@ class Parking:
         right_result: ContourResult,
         pid: PID,
     ):
+        print(left_result.metadata)
+        print(right_result.metadata)
 
         self.left_buf.append(left_result.area)
         self.right_buf.append(right_result.area)
@@ -165,16 +167,35 @@ class Parking:
         if parking_result and parking_result.area > 800:
             self.seen_parking_lot = "SEEN"
             self.last_seen_time = time.time()
-            print(f"Parking | Seen parking lot, Area: {parking_result.area}")
+            print("seen parking lot")            
             return angle
-
+        
         # # step 02
         elif self.seen_parking_lot == "SEEN" and (
             (time.time() - self.last_seen_time) < self.wait_after_seen
         ):
             print("Parking | Last seen parking lot, STOP")
             self.arduino.write(f"0,-1,{self.STRAIGHT_CONST}\n".encode())
-            return self.STRAIGHT_CONST
+
+            for speed, steps, angle in self.parking_in_instructions:
+                self.arduino.write(f"{speed},{steps},{angle}\n".encode())
+                time.sleep(0.1)
+                print(f"Parking In | Speed: {speed}, Steps: {steps}, Angle: {angle}")
+
+                # wait for arduino to respond
+                while True:
+                    if self.arduino.in_waiting > 0:
+                        line = self.arduino.readline().decode("utf-8").rstrip()
+                        print(f"Arduino: {line}")
+                        if "DONE" in line:
+                            print("found DONE")
+                            break
+                
+            while True:
+                self.arduino.write(f"0,-1,{self.STRAIGHT_CONST}\n".encode())
+                time.sleep(0.5)
+
+
         #     return (None, None)
         #     print("Parking | No longer see parking lot, stopping")
         #     self.arduino.write(f"0,-1,{self.STRAIGHT_CONST}\n".encode())

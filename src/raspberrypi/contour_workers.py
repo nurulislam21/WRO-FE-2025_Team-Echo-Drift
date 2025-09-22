@@ -227,6 +227,7 @@ class ContourWorkers:
                     self.UPPER_BLACK,
                     self.LEFT_REGION,
                     direction="left",
+                    consider_area=800,
                 )
                 black_area, _ = max_contour_area(contours)
                 result = ContourResult(black_area, contours, "black_left")
@@ -240,7 +241,7 @@ class ContourWorkers:
                         self.LEFT_REGION,
                         direction="left",
                         use_convex_hull=True,
-                        consider_area=800,
+                        consider_area=1000,
                     )
                     magenta_area, _ = max_contour_area(contours)
 
@@ -274,6 +275,7 @@ class ContourWorkers:
                     self.UPPER_BLACK,
                     self.RIGHT_REGION,
                     direction="right",
+                    consider_area=800,
                 )
                 black_area, _ = max_contour_area(contours)
                 result = ContourResult(black_area, contours, "black_right")
@@ -287,7 +289,7 @@ class ContourWorkers:
                         self.RIGHT_REGION,
                         direction="right",
                         use_convex_hull=True,
-                        consider_area=800,
+                        consider_area=1000,
                     )
                     magenta_area, _ = max_contour_area(contours)
 
@@ -429,7 +431,7 @@ class ContourWorkers:
                     self.UPPER_MAGENTA,
                     self.PARKING_LOT_REGION,
                     use_convex_hull=True,
-                    consider_area=800,
+                    consider_area=1000,
                 )
                 area, _ = max_contour_area(contours)
                 result = ContourResult(area, contours, "magenta_parking_lot")
