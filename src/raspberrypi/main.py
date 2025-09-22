@@ -303,7 +303,7 @@ def main():
             if contour_workers.mode == "OBSTACLE":
                 # process parking out first if not yet done
                 if not parking.has_parked_out:                    
-                    parking.process_parking_out()
+                    angle = parking.process_parking_out()
                     parking.has_parked_out = True
 
                 # process parking, when parking mode is active

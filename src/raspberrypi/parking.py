@@ -166,7 +166,7 @@ class Parking:
             self.seen_parking_lot = "SEEN"
             self.last_seen_time = time.time()
             print(f"Parking | Seen parking lot, Area: {parking_result.area}")
-            return (None, None)
+            return angle
 
         # # step 02
         elif self.seen_parking_lot == "SEEN" and (
@@ -174,6 +174,7 @@ class Parking:
         ):
             print("Parking | Last seen parking lot, STOP")
             self.arduino.write(f"0,-1,{self.STRAIGHT_CONST}\n".encode())
+            return self.STRAIGHT_CONST
         #     return (None, None)
         #     print("Parking | No longer see parking lot, stopping")
         #     self.arduino.write(f"0,-1,{self.STRAIGHT_CONST}\n".encode())
