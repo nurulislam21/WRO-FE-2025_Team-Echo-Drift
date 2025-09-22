@@ -32,24 +32,22 @@ Welcome to the official GitHub repository of **Team Echo Drift**. This repositor
 ### XIV. [License](#license)  
 
 ---
+## About the Team  
 
-
-
-
-
- 
-## Our Team
 We are a team of three young innovators, coming from different corners of Bangladesh. At first, each of us participated individually in many competitions across the country. Through those journeys, we eventually met one another, shared our dreams, and realised that together we could achieve something even greater. That was the beginning of our team.
 
 From the very start, we have built a strong bond based on trust, hard work, and a shared passion for robotics. Step by step, we worked side by side and successfully won several national robotics competitions, which made us more confident about our vision.
 
 A few months ago, we set ourselves a bigger goal—to represent Bangladesh in the World Robot Olympiad. Since then, we have been working with full dedication and determination. Our dream is simple but powerful: to raise the flag of Bangladesh high on the international stage and prove that with passion, teamwork, and belief, anything is possible.
-
+ 
 <p align="center">
   <img src="t-photos/GP_WRO.jpg" alt="Team Echo Drift" width="700"/>
 </p>
 
-### Team Members
+---
+
+## Meet the Team  
+
 
 ### *Nurul Islam Noman – Mechanical Design*
 
@@ -60,9 +58,6 @@ Skills span Robotics, Embedded Systems, and Mechanical Design, enabling a holist
   <img src="t-photos/Noman.jpg" alt="Nurul Islam Noman" width="700"/>
 </p>
 
-
-
-
 ### *Tanim SK – Programming & Software Architecture* 
 
 A versatile programmer with expertise in Python, JavaScript, HTML, CSS, and C++, and over 5 years of experience in software development. Skilled in building web applications using frameworks like Django, Flask, and FastAPI for the backend, and ReactJS for the frontend, with PostgreSQL for databases and Redis for caching. Experienced in deploying web applications on AWS and similar platforms with CI/CD integration.
@@ -71,9 +66,6 @@ Also proficient in working with Raspberry Pi and microcontrollers, with experien
 <p align="center">
   <img src="t-photos/tanim.jpg" alt="Tanim SK" width="700"/>
 </p>
-
-
-
 
 ### *Majedul Islam Naeem – Electronics & Circuit Design* 
 
@@ -98,6 +90,8 @@ Driven by curiosity and creativity, Naeem thrives in collaborative environments 
 - [Resources & Media](#resources--media)
 
 ---
+
+
 ## Our Robot
 
 ### Robot Overview
