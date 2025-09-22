@@ -75,6 +75,14 @@ Driven by curiosity and creativity, Naeem thrives in collaborative environments 
 
 ---
 
+## Photos Of Our Robot 
+
+
+
+## Videos Of Our Robot 
+
+
+
 ## Project Overview
 
 Team **Echo Drift** is participating in **WRO Future Engineers 2025** with a **state-of-the-art autonomous drift-capable vehicle**.
