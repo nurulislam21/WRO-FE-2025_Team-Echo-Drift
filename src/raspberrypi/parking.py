@@ -81,11 +81,12 @@ class Parking:
 
         self.parking_in_instructions = [
             # speed, steps, angle
-            (-self.parking_speed, 2000, 170),
-            (-self.parking_speed, 600, 95),
-            (-self.parking_speed, 1700, 20),
-            (self.parking_speed, 800, 170),
-            (-self.parking_speed, 500, 95),
+            (self.parking_speed, 1200, 95),
+            (-self.parking_speed, 3500, 170),
+            (-self.parking_speed, 1250, 95),
+            (-self.parking_speed, 2300, 20),
+            # (self.parking_speed, 800, 170),
+            (self.parking_speed, 800, 95),
         ]
 
     def process_parking_out(
@@ -176,7 +177,8 @@ class Parking:
             (time.time() - self.last_seen_time) < self.wait_after_seen
         ):
             print("Parking | Last seen parking lot, STOP")
-            self.arduino.write(f"0,-1,{self.STRAIGHT_CONST}\n".encode())
+            self.arduino.write(f"-10,-1,{self.STRAIGHT_CONST}\n".encode())
+            time.sleep(0.8)
 
             for speed, steps, angle in self.parking_in_instructions:
                 self.arduino.write(f"{speed},{steps},{angle}\n".encode())

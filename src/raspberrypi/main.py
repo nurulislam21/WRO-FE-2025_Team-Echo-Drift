@@ -152,7 +152,7 @@ arduino.write(b"0,-1,95\n")
 
 # parking
 parking = Parking(
-    parking_speed=40,
+    parking_speed=45,
     arduino=arduino,
     camera_width=CAM_WIDTH,
     camera_height=CAM_HEIGHT,
