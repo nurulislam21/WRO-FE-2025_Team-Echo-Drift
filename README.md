@@ -48,59 +48,91 @@ A few months ago, we set ourselves a bigger goal—to represent Bangladesh in th
 
 ## Meet the Team  
 <!-- Meet the Team Section -->
-<div style="background:#5ec6c6; padding:50px; border-radius:10px;">
+<div style="background: linear-gradient(135deg, #5ec6c6 0%, #4a9d9d 100%); padding: 60px 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
 
-  <h2 align="center" style="color:#2a3c3c; font-size:32px; margin-bottom:10px;">
-    Our Teams
+  <h2 align="center" style="color:#2a3c3c; font-size:42px; margin-bottom:15px; font-weight:700;">
+    Meet Our Team
   </h2>
-  <p align="center" style="color:#333; font-size:14px; margin-bottom:40px;">
+  <p align="center" style="color:#2a3c3c; font-size:18px; margin-bottom:50px; font-weight:300;">
     Robotics, Electronics & Mechanical Experts Working Together 🚀
   </p>
 
-  <div align="center" style="display:flex; justify-content:center; gap:40px; flex-wrap:wrap;">
+  <div style="max-width: 1200px; margin: 0 auto;">
 
-   <!-- Member 1 -->
-   <div style="text-align:center; width:220px;">
-     <svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
-       <path d="M60,-70C80,-50,100,-30,100,0C100,30,80,60,50,80C20,100,-20,100,-50,80C-80,60,-100,30,-100,0C-100,-30,-80,-60,-50,-70C-20,-80,20,-90,60,-70Z" fill="#2449d8" transform="translate(100 100)"/>
-       <clipPath id="img1">
-         <circle cx="100" cy="100" r="70"/>
-       </clipPath>
-       <image href="https://github.com/nurulislam21/WRO-FE-2025_Team-Echo-Drift/blob/main/t-photos/Noman.jpg?raw=true" width="200" height="200" clip-path="url(#img1)"/>
-     </svg>
-     <h3 style="margin:10px 0 5px; color:#fff;">Nurul Islam Noman</h3>
-     <p style="margin:0; color:#fff; font-size:14px;">Mechanical Design</p>
+<!-- Member 1: Nurul Islam Noman -->
+<div style="background: rgba(255,255,255,0.95); border-radius: 20px; padding: 40px; margin-bottom: 40px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 40px; flex-wrap: wrap;">
+ 
+ <div style="flex: 0 0 300px; text-align: center;">
+   <svg width="280" height="280" xmlns="http://www.w3.org/2000/svg">
+     <path d="M60,-70C80,-50,100,-30,100,0C100,30,80,60,50,80C20,100,-20,100,-50,80C-80,60,-100,30,-100,0C-100,-30,-80,-60,-50,-70C-20,-80,20,-90,60,-70Z" fill="#2449d8" transform="translate(140 140)"/>
+     <clipPath id="img1">
+       <circle cx="140" cy="140" r="90"/>
+     </clipPath>
+     <image href="./t-photos/Noman.jpg" width="280" height="280" clip-path="url(#img1)" alt="Nurul Islam Noman"/>
+   </svg>
+ </div>
+ 
+ <div style="flex: 1; min-width: 300px;">
+   <h3 style="color:#2a3c3c; font-size:28px; margin-bottom:10px; font-weight:600;">Nurul Islam Noman</h3>
+   <p style="color:#2449d8; font-size:18px; margin-bottom:20px; font-weight:500;">Mechanical Design</p>
+   
+   <div style="color:#333; font-size:16px; line-height:1.6;">
+     <p>Specializing in Mechanical Design with strong experience in Robotics and Embedded Systems. Extensive work in research and development has built expertise where precision, innovation, and reliability are key.</p>
+     <p>Skills span Robotics, Embedded Systems, and Mechanical Design, enabling a holistic approach to complex technical challenges. With a focus on Mechanical Design, the goal is to create solutions that seamlessly integrate hardware, software, and system reliability.</p>
    </div>
+ </div>
+</div>
 
-   <!-- Member 2 -->
-   <div style="text-align:center; width:220px;">
-     <svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
-       <path d="M60,-70C90,-60,110,-20,100,20C90,60,50,90,10,100C-30,110,-70,100,-90,70C-110,40,-120,0,-100,-30C-80,-60,-40,-80,0,-90C40,-100,80,-90,60,-70Z" fill="#f2b844" transform="translate(100 100)"/>
-       <clipPath id="img2">
-         <circle cx="100" cy="100" r="70"/>
-       </clipPath>
-       <image href="https://github.com/nurulislam21/WRO-FE-2025_Team-Echo-Drift/blob/main/t-photos/tanim.jpg?raw=true" width="200" height="200" clip-path="url(#img2)"/>
-     </svg>
-     <h3 style="margin:10px 0 5px; color:#fff;">Tanim SK</h3>
-     <p style="margin:0; color:#fff; font-size:14px;">Programming & Software Architecture</p>
+<!-- Member 2: Tanim SK -->
+<div style="background: rgba(255,255,255,0.95); border-radius: 20px; padding: 40px; margin-bottom: 40px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 40px; flex-wrap: wrap; flex-direction: row-reverse;">
+ 
+ <div style="flex: 0 0 300px; text-align: center;">
+   <svg width="280" height="280" xmlns="http://www.w3.org/2000/svg">
+     <path d="M60,-70C90,-60,110,-20,100,20C90,60,50,90,10,100C-30,110,-70,100,-90,70C-110,40,-120,0,-100,-30C-80,-60,-40,-80,0,-90C40,-100,80,-90,60,-70Z" fill="#f2b844" transform="translate(140 140)"/>
+     <clipPath id="img2">
+       <circle cx="140" cy="140" r="90"/>
+     </clipPath>
+     <image href="./t-photos/tanim.jpg" width="280" height="280" clip-path="url(#img2)" alt="Tanim SK"/>
+   </svg>
+ </div>
+ 
+ <div style="flex: 1; min-width: 300px;">
+   <h3 style="color:#2a3c3c; font-size:28px; margin-bottom:10px; font-weight:600;">Tanim SK</h3>
+   <p style="color:#f2b844; font-size:18px; margin-bottom:20px; font-weight:500;">Programming & Software Architecture</p>
+   
+   <div style="color:#333; font-size:16px; line-height:1.6;">
+     <p>A versatile programmer with expertise in Python, JavaScript, HTML, CSS, and C++, and over 5 years of experience in software development. Skilled in building web applications using frameworks like Django, Flask, and FastAPI for the backend, and ReactJS for the frontend, with PostgreSQL for databases and Redis for caching.</p>
+     <p>Experienced in deploying web applications on AWS and similar platforms with CI/CD integration. Also proficient in working with Raspberry Pi and microcontrollers, with experience in home automation, WebSocket programming, RF communication, and integrating TinyML for lightweight AI projects.</p>
    </div>
+ </div>
+</div>
 
-   <!-- Member 3 -->
-   <div style="text-align:center; width:220px;">
-     <svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
-       <path d="M70,-80C100,-60,120,-20,110,20C100,60,60,90,20,110C-20,120,-60,110,-80,80C-100,50,-120,10,-110,-30C-100,-70,-60,-100,-20,-110C20,-120,60,-100,70,-80Z" fill="#f28585" transform="translate(100 100)"/>
-       <clipPath id="img3">
-         <circle cx="100" cy="100" r="70"/>
-       </clipPath>
-       <image href="t-photos/Naeem.jpg" width="200" height="200" clip-path="url(#img3)"/>
-     </svg>
-     <h3 style="margin:10px 0 5px; color:#fff;">Majedul Islam Naeem</h3>
-     <p style="margin:0; color:#fff; font-size:14px;">Electronics & Circuit Design</p>
+<!-- Member 3: Majedul Islam Naeem -->
+<div style="background: rgba(255,255,255,0.95); border-radius: 20px; padding: 40px; margin-bottom: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 40px; flex-wrap: wrap;">
+ 
+ <div style="flex: 0 0 300px; text-align: center;">
+   <svg width="280" height="280" xmlns="http://www.w3.org/2000/svg">
+     <path d="M70,-80C100,-60,120,-20,110,20C100,60,60,90,20,110C-20,120,-60,110,-80,80C-100,50,-120,10,-110,-30C-100,-70,-60,-100,-20,-110C20,-120,60,-100,70,-80Z" fill="#f28585" transform="translate(140 140)"/>
+     <clipPath id="img3">
+       <circle cx="140" cy="140" r="90"/>
+     </clipPath>
+     <image href="./t-photos/Naeem.jpg" width="280" height="280" clip-path="url(#img3)" alt="Majedul Islam Naeem"/>
+   </svg>
+ </div>
+ 
+ <div style="flex: 1; min-width: 300px;">
+   <h3 style="color:#2a3c3c; font-size:28px; margin-bottom:10px; font-weight:600;">Majedul Islam Naeem</h3>
+   <p style="color:#f28585; font-size:18px; margin-bottom:20px; font-weight:500;">Electronics & Circuit Design</p>
+   
+   <div style="color:#333; font-size:16px; line-height:1.6;">
+     <p>Majedul Islam Naeem is a passionate Robotics and Embedded Systems innovator with strong expertise in Electronics & Circuit Design. He excels at transforming ideas into practical, intelligent solutions, designing efficient circuits, and integrating electronics seamlessly with robotics projects.</p>
+     <p>Driven by curiosity and creativity, Naeem thrives in collaborative environments and is committed to pushing the boundaries of technology while inspiring others to innovate.</p>
    </div>
+ </div>
+</div>
 
   </div>
 </div>
-
 ---
 
 ## Navigation Menu
