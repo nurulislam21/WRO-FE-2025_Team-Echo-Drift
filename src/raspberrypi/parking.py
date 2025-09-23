@@ -66,10 +66,9 @@ class Parking:
                 # speed, steps, angle
                 (-self.parking_speed, 600, 170),
                 (self.parking_speed, 2100, 20),
-                # (-self.parking_speed, 1000, 170),
-                # (self.parking_speed, 1000, 40),
-                (self.parking_speed, 2800, 170),
-                (-self.parking_speed, 1700, 95),
+                (-self.parking_speed, 800, 95),                
+                (self.parking_speed, 3000, 170),
+                (-self.parking_speed, 2000, 95),
             ],
             "right": [
                 # speed, steps, angle
