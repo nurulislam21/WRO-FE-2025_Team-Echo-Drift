@@ -374,7 +374,7 @@ class ContourWorkers:
             try:
                 frame = self.frame_queue_green.get(timeout=0.1)
                 contours = find_contours(
-                    frame, self.LOWER_GREEN, self.UPPER_GREEN, self.OBS_REGION
+                    frame, self.LOWER_GREEN, self.UPPER_GREEN, self.OBS_REGION, consider_area=800
                 )
                 area, _ = max_contour_area(contours)
                 result = ContourResult(area, contours, "green_pillar")
@@ -401,7 +401,7 @@ class ContourWorkers:
             try:
                 frame = self.frame_queue_red.get(timeout=0.1)
                 contours = find_contours(
-                    frame, self.LOWER_RED, self.UPPER_RED, self.OBS_REGION
+                    frame, self.LOWER_RED, self.UPPER_RED, self.OBS_REGION, consider_area=800
                 )
                 area, _ = max_contour_area(contours)
                 result = ContourResult(area, contours, "red_pillar")

@@ -34,15 +34,15 @@ print("DEBUG MODE" if DEBUG else "PRODUCTION")
 # Simulated camera settings
 CAM_WIDTH = 640
 CAM_HEIGHT = 480
-MAX_SPEED = 100
-MIN_SPEED = 60
+MAX_SPEED = 60
+MIN_SPEED = 50
 
 # Intersections
 TOTAL_INTERSECTIONS = 12
 
 # Region of Interest coordinates
-LEFT_REGION = [20, 220, 280, 280]  # left
-RIGHT_REGION = [360, 220, 620, 280]  # right
+LEFT_REGION = [20, 220, 270, 280]  # left
+RIGHT_REGION = [370, 220, 620, 280]  # right
 LAP_REGION = [200, 300, 440, 350]  # lap detection
 OBS_REGION = [95, 140, 545, 320]  # obstacle detection
 REVERSE_REGION = [200, 300, 440, 320]  # reverse trigger area
@@ -67,11 +67,11 @@ LOWER_BLUE = np.array([92, 150, 166])
 UPPER_BLUE = np.array([152, 190, 206])
 
 # obstacle color ranges
-LOWER_RED = np.array([48, 154, 39])
-UPPER_RED = np.array([108, 194, 79])
+LOWER_RED = np.array([50, 163, 42])
+UPPER_RED = np.array([120, 203, 82])
 
-LOWER_GREEN = np.array([110, 72, 168])
-UPPER_GREEN = np.array([176, 112, 208])
+LOWER_GREEN = np.array([95, 96, 165])
+UPPER_GREEN = np.array([180, 136, 205])
 
 # parking color ranges
 LOWER_MAGENTA = np.array([90, 89, 105])
@@ -79,8 +79,8 @@ UPPER_MAGENTA = np.array([160, 129, 145])
 
 
 contour_workers = ContourWorkers(
-    mode="NO_OBSTACLE",
-    #mode="OBSTACLE",
+    #mode="NO_OBSTACLE",
+    mode="OBSTACLE",
     has_parked_out=False,
     # color ranges
     lower_blue=LOWER_BLUE,
@@ -134,7 +134,7 @@ speed = 0
 
 trigger_reverse = False
 reverse_start_time = 0
-reverse_duration = 0.7  # seconds
+reverse_duration = 0.6  # seconds
 
 startProcessing = False
 stopFlag = False
