@@ -17,6 +17,7 @@ class ContourWorkers:
     def __init__(
         self,
         mode: Literal["OBSTACLE", "NO_OBSTACLE"],
+        has_parked_out: bool,
         # color ranges
         lower_blue: np.ndarray,
         upper_blue: np.ndarray,
@@ -41,6 +42,7 @@ class ContourWorkers:
     ):
         self.mode = mode
         self.parking_mode = False
+        self.has_parked_out = has_parked_out
 
         # colors
         self.LOWER_BLUE = lower_blue
@@ -227,11 +229,12 @@ class ContourWorkers:
                     self.UPPER_BLACK,
                     self.LEFT_REGION,
                     direction="left",
+                    consider_area=800,
                 )
                 black_area, _ = max_contour_area(contours)
                 result = ContourResult(black_area, contours, "black_left")
 
-                if self.parking_mode:
+                if self.mode == "OBSTACLE" and self.has_parked_out:
                     frame = self.frame_queue_left.get(timeout=0.1)
                     contours = find_contours(
                         frame,
@@ -239,10 +242,12 @@ class ContourWorkers:
                         self.UPPER_MAGENTA,
                         self.LEFT_REGION,
                         direction="left",
+                        use_convex_hull=True,
+                        consider_area=1000,
                     )
                     magenta_area, _ = max_contour_area(contours)
 
-                    if magenta_area > 0:
+                    if magenta_area > black_area:
                         result = ContourResult(magenta_area, contours, "magenta_left")
 
                 try:
@@ -272,11 +277,12 @@ class ContourWorkers:
                     self.UPPER_BLACK,
                     self.RIGHT_REGION,
                     direction="right",
+                    consider_area=800,
                 )
                 black_area, _ = max_contour_area(contours)
                 result = ContourResult(black_area, contours, "black_right")
 
-                if self.parking_mode:
+                if self.mode == "OBSTACLE" and self.has_parked_out:
                     frame = self.frame_queue_right.get(timeout=0.1)
                     contours = find_contours(
                         frame,
@@ -284,10 +290,12 @@ class ContourWorkers:
                         self.UPPER_MAGENTA,
                         self.RIGHT_REGION,
                         direction="right",
+                        use_convex_hull=True,
+                        consider_area=1000,
                     )
                     magenta_area, _ = max_contour_area(contours)
 
-                    if magenta_area > 0:
+                    if magenta_area > black_area:
                         result = ContourResult(magenta_area, contours, "magenta_right")
 
                 try:
@@ -366,7 +374,7 @@ class ContourWorkers:
             try:
                 frame = self.frame_queue_green.get(timeout=0.1)
                 contours = find_contours(
-                    frame, self.LOWER_GREEN, self.UPPER_GREEN, self.OBS_REGION
+                    frame, self.LOWER_GREEN, self.UPPER_GREEN, self.OBS_REGION, consider_area=800
                 )
                 area, _ = max_contour_area(contours)
                 result = ContourResult(area, contours, "green_pillar")
@@ -393,7 +401,7 @@ class ContourWorkers:
             try:
                 frame = self.frame_queue_red.get(timeout=0.1)
                 contours = find_contours(
-                    frame, self.LOWER_RED, self.UPPER_RED, self.OBS_REGION
+                    frame, self.LOWER_RED, self.UPPER_RED, self.OBS_REGION, consider_area=800
                 )
                 area, _ = max_contour_area(contours)
                 result = ContourResult(area, contours, "red_pillar")
@@ -424,6 +432,8 @@ class ContourWorkers:
                     self.LOWER_MAGENTA,
                     self.UPPER_MAGENTA,
                     self.PARKING_LOT_REGION,
+                    use_convex_hull=True,
+                    consider_area=1000,
                 )
                 area, _ = max_contour_area(contours)
                 result = ContourResult(area, contours, "magenta_parking_lot")

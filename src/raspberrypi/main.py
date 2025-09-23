@@ -35,19 +35,19 @@ print("DEBUG MODE" if DEBUG else "PRODUCTION")
 CAM_WIDTH = 640
 CAM_HEIGHT = 480
 MAX_SPEED = 60
-MIN_SPEED = 45
+MIN_SPEED = 50
 
 # Intersections
-TOTAL_INTERSECTIONS = 100
+TOTAL_INTERSECTIONS = 12
 
 # Region of Interest coordinates
-LEFT_REGION = [20, 220, 240, 280]  # left
-RIGHT_REGION = [400, 220, 620, 280]  # right
+LEFT_REGION = [20, 220, 270, 280]  # left
+RIGHT_REGION = [370, 220, 620, 280]  # right
 LAP_REGION = [200, 300, 440, 350]  # lap detection
 OBS_REGION = [95, 140, 545, 320]  # obstacle detection
 REVERSE_REGION = [200, 300, 440, 320]  # reverse trigger area
 FRONT_WALL_REGION = [300, 200, 340, 220]  # front wall detection
-PARKING_LOT_REGION = [0, 185, CAM_WIDTH, 440]  # parking lot detection
+PARKING_LOT_REGION = [0, 185, CAM_WIDTH, 400]  # parking lot detection
 
 BLACK_WALL_DETECTOR_AREA = (LEFT_REGION[2] - LEFT_REGION[0]) * (
     LEFT_REGION[3] - LEFT_REGION[1]
@@ -57,8 +57,8 @@ OBSTACLE_DETECTOR_Y = OBS_REGION[3] - OBS_REGION[1]
 obstacle_wall_pivot = (None, None)
 
 # Color ranges
-LOWER_BLACK = np.array([0, 114, 116])
-UPPER_BLACK = np.array([65, 154, 156])
+LOWER_BLACK = np.array([0, 111, 116])
+UPPER_BLACK = np.array([80, 151, 156])
 
 LOWER_ORANGE = np.array([105, 125, 87])
 UPPER_ORANGE = np.array([185, 165, 127])
@@ -67,20 +67,21 @@ LOWER_BLUE = np.array([92, 150, 166])
 UPPER_BLUE = np.array([152, 190, 206])
 
 # obstacle color ranges
-LOWER_RED = np.array([48, 154, 39])
-UPPER_RED = np.array([108, 194, 79])
+LOWER_RED = np.array([50, 163, 42])
+UPPER_RED = np.array([120, 203, 82])
 
-LOWER_GREEN = np.array([110, 72, 168])
-UPPER_GREEN = np.array([176, 112, 208])
+LOWER_GREEN = np.array([95, 96, 165])
+UPPER_GREEN = np.array([180, 136, 205])
 
 # parking color ranges
-LOWER_MAGENTA = np.array([120, 86, 98])
-UPPER_MAGENTA = np.array([190, 126, 138])
+LOWER_MAGENTA = np.array([90, 89, 105])
+UPPER_MAGENTA = np.array([160, 129, 145])
 
 
 contour_workers = ContourWorkers(
-    # mode="NO_OBSTACLE",
+    #mode="NO_OBSTACLE",
     mode="OBSTACLE",
+    has_parked_out=False,
     # color ranges
     lower_blue=LOWER_BLUE,
     upper_blue=UPPER_BLUE,
@@ -104,14 +105,14 @@ contour_workers = ContourWorkers(
     parking_lot_region=PARKING_LOT_REGION,
 )
 
-contour_workers.parking_mode = True
+contour_workers.parking_mode = False
 
 STRAIGHT_CONST = 95
 turnThresh = 150
 exitThresh = 1500
 
 
-MAX_OFFSET_DEGREE = 30
+MAX_OFFSET_DEGREE = 40
 maxRight = STRAIGHT_CONST + MAX_OFFSET_DEGREE
 maxLeft = STRAIGHT_CONST - MAX_OFFSET_DEGREE
 slightRight = STRAIGHT_CONST + 20
@@ -133,7 +134,7 @@ speed = 0
 
 trigger_reverse = False
 reverse_start_time = 0
-reverse_duration = 0.7  # seconds
+reverse_duration = 0.6  # seconds
 
 startProcessing = False
 stopFlag = False
@@ -148,11 +149,11 @@ intersection_detected = False
 # Serial communication
 arduino = serial.Serial(port="/dev/ttyUSB0", baudrate=115200, dsrdtr=True)
 time.sleep(2)
-arduino.write(b"0,95\n")
+arduino.write(b"0,-1,95\n")
 
 # parking
 parking = Parking(
-    parking_speed=30,
+    parking_speed=45,
     arduino=arduino,
     camera_width=CAM_WIDTH,
     camera_height=CAM_HEIGHT,
@@ -163,6 +164,7 @@ parking = Parking(
     MAX_OFFSET_DEGREE=MAX_OFFSET_DEGREE,
     REVERSE_REGION=REVERSE_REGION,
 )
+parking.has_parked_out = False
 
 
 # Threading variables - separate queues for each detection task
@@ -170,6 +172,10 @@ def main():
     global stopFlag, stopTime, speed, trigger_reverse
     global current_intersections, intersection_detected, intersection_crossing_start
     global startProcessing, obstacle_wall_pivot
+
+    parking_walls = []
+    parking_walls_count = 0
+    parking_wall_pivot = (None, None)
 
     # Initialize PiCamera2
     picam2 = Picamera2()
@@ -219,24 +225,22 @@ def main():
     try:
         while True:
             # dont start until start button pressed
-            # if arduino.in_waiting > 0:
-            #     line = arduino.readline().decode("utf-8").rstrip()
-            #     print(f"Arduino: {line}")
-            #     if not line == "START":
-            #         startProcessing = True
-            # if not startProcessing:
-            #     continue
+            if not startProcessing and arduino.in_waiting > 0:
+                line = arduino.readline().decode("utf-8").rstrip()
+                print(f"Arduino: {line}")
+                if line == "START":
+                    startProcessing = True
 
             # Capture frame
             frame = picam2.capture_array()
 
             # Distribute frame to all processing threads (non-blocking)
             frame_copy = copy.deepcopy(frame)
+            contour_workers.put_frames_in_queues(frame_copy)
 
             # default values
             speed_factor = 1.0
 
-            contour_workers.put_frames_in_queues(frame_copy)
             # Retrieve all results from queues (non-blocking)
             (
                 left_result,
@@ -259,10 +263,6 @@ def main():
             red_area = red_result.area
             reverse_area = reverse_result.area
             front_wall_area = front_wall_result.area
-
-            parking_walls, parking_walls_count, parking_wall_pivot = parking.process_parking(
-                parking_result=parking_result, pid=pid
-            )          
 
             # Debug view
             if DEBUG:
@@ -290,8 +290,36 @@ def main():
                     obstacle_wall_pivot=obstacle_wall_pivot,
                     parking_mode=contour_workers.parking_mode,
                     parking_lot_region=PARKING_LOT_REGION,
-                    parking_walls=parking_walls,
-                )            
+                    parking_result=parking_result,
+                )
+
+            if not startProcessing:
+                if cv2.waitKey(1) & 0xFF == ord("q"):
+                    break
+                # Dont start moving until start signal received
+                continue
+
+            # --- PARKING LOGIC ---
+            if contour_workers.mode == "OBSTACLE":
+                # process parking out first if not yet done
+                if not parking.has_parked_out:
+                    parking.process_parking_out(
+                        left_result=left_result, right_result=right_result
+                    )
+                    parking.has_parked_out = contour_workers.has_parked_out = True
+                    continue
+
+                # process parking, when parking mode is active
+                if contour_workers.parking_mode:
+                    angle = parking.process_parking(
+                        parking_result=parking_result,
+                        pid=pid,
+                        left_result=left_result,
+                        right_result=right_result,
+                    )
+                    if cv2.waitKey(1) & 0xFF == ord("q"):
+                        break
+                    continue
 
             # --- Reversing logic ---
             if trigger_reverse:
@@ -301,7 +329,7 @@ def main():
                     speed = 0  # stop after reversing
                 else:
                     angle = STRAIGHT_CONST  # go straight when reversing
-                arduino.write(f"{speed},{angle}\n".encode())
+                arduino.write(f"{speed},-1,{angle}\n".encode())
                 print(f"Reversing... Speed: {speed}, Angle: {angle}")
                 if cv2.waitKey(1) & 0xFF == ord("q"):
                     break
@@ -313,18 +341,18 @@ def main():
                 trigger_reverse = True
                 reverse_start_time = time.time()
                 speed = 0  # stop before reversing
-                arduino.write(f"{speed},{angle}\n".encode())
+                arduino.write(f"{speed},-1,{angle}\n".encode())
                 if cv2.waitKey(1) & 0xFF == ord("q"):
                     break
 
                 print("continue")
-                continue            
-
-            if parking_walls_count == 2:
-                obstacle_wall_pivot = parking_wall_pivot
-                if cv2.waitKey(1) & 0xFF == ord("q"):
-                    break
                 continue
+
+            # if parking_walls_count == 2:
+            #     obstacle_wall_pivot = parking_wall_pivot
+            #     if cv2.waitKey(1) & 0xFF == ord("q"):
+            #         break
+            #     continue
 
             # --- Obstacle avoidance ---
             if contour_workers.mode == "OBSTACLE" and (
@@ -514,7 +542,7 @@ def main():
             # speed = 0
 
             # Send to Arduino
-            arduino.write(f"{speed},{angle}\n".encode())
+            arduino.write(f"{speed},-1,{angle}\n".encode())
 
             # intersection detection
             # work here
@@ -537,9 +565,13 @@ def main():
                     print("Intersection crossing ended.")
 
             # Stopping logic
-            if stopFlag and (int(time.time()) - stopTime) > 1.7:
+            if (
+                contour_workers.mode == "NO_OBSTACLE"
+                and stopFlag
+                and (int(time.time()) - stopTime) > 1.7
+            ):
                 print("Lap completed!")
-                arduino.write(f"0,{angle}\n".encode())
+                arduino.write(f"-5,-1,{angle}\n".encode())
                 print(angle)
                 break
 
@@ -549,6 +581,7 @@ def main():
                 and not stopFlag
             ):
                 stopFlag = True
+                contour_workers.parking_mode = True
                 stopTime = int(time.time())
                 print("Preparing to stop...")
 
