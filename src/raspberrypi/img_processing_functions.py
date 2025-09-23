@@ -87,6 +87,7 @@ def display_debug_screen(
     FRONT_WALL_REGION,
     front_wall_result,
     REVERSE_REGION,
+    DANGER_ZONE,
     left_result,
     right_result,
     orange_result,
@@ -101,7 +102,7 @@ def display_debug_screen(
     obstacle_wall_pivot,
     parking_mode,
     parking_lot_region,
-    parking_result,
+    parking_result,    
 ):
     debug_frame = frame.copy()
     debug_frame = display_roi(debug_frame, [LEFT_REGION, RIGHT_REGION, LAP_REGION, OBS_REGION], (255, 0, 255))
@@ -110,6 +111,7 @@ def display_debug_screen(
         debug_frame = display_roi(debug_frame, [parking_lot_region], (0, 255, 0))
 
     if obstacle_wall_pivot != (None, None):
+        print(f"Obstacle wall pivot: {obstacle_wall_pivot}")
         cv2.circle(
             debug_frame,
             obstacle_wall_pivot,
@@ -124,6 +126,15 @@ def display_debug_screen(
         (255, 0, 0),
         1,
     )  # blue line in the center
+
+    # draw danger zone
+    cv2.rectangle(
+        debug_frame,
+        (DANGER_ZONE[0], DANGER_ZONE[1]),
+        (DANGER_ZONE[2], DANGER_ZONE[3]),
+        (0, 0, 255),
+        2,
+    )
 
     # Draw contours using the latest results
     if left_result.contours:
