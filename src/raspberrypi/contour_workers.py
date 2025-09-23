@@ -481,7 +481,7 @@ class ContourWorkers:
                 # front wall region processing
                 frame_fw = self.frame_queue_front_wall.get(timeout=0.1)
                 contours_fw = find_contours(
-                    frame_fw, self.LOWER_BLACK, self.UPPER_BLACK, self.FRONT_WALL_REGION
+                    frame_fw, self.LOWER_BLACK, self.UPPER_BLACK, self.FRONT_WALL_REGION, use_convex_hull=True
                 )
                 area_fw, _ = max_contour_area(contours_fw)
                 result_fw = ContourResult(area_fw, contours_fw, "front_wall_trigger")

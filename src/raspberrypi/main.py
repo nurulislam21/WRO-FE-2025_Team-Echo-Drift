@@ -45,7 +45,7 @@ LEFT_REGION = [20, 220, 270, 280]  # left
 RIGHT_REGION = [370, 220, 620, 280]  # right
 LAP_REGION = [200, 300, 440, 350]  # lap detection
 OBS_REGION = [95, 140, 545, 320]  # obstacle detection
-REVERSE_REGION = [210, 300, 430, 320]  # reverse trigger area
+REVERSE_REGION = [225, 300, 415, 320]  # reverse trigger area
 FRONT_WALL_REGION = [300, 200, 340, 220]  # front wall detection
 PARKING_LOT_REGION = [0, 185, CAM_WIDTH, 400]  # parking lot detection
 
@@ -173,9 +173,9 @@ def main():
     global current_intersections, intersection_detected, intersection_crossing_start
     global startProcessing, obstacle_wall_pivot
 
-    parking_walls = []
-    parking_walls_count = 0
-    parking_wall_pivot = (None, None)
+    # parking_walls = []
+    # parking_walls_count = 0
+    # parking_wall_pivot = (None, None)
 
     # Initialize PiCamera2
     picam2 = Picamera2()
@@ -547,8 +547,11 @@ def main():
             # intersection detection
             # work here
             if not intersection_detected:
-                if (orange_result.contours and orange_area > 80) or (
+                if ((orange_result.contours and orange_area > 80) or (
                     blue_result.contours and blue_area > 80
+                )) and (
+                    # ignore laps if just reversed recently for 1.4 second
+                    reverse_start_time + reverse_duration + 1.4 < time.time()
                 ):
                     intersection_detected = True
                     intersection_crossing_start = int(time.time())
