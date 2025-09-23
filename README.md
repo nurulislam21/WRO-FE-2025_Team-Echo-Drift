@@ -48,14 +48,13 @@ A few months ago, we set ourselves a bigger goal—to represent Bangladesh in th
 
 ## Meet the Team  
 
-
 ### *Nurul Islam Noman – Mechanical Design*
 
 Specializing in Mechanical Design with strong experience in Robotics and Embedded Systems. Extensive work in research and development has built expertise where precision, innovation, and reliability are key.
 
 Skills span Robotics, Embedded Systems, and Mechanical Design, enabling a holistic approach to complex technical challenges. With a focus on Mechanical Design, the goal is to create solutions that seamlessly integrate hardware, software, and system reliability.
 <p align="center">
-  <img src="t-photos/Noman.jpg" alt="Nurul Islam Noman" width="700"/>
+  <img src="t-photos/Noman.jpg" alt="Nurul Islam Noman" width="700" height="900"/>
 </p>
 
 ### *Tanim SK – Programming & Software Architecture* 
@@ -64,8 +63,9 @@ A versatile programmer with expertise in Python, JavaScript, HTML, CSS, and C++,
 
 Also proficient in working with Raspberry Pi and microcontrollers, with experience in home automation, WebSocket programming, RF communication, and integrating TinyML for lightweight AI projects.
 <p align="center">
-  <img src="t-photos/tanim.jpg" alt="Tanim SK" width="700"/>
+  <img src="t-photos/tanim.jpg" alt="Tanim SK" width="700" height="900"/>
 </p>
+
 
 ### *Majedul Islam Naeem – Electronics & Circuit Design* 
 
@@ -73,7 +73,7 @@ Majedul Islam Naeem is a passionate Robotics and Embedded Systems innovator with
 
 Driven by curiosity and creativity, Naeem thrives in collaborative environments and is committed to pushing the boundaries of technology while inspiring others to innovate.
 <p align="center">
-  <img src="t-photos/Naeem.jpg" alt="Majedul Islam Naeem" width="700"/>
+  <img src="t-photos/Naeem.jpg" alt="Majedul Islam Naeem" width="700" height="900"/>
 </p>
 
 
@@ -90,6 +90,39 @@ Driven by curiosity and creativity, Naeem thrives in collaborative environments 
 - [Resources & Media](#resources--media)
 
 ---
+
+## Competition Overview  
+
+WRO **Future Engineers** challenges teams to design autonomous electric vehicles (EVs) that can:  
+
+- Navigate complex tracks  
+- Handle lane following, obstacle avoidance, parking, and overtaking  
+- Optimize performance for efficiency and reliability  
+
+>  **For 2025, the challenge emphasizes real-world autonomous driving concepts aligned with SDG 11 — Sustainable Cities and Communities.**
+
+
+---
+
+##  Competition Rounds 
+
+The WRO Future Engineers 2025 competition is divided into **two progressive rounds**. Each round adds new layers of complexity and pushes teams to demonstrate engineering excellence.  
+
+
+| Round | Description | Key Tasks | Track Layout |
+|:------|:-----------:|:----------|:-------------|
+| **Round 1 – Endurance Lap** | Focuses on **reliability and lap consistency**. The robot must complete **3 laps** without error while maintaining smooth navigation. Judges emphasize **stability, accuracy, and precise lane following**. | - 🎯 Focus on **stability, accuracy, and smooth lane following**  <br> - 🏁 Complete **3 full laps** without error  <br> ⏱️ Time-based scoring adds pressure   | <img src="https://github.com/majednaeem/WRO/blob/main/Assets/Round%201.png" width="400" align="top" align="right">|
+| **Round 2 – Smart Navigation + Parking** | Introduces **real-time intelligence**. After completing laps, the robot must avoid **color-coded obstacles** and then park in a **designated zone**.| - 🟩 **Green obstacle → move left**  <br> - 🟥 **Red obstacle → move right**  <br> - 🏎️ Maintain speed while **avoiding collisions**   <br> -- 🅿️ Finish with **precision parking** inside a marked box  |<img src="https://github.com/majednaeem/WRO/blob/main/Assets/Round%202.png" width="400" align="top" align="left">   |
+
+
+> **Both rounds are aligned with the [official WRO 2025 Future Engineers Rules (PDF)](https://wro-association.org/wp-content/uploads/WRO-2025-Future-Engineers-Self-Driving-Cars-General-Rules.pdf).**
+
+
+
+---
+
+
+
 
 
 ## Our Robot
