@@ -57,49 +57,48 @@ A few months ago, we set ourselves a bigger goal—to represent Bangladesh in th
     Robotics, Electronics & Mechanical Experts Working Together 🚀
   </p>
 
-  <div align="center" style="display:flex; justify-content:center; gap:40px; flex-wrap:wrap;">
+  <div align="center" style="display:flex; justify-content:center; gap:60px; flex-wrap:wrap;">
 
    <!-- Member 1 -->
-   <div style="background:#fff; padding:20px; border-radius:15px; max-width:280px; text-align:center; box-shadow:0 4px 12px rgba(0,0,0,0.15);">
-     <div style="background:#2449d8; border-radius:50%; width:120px; height:120px; display:flex; align-items:center; justify-content:center; margin:auto;">
-       <img src="t-photos/Noman.jpg" alt="Nurul Islam Noman" style="border-radius:50%; width:100px; height:100px; object-fit:cover;">
+   <div style="text-align:center; max-width:250px;">
+     <div style="background:#2449d8; border-radius:50%; width:160px; height:160px; display:flex; align-items:center; justify-content:center; margin:auto;">
+       <img src="t-photos/Noman.jpg" alt="Nurul Islam Noman" style="border-radius:50%; width:140px; height:140px; object-fit:cover;">
      </div>
-     <h3 style="margin:15px 0 5px; color:#2449d8;">Nurul Islam Noman</h3>
-     <p style="margin:0; font-weight:bold; color:#555;">Mechanical Design</p>
-     <p style="margin-top:10px; font-size:13px; color:#666;">
-       Specializing in Mechanical Design with strong experience in Robotics and Embedded Systems. Focused on precision, innovation, and reliability.
+     <h3 style="margin:15px 0 5px; color:#fff;">Nurul Islam Noman</h3>
+     <p style="margin:0; color:#fff; font-size:14px; font-weight:bold;">Mechanical Design</p>
+     <p style="margin-top:10px; font-size:12px; color:#f0f0f0;">
+       Specializing in Mechanical Design with strong experience in Robotics and Embedded Systems. Passionate about integrating hardware, software, and system reliability.
      </p>
    </div>
 
    <!-- Member 2 -->
-   <div style="background:#fff; padding:20px; border-radius:15px; max-width:280px; text-align:center; box-shadow:0 4px 12px rgba(0,0,0,0.15);">
-     <div style="background:#f2b844; border-radius:50%; width:120px; height:120px; display:flex; align-items:center; justify-content:center; margin:auto;">
-       <img src="t-photos/tanim.jpg" alt="Tanim SK" style="border-radius:50%; width:100px; height:100px; object-fit:cover;">
+   <div style="text-align:center; max-width:250px;">
+     <div style="background:#f2b844; border-radius:50%; width:160px; height:160px; display:flex; align-items:center; justify-content:center; margin:auto;">
+       <img src="t-photos/tanim.jpg" alt="Tanim SK" style="border-radius:50%; width:140px; height:140px; object-fit:cover;">
      </div>
-     <h3 style="margin:15px 0 5px; color:#f2b844;">Tanim SK</h3>
-     <p style="margin:0; font-weight:bold; color:#555;">Programming & Software Architecture</p>
-     <p style="margin-top:10px; font-size:13px; color:#666;">
-       Full-stack developer with 5+ years of experience in Python, C++, and JavaScript. Skilled in web frameworks, IoT, TinyML, and cloud deployment.
+     <h3 style="margin:15px 0 5px; color:#fff;">Tanim SK</h3>
+     <p style="margin:0; color:#fff; font-size:14px; font-weight:bold;">Programming & Software Architecture</p>
+     <p style="margin-top:10px; font-size:12px; color:#f0f0f0;">
+       Versatile programmer with 5+ years in Python, C++, JS, and web frameworks. Skilled in IoT, TinyML, and cloud deployment with CI/CD pipelines.
      </p>
    </div>
 
    <!-- Member 3 -->
-   <div style="background:#fff; padding:20px; border-radius:15px; max-width:280px; text-align:center; box-shadow:0 4px 12px rgba(0,0,0,0.15);">
-     <div style="background:#f28585; border-radius:50%; width:120px; height:120px; display:flex; align-items:center; justify-content:center; margin:auto;">
-       <img src="t-photos/Naeem.jpg" alt="Majedul Islam Naeem" style="border-radius:50%; width:100px; height:100px; object-fit:cover;">
+   <div style="text-align:center; max-width:250px;">
+     <div style="background:#f28585; border-radius:50%; width:160px; height:160px; display:flex; align-items:center; justify-content:center; margin:auto;">
+       <img src="t-photos/Naeem.jpg" alt="Majedul Islam Naeem" style="border-radius:50%; width:140px; height:140px; object-fit:cover;">
      </div>
-     <h3 style="margin:15px 0 5px; color:#f28585;">Majedul Islam Naeem</h3>
-     <p style="margin:0; font-weight:bold; color:#555;">Electronics & Circuit Design</p>
-     <p style="margin-top:10px; font-size:13px; color:#666;">
-       Passionate about Robotics and Embedded Systems. Excels at circuit design and integrating electronics seamlessly into robotics projects.
+     <h3 style="margin:15px 0 5px; color:#fff;">Majedul Islam Naeem</h3>
+     <p style="margin:0; color:#fff; font-size:14px; font-weight:bold;">Electronics & Circuit Design</p>
+     <p style="margin-top:10px; font-size:12px; color:#f0f0f0;">
+       Robotics and Embedded Systems innovator, designing efficient circuits and integrating electronics seamlessly into robotics projects.
      </p>
    </div>
 
   </div>
 </div>
 
-
-
+---
 
 ## Navigation Menu
 - [Project Overview](#project-overview)
