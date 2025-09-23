@@ -18,7 +18,7 @@ Welcome to the official GitHub repository of **Team Echo Drift**. This repositor
 
 ### Ⅰ. [About the Team](#about-the-team)  
 ### Ⅱ. [Competition Overview](#competition-overview)  
-### Ⅲ. [Project Goals](#project-goals)  
+### Ⅲ. [Our Robot](#our-robot)  
 ### Ⅳ. [System Architecture](#system-architecture)  
 ### Ⅴ. [Hardware Components](#hardware-components)  
 ### Ⅵ. [Software & Algorithms](#software--algorithms)  
@@ -122,32 +122,61 @@ The WRO Future Engineers 2025 competition is divided into **two progressive roun
 ---
 
 
+##  Our Robot  
+
+### 🔎 Robot Overview  
+**Echo Drift** brings a **next-generation autonomous EV** to WRO 2025, built for speed, accuracy, and adaptability.
+  
+- 🚗 Precise track navigation  
+- ⚡ Real-time obstacle avoidance  
+- 🎯 Controlled drift maneuvers  
+- 🔒 Safe & reliable performance  
+
+🛠️ 3D-printed chassis | 🔌 Smart sensors & drivers | 🧠 Vision & PID control
+
+---
+
+## 📊 Robot Specifications  
+
+| Parameter | Value |
+|-----------|-------|
+| **Dimensions** | 280 mm (L) × 190 mm (W) × 160 mm (H) |
+| **Weight** | ~ 1.4 kg |
+| **Chassis** | Modular 3D-printed PLA with reinforced mounts |
+| **Motors** | N20  |
+| **Motor Driver** | TB6612FNG dual-channel |
+| **Steering** | MG995 Servo |
+| **Sensors** | HC-SR04 Ultrasonic × 2, IMU, Optional Camera |
+| **Controller** | Raspberry Pi 5 (8GB) |
+| **Battery** | 3S 11.1V Li-Po, 2200mAh |
+| **Special Feature** | Custom herringbone gear differential for drift |
+---
+
+## 📸 Vehicle Photos  
+
+| Front | Right | Back |
+|-------|-------|------|
+| <img src="images/robot-front.jpg" width="250"> | <img src="images/robot-right.jpg" width="250"> | <img src="images/robot-back.jpg" width="250"> |
+
+| Left | Top | Bottom |
+|------|-----|--------|
+| <img src="images/robot-left.jpg" width="250"> | <img src="images/robot-top.jpg" width="250"> | <img src="images/robot-bottom.jpg" width="250"> |
+
+---
+
+## 🎥 Videos of Our Robot  
+
+[![Test Run 1 – Track Navigation](https://img.youtube.com/vi/XXXXXXXX/0.jpg)](https://youtu.be/XXXXXXXX)  
+[![Test Run 2 – Obstacle Avoidance](https://img.youtube.com/vi/YYYYYYYY/0.jpg)](https://youtu.be/YYYYYYYY)  
+[![Test Run 3 – Precision Parking](https://img.youtube.com/vi/ZZZZZZZZ/0.jpg)](https://youtu.be/ZZZZZZZZ)  
+ 
+
+👉 *(Videos will be linked here once uploaded to YouTube)*  
+
+---
 
 
 
-## Our Robot
-
-### Robot Overview
-
-Team **Echo Drift** is participating in **WRO Future Engineers 2025** with a **state-of-the-art autonomous drift-capable vehicle**.
-
-Our vehicle is engineered to:
-- Navigate complex tracks with high precision  
-- Detect and avoid dynamic obstacles in real time  
-- Execute controlled drift maneuvers for competitive advantage  
-- Maintain robust, repeatable, and safe performance  
-
-### Photos Of Our Robot 
-
-
-
-### Videos Of Our Robot 
-
-
-
-
-
-The entire chassis and drivetrain are **fully 3D-printed** in **STL format**, designed in **SolidWorks**, enabling a lightweight, modular, and customizable structure.
 
 <p align="center">
   <img src="v-photos/IMG_20250618_170008.webp" alt="Vehicle Front View" width="500"/>
