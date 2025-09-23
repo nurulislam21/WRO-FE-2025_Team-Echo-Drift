@@ -87,7 +87,7 @@ def display_debug_screen(
     FRONT_WALL_REGION,
     front_wall_result,
     REVERSE_REGION,
-    DANGER_ZONE,
+    DANGER_ZONE_POINTS,
     left_result,
     right_result,
     orange_result,
@@ -128,13 +128,8 @@ def display_debug_screen(
     )  # blue line in the center
 
     # draw danger zone
-    cv2.rectangle(
-        debug_frame,
-        (DANGER_ZONE[0], DANGER_ZONE[1]),
-        (DANGER_ZONE[2], DANGER_ZONE[3]),
-        (0, 0, 255),
-        2,
-    )
+    cv2.line(debug_frame, (DANGER_ZONE_POINTS[0]["x1"], DANGER_ZONE_POINTS[0]["y1"]), (DANGER_ZONE_POINTS[0]["x2"], DANGER_ZONE_POINTS[0]["y2"]), (0, 0, 255), 2)
+    cv2.line(debug_frame, (DANGER_ZONE_POINTS[1]["x1"], DANGER_ZONE_POINTS[1]["y1"]), (DANGER_ZONE_POINTS[1]["x2"], DANGER_ZONE_POINTS[1]["y2"]), (0, 0, 255), 2)
 
     # Draw contours using the latest results
     if left_result.contours:
@@ -284,3 +279,13 @@ def get_overall_centroid(contours):
         return (cx, cy)
     else:
         return (None, None)  # invalid if total area = 0
+
+
+def point_position(x1, y1, x2, y2, target_x3, target_y3):
+    val = (x2 - x1) * (target_y3 - y1) - (y2 - y1) * (target_x3 - x1)
+    if val > 0:
+        return "LEFT"
+    elif val < 0:
+        return "RIGHT"
+    else:
+        return "COLLINEAR"

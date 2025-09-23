@@ -14,6 +14,7 @@ from img_processing_functions import (
     display_debug_screen,
     get_max_x_coord,
     get_overall_centroid,
+    point_position,
 )
 from contour_workers import ContourWorkers
 from parking import Parking
@@ -51,9 +52,22 @@ RIGHT_REGION = (
 LAP_REGION = [200, 300, 440, 350]  # lap detection
 OBS_REGION = [85, 140, 555, 320]  # obstacle detection
 REVERSE_REGION = [225, 300, 415, 320]  # reverse trigger area
-FRONT_WALL_REGION = [300, 200, 340, 220]  # front wall detection
+FRONT_WALL_REGION = [300, 195, 340, 215]  # front wall detection
 PARKING_LOT_REGION = [0, 185, CAM_WIDTH, 400]  # parking lot detection
-DANGER_ZONE = [175, OBS_REGION[1], 465, OBS_REGION[3]]  # area to check for obstacles
+# DANGER_ZONE_POINTS = [175, OBS_REGION[1], 465, OBS_REGION[3]]  # area to check for obstacles
+DANGER_ZONE_POINTS = [{
+    "x1": 290,
+    "y1": OBS_REGION[1],
+    "x2": 207,
+    "y2": OBS_REGION[3],
+},
+
+{
+    "x1": 360,
+    "y1": OBS_REGION[1],
+    "x2": 433,
+    "y2": OBS_REGION[3],
+}]
 
 BLACK_WALL_DETECTOR_AREA = (LEFT_REGION[2] - LEFT_REGION[0]) * (
     LEFT_REGION[3] - LEFT_REGION[1]
@@ -292,7 +306,7 @@ def main():
                     OBS_REGION=OBS_REGION,
                     REVERSE_REGION=REVERSE_REGION,
                     FRONT_WALL_REGION=FRONT_WALL_REGION,
-                    DANGER_ZONE=DANGER_ZONE,
+                    DANGER_ZONE_POINTS=DANGER_ZONE_POINTS,
                     front_wall_result=front_wall_result,
                     angle=angle,
                     current_intersections=current_intersections,
@@ -365,22 +379,25 @@ def main():
             #     if cv2.waitKey(1) & 0xFF == ord("q"):
             #         break
             #     continue
-            print("front area: ", front_wall_area)
+
             # --- Obstacle avoidance ---
             # reset obstacle positions
             # obstacle position
-            red_obj_x, red_obj_y = -1, -1
-            green_obj_x, green_obj_y = -1, -1
+            red_obj_x, red_obj_y = None, None
+            green_obj_x, green_obj_y = None, None
 
             if contour_workers.mode == "OBSTACLE" and (
                 (red_result.contours and red_area > 300)
                 or (green_result.contours and green_area > 300)
             ):
                 # get object coordinates
-                red_obj_x, green_obj_y = get_max_y_coord(green_result.contours)
-                green_obj_x, red_obj_y = get_max_y_coord(red_result.contours)
-                _, _ = get_overall_centroid(red_result.contours)
-                _, _ = get_overall_centroid(green_result.contours)
+                green_obj_x, green_obj_y = get_max_y_coord(green_result.contours)
+                red_obj_x, red_obj_y = get_max_y_coord(red_result.contours)
+                
+                red_obj_x, _ = get_overall_centroid(red_result.contours)
+                green_obj_x, _ = get_overall_centroid(green_result.contours)
+
+                # print(f"Raw Green: {green_obj_x}, {green_obj_y} | Raw Red: {red_obj_x}, {red_obj_y}")
 
                 # set inf if no object detected
                 if green_obj_y is None or green_obj_x is None:
@@ -389,19 +406,16 @@ def main():
 
                 if red_obj_y is None or red_obj_x is None:
                     red_obj_x = -1
-                    red_obj_y = -1
-
-                direction_turing = ""
+                    red_obj_y = -1                
 
                 # only proceed if both are not -1
                 if not (
                     (green_obj_x == -1 and green_obj_y == -1)
                     and (red_obj_x == -1 and red_obj_y == -1)
-                ):
-
-                    print(
-                        f"Red: {red_obj_x}, {red_obj_y} | Green: {green_obj_x}, {green_obj_y}"
-                    )
+                ):                    
+                    # print(
+                    #     f"Red: {red_obj_x}, {red_obj_y} | Green: {green_obj_x}, {green_obj_y}"
+                    # )
                     # if object is too close, back off (convert to global coords and compare)
                     if (
                         (red_obj_y + OBS_REGION[1]) > REVERSE_REGION[1]
@@ -415,11 +429,13 @@ def main():
                         print("Object too close! Backing off.")
                         trigger_reverse = True
                         reverse_start_time = time.time()
+                    
+                    direction_turing = ""
 
                     # if red obj is closer & right to the left danger zone
                     if (
                         red_obj_y > green_obj_y
-                        and (red_obj_x + OBS_REGION[0]) > DANGER_ZONE[0]
+                        and point_position(DANGER_ZONE_POINTS[0]["x1"], DANGER_ZONE_POINTS[0]["y1"], DANGER_ZONE_POINTS[0]["x2"], DANGER_ZONE_POINTS[0]["y2"], red_obj_x + OBS_REGION[0], red_obj_y + OBS_REGION[1]) == "RIGHT"
                     ):
                         print("Red")
 
@@ -467,7 +483,7 @@ def main():
                     # if green obj is closer & left to the right danger zone
                     elif (
                         green_obj_y > red_obj_y
-                        and (green_obj_x + OBS_REGION[0]) < DANGER_ZONE[2]
+                        and point_position(DANGER_ZONE_POINTS[1]["x1"], DANGER_ZONE_POINTS[1]["y1"], DANGER_ZONE_POINTS[1]["x2"], DANGER_ZONE_POINTS[1]["y2"], green_obj_x + OBS_REGION[0], green_obj_y + OBS_REGION[1]) == "LEFT"
                     ):
                         print("Green")
 
@@ -536,29 +552,27 @@ def main():
                     print(
                         f"Norm: {normalized_angle_offset} | Ygain: {y_gain} | OBJ error: {obj_error}"
                     )
-
-                elif front_wall_area > 400:
-                    normalized_angle_offset = -1
                 # print(f"Obj: {red_obj_x}, {red_obj_y} | Wall: {r_wall_x}, {r_wall_y}")
+            elif front_wall_area > 350:
+                normalized_angle_offset = -1
+                print("only front wall")
 
-            if (
-                (
-                    # if no obstacles detected
-                    not (
-                        (red_result.contours and red_area > 300)
-                        or (green_result.contours and green_area > 300)
-                    )
-                )
-                # or if x or y coords are not assigned
-                or (not (red_obj_x and green_obj_x and red_obj_y and green_obj_y))
+            if (            
+                # or if x or y coords are not assigned and front area is small
+                ((red_obj_x is None and green_obj_x is None and red_obj_y is None and green_obj_y is None) and front_wall_area < 350)
                 or (
                     # or if both obstacles are outside the danger zone
                     not (
-                        (red_obj_x + OBS_REGION[0]) > DANGER_ZONE[0]
-                        and (green_obj_x + OBS_REGION[0]) < DANGER_ZONE[2]
+                        (red_obj_x is not None and red_obj_y is not None and point_position(DANGER_ZONE_POINTS[0]["x1"], DANGER_ZONE_POINTS[0]["y1"], DANGER_ZONE_POINTS[0]["x2"], DANGER_ZONE_POINTS[0]["y2"], red_obj_x + OBS_REGION[0], red_obj_y + OBS_REGION[1]) == "RIGHT")
+                        or (green_obj_x is not None and green_obj_y is not None and point_position(DANGER_ZONE_POINTS[1]["x1"], DANGER_ZONE_POINTS[1]["y1"], DANGER_ZONE_POINTS[1]["x2"], DANGER_ZONE_POINTS[1]["y2"], green_obj_x + OBS_REGION[0], green_obj_y + OBS_REGION[1]) == "LEFT")
                     )
-                )
+                )                
             ):
+                print("1st:", bool(((red_obj_x is None and green_obj_x is None and red_obj_y is None and green_obj_y is None) and front_wall_area < 350)))
+                print("2nd:", bool(not (
+                        (red_obj_x is not None and red_obj_y is not None and point_position(DANGER_ZONE_POINTS[0]["x1"], DANGER_ZONE_POINTS[0]["y1"], DANGER_ZONE_POINTS[0]["x2"], DANGER_ZONE_POINTS[0]["y2"], red_obj_x + OBS_REGION[0], red_obj_y + OBS_REGION[1]) == "RIGHT")
+                        or (green_obj_x is not None and green_obj_y is not None and point_position(DANGER_ZONE_POINTS[1]["x1"], DANGER_ZONE_POINTS[1]["y1"], DANGER_ZONE_POINTS[1]["x2"], DANGER_ZONE_POINTS[1]["y2"], green_obj_x + OBS_REGION[0], green_obj_y + OBS_REGION[1]) == "LEFT")
+                    )))
                 obstacle_wall_pivot = (None, None)
                 # PID controller
                 left_buf.append(left_area)
