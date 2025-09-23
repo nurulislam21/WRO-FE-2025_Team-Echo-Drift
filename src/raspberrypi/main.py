@@ -307,6 +307,7 @@ def main():
                         left_result=left_result, right_result=right_result
                     )
                     parking.has_parked_out = contour_workers.has_parked_out = True
+                    continue
 
                 # process parking, when parking mode is active
                 if contour_workers.parking_mode:
@@ -318,7 +319,8 @@ def main():
                     )
                     if cv2.waitKey(1) & 0xFF == ord("q"):
                         break
-                continue
+                    continue
+                
 
             # --- Reversing logic ---
             if trigger_reverse:
