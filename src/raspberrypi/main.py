@@ -320,7 +320,6 @@ def main():
                     if cv2.waitKey(1) & 0xFF == ord("q"):
                         break
                     continue
-                
 
             # --- Reversing logic ---
             if trigger_reverse:
@@ -566,11 +565,14 @@ def main():
                     print("Intersection crossing ended.")
 
             # Stopping logic
-            if stopFlag and (int(time.time()) - stopTime) > 1.7:
+            if (
+                contour_workers.mode == "NO_OBSTACLE"
+                and stopFlag
+                and (int(time.time()) - stopTime) > 1.7
+            ):
                 print("Lap completed!")
-                arduino.write(f"0,-1,{angle}\n".encode())
+                arduino.write(f"-5,-1,{angle}\n".encode())
                 print(angle)
-                contour_workers.parking_mode = True
                 # break
 
             if (
@@ -579,6 +581,7 @@ def main():
                 and not stopFlag
             ):
                 stopFlag = True
+                contour_workers.parking_mode = True
                 stopTime = int(time.time())
                 print("Preparing to stop...")
 
