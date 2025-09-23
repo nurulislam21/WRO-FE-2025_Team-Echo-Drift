@@ -19,10 +19,10 @@ def find_contours(frame, lower_color, upper_color, roi, direction=None, use_conv
     labImg = cv2.cvtColor(roi_frame, cv2.COLOR_RGB2Lab)
 
     # lighting normalization
-    l, a, b = cv2.split(labImg)
-    clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8,8))
-    l = clahe.apply(l)
-    labImg = cv2.merge((l,a,b))
+    # l, a, b = cv2.split(labImg)
+    # clahe = cv2.createCLAHE(clipLimit=1.0, tileGridSize=(8,8))
+    # l = clahe.apply(l)
+    # labImg = cv2.merge((l,a,b))
 
     # blur and mask
     img_blur = cv2.medianBlur(labImg, 7)
@@ -85,6 +85,7 @@ def display_debug_screen(
     LAP_REGION,
     OBS_REGION,
     FRONT_WALL_REGION,
+    front_wall_result,
     REVERSE_REGION,
     left_result,
     right_result,
@@ -181,6 +182,15 @@ def display_debug_screen(
             reverse_result.contours,
             -1,
             (255, 0, 0),
+            2,
+        )
+    
+    if front_wall_result.contours:
+        cv2.drawContours(
+            debug_frame[FRONT_WALL_REGION[1] : FRONT_WALL_REGION[3], FRONT_WALL_REGION[0] : FRONT_WALL_REGION[2]],
+            front_wall_result.contours,
+            -1,
+            (0, 255, 0),
             2,
         )
 

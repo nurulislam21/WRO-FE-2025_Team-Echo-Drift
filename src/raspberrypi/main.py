@@ -49,9 +49,9 @@ RIGHT_REGION = (
     [370, 220, 620, 280] if MODE == "NO_OBSTACLE" else [390, 220, 620, 280]
 )  # right
 LAP_REGION = [200, 300, 440, 350]  # lap detection
-OBS_REGION = [95, 140, 545, 320]  # obstacle detection
+OBS_REGION = [85, 140, 555, 320]  # obstacle detection
 REVERSE_REGION = [225, 300, 415, 320]  # reverse trigger area
-FRONT_WALL_REGION = [300, 200, 340, 220]  # front wall detection
+FRONT_WALL_REGION = [300, 182, 340, 202]  # front wall detection
 PARKING_LOT_REGION = [0, 185, CAM_WIDTH, 400]  # parking lot detection
 
 BLACK_WALL_DETECTOR_AREA = (LEFT_REGION[2] - LEFT_REGION[0]) * (
@@ -62,21 +62,21 @@ OBSTACLE_DETECTOR_Y = OBS_REGION[3] - OBS_REGION[1]
 obstacle_wall_pivot = (None, None)
 
 # Color ranges
-LOWER_BLACK = np.array([0, 111, 116])
-UPPER_BLACK = np.array([80, 151, 156])
+LOWER_BLACK = np.array([0, 108, 90])
+UPPER_BLACK = np.array([89, 148, 163])
 
-LOWER_ORANGE = np.array([105, 125, 87])
-UPPER_ORANGE = np.array([185, 165, 127])
+LOWER_ORANGE = np.array([135, 125, 83])
+UPPER_ORANGE = np.array([195, 165, 123])
 
-LOWER_BLUE = np.array([92, 150, 166])
-UPPER_BLUE = np.array([152, 190, 206])
+LOWER_BLUE = np.array([93, 144, 164])
+UPPER_BLUE = np.array([153, 184, 204])
 
 # obstacle color ranges
-LOWER_RED = np.array([50, 163, 42])
-UPPER_RED = np.array([120, 203, 82])
+LOWER_RED = np.array([41, 157, 38])
+UPPER_RED = np.array([125, 197, 78])
 
-LOWER_GREEN = np.array([90, 78, 165])
-UPPER_GREEN = np.array([180, 118, 205])
+LOWER_GREEN = np.array([103, 75, 163])
+UPPER_GREEN = np.array([210, 115, 203])
 
 # parking color ranges
 LOWER_MAGENTA = np.array([100, 81, 105])
@@ -175,7 +175,7 @@ parking.has_parked_out = False
 def main():
     global stopFlag, stopTime, speed, trigger_reverse
     global current_intersections, intersection_detected, intersection_crossing_start
-    global startProcessing, obstacle_wall_pivot
+    global startProcessing, obstacle_wall_pivot, reverse_start_time
 
     # parking_walls = []
     # parking_walls_count = 0
@@ -287,6 +287,7 @@ def main():
                     OBS_REGION=OBS_REGION,
                     REVERSE_REGION=REVERSE_REGION,
                     FRONT_WALL_REGION=FRONT_WALL_REGION,
+                    front_wall_result=front_wall_result,
                     angle=angle,
                     current_intersections=current_intersections,
                     left_area=left_area,
@@ -304,14 +305,14 @@ def main():
                 continue
 
             # --- PARKING LOGIC ---
-            if contour_workers.mode == "OBSTACLE":
-                # process parking out first if not yet done
-                if not parking.has_parked_out:
-                    parking.process_parking_out(
-                        left_result=left_result, right_result=right_result
-                    )
-                    parking.has_parked_out = contour_workers.has_parked_out = True
-                    continue
+            # if contour_workers.mode == "OBSTACLE":
+            #     # process parking out first if not yet done
+            #     if not parking.has_parked_out:
+            #         parking.process_parking_out(
+            #             left_result=left_result, right_result=right_result
+            #         )
+            #         parking.has_parked_out = contour_workers.has_parked_out = True
+            #         continue
 
             # --- Reversing logic ---
             if trigger_reverse:
@@ -341,24 +342,24 @@ def main():
                 continue
 
             # --- Parking logic ---
-            if contour_workers.parking_mode:
-                angle = parking.process_parking(
-                        parking_result=parking_result,
-                        pid=pid,
-                        left_result=left_result,
-                        right_result=right_result,
-                    )
-                if cv2.waitKey(1) & 0xFF == ord("q"):
-                    break
+            # if contour_workers.parking_mode:
+            #     angle = parking.process_parking(
+            #             parking_result=parking_result,
+            #             pid=pid,
+            #             left_result=left_result,
+            #             right_result=right_result,
+            #         )
+            #     if cv2.waitKey(1) & 0xFF == ord("q"):
+            #         break
                 
-                continue
+            #     continue
 
             # if parking_walls_count == 2:
             #     obstacle_wall_pivot = parking_wall_pivot
             #     if cv2.waitKey(1) & 0xFF == ord("q"):
             #         break
             #     continue
-
+            print("front area: ", front_wall_area)
             # --- Obstacle avoidance ---
             if contour_workers.mode == "OBSTACLE" and (
                 (red_result.contours and red_area > 300)
@@ -377,7 +378,7 @@ def main():
                     red_obj_x = -1
                     red_obj_y = -1
 
-                # only proceed if both are not infinity
+                # only proceed if both are not -1
                 if not (
                     (green_obj_x == -1 and green_obj_y == -1)
                     and (red_obj_x == -1 and red_obj_y == -1)
@@ -404,7 +405,7 @@ def main():
 
                     # if red obj is closer
                     if red_obj_y > green_obj_y:
-                        if front_wall_area > 500:
+                        if front_wall_area > 400:
                             print("Front wall is priority, ignoring side walls")
                             r_wall_x = (
                                 FRONT_WALL_REGION[0]
@@ -447,7 +448,7 @@ def main():
 
                     # if green obj is closer
                     elif green_obj_y > red_obj_y:
-                        if front_wall_area > 500:
+                        if front_wall_area > 350:
                             print("Front wall is priority, ignoring side walls")
                             l_wall_x = (
                                 FRONT_WALL_REGION[0]
@@ -513,6 +514,9 @@ def main():
                         f"Norm: {normalized_angle_offset} | Ygain: {y_gain} | OBJ error: {obj_error}"
                     )
 
+                elif front_wall_area > 300:
+                    # both are -1, so turn based on front wall
+                    normalized_angle_offset = -1
                 # print(f"Obj: {red_obj_x}, {red_obj_y} | Wall: {r_wall_x}, {r_wall_y}")
 
             else:
@@ -576,8 +580,9 @@ def main():
 
             # Stopping logic
             if (
-                contour_workers.mode == "NO_OBSTACLE"
-                and stopFlag
+                # contour_workers.mode == "NO_OBSTACLE"
+                # and 
+                stopFlag
                 and (int(time.time()) - stopTime) > 1.7
             ):
                 print("Lap completed!")
