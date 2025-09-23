@@ -66,7 +66,7 @@ A few months ago, we set ourselves a bigger goal—to represent Bangladesh in th
        <clipPath id="img1">
          <circle cx="100" cy="100" r="70"/>
        </clipPath>
-       <image href="t-photos/Noman.jpg" width="200" height="200" clip-path="url(#img1)"/>
+       <image href="https://github.com/nurulislam21/WRO-FE-2025_Team-Echo-Drift/blob/main/t-photos/Noman.jpg?raw=true" width="200" height="200" clip-path="url(#img1)"/>
      </svg>
      <h3 style="margin:10px 0 5px; color:#fff;">Nurul Islam Noman</h3>
      <p style="margin:0; color:#fff; font-size:14px;">Mechanical Design</p>
@@ -79,7 +79,7 @@ A few months ago, we set ourselves a bigger goal—to represent Bangladesh in th
        <clipPath id="img2">
          <circle cx="100" cy="100" r="70"/>
        </clipPath>
-       <image href="t-photos/tanim.jpg" width="200" height="200" clip-path="url(#img2)"/>
+       <image href="https://github.com/nurulislam21/WRO-FE-2025_Team-Echo-Drift/blob/main/t-photos/tanim.jpg?raw=true" width="200" height="200" clip-path="url(#img2)"/>
      </svg>
      <h3 style="margin:10px 0 5px; color:#fff;">Tanim SK</h3>
      <p style="margin:0; color:#fff; font-size:14px;">Programming & Software Architecture</p>
