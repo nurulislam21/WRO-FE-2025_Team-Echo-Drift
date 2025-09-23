@@ -18,7 +18,7 @@ Welcome to the official GitHub repository of **Team Echo Drift**. This repositor
 
 ### Ⅰ. [About the Team](#about-the-team)  
 ### Ⅱ. [Competition Overview](#competition-overview)  
-### Ⅲ. [Project Goals](#project-goals)  
+### Ⅲ. [Our Robot](#our-robot)  
 ### Ⅳ. [System Architecture](#system-architecture)  
 ### Ⅴ. [Hardware Components](#hardware-components)  
 ### Ⅵ. [Software & Algorithms](#software--algorithms)  
@@ -47,36 +47,61 @@ A few months ago, we set ourselves a bigger goal—to represent Bangladesh in th
 ---
 
 ## Meet the Team  
+<!-- Meet the Team Section -->
+<div style="background:#5ec6c6; padding:50px; border-radius:10px;">
 
+  <h2 align="center" style="color:#2a3c3c; font-size:32px; margin-bottom:10px;">
+    Our Teams
+  </h2>
+  <p align="center" style="color:#333; font-size:14px; margin-bottom:40px;">
+    Robotics, Electronics & Mechanical Experts Working Together 🚀
+  </p>
 
-### *Nurul Islam Noman – Mechanical Design*
+  <div align="center" style="display:flex; justify-content:center; gap:40px; flex-wrap:wrap;">
 
-Specializing in Mechanical Design with strong experience in Robotics and Embedded Systems. Extensive work in research and development has built expertise where precision, innovation, and reliability are key.
+   <!-- Member 1 -->
+   <div style="text-align:center; width:220px;">
+     <svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
+       <path d="M60,-70C80,-50,100,-30,100,0C100,30,80,60,50,80C20,100,-20,100,-50,80C-80,60,-100,30,-100,0C-100,-30,-80,-60,-50,-70C-20,-80,20,-90,60,-70Z" fill="#2449d8" transform="translate(100 100)"/>
+       <clipPath id="img1">
+         <circle cx="100" cy="100" r="70"/>
+       </clipPath>
+       <image href="https://github.com/nurulislam21/WRO-FE-2025_Team-Echo-Drift/blob/main/t-photos/Noman.jpg?raw=true" width="200" height="200" clip-path="url(#img1)"/>
+     </svg>
+     <h3 style="margin:10px 0 5px; color:#fff;">Nurul Islam Noman</h3>
+     <p style="margin:0; color:#fff; font-size:14px;">Mechanical Design</p>
+   </div>
 
-Skills span Robotics, Embedded Systems, and Mechanical Design, enabling a holistic approach to complex technical challenges. With a focus on Mechanical Design, the goal is to create solutions that seamlessly integrate hardware, software, and system reliability.
-<p align="center">
-  <img src="t-photos/Noman.jpg" alt="Nurul Islam Noman" width="700"/>
-</p>
+   <!-- Member 2 -->
+   <div style="text-align:center; width:220px;">
+     <svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
+       <path d="M60,-70C90,-60,110,-20,100,20C90,60,50,90,10,100C-30,110,-70,100,-90,70C-110,40,-120,0,-100,-30C-80,-60,-40,-80,0,-90C40,-100,80,-90,60,-70Z" fill="#f2b844" transform="translate(100 100)"/>
+       <clipPath id="img2">
+         <circle cx="100" cy="100" r="70"/>
+       </clipPath>
+       <image href="https://github.com/nurulislam21/WRO-FE-2025_Team-Echo-Drift/blob/main/t-photos/tanim.jpg?raw=true" width="200" height="200" clip-path="url(#img2)"/>
+     </svg>
+     <h3 style="margin:10px 0 5px; color:#fff;">Tanim SK</h3>
+     <p style="margin:0; color:#fff; font-size:14px;">Programming & Software Architecture</p>
+   </div>
 
-### *Tanim SK – Programming & Software Architecture* 
+   <!-- Member 3 -->
+   <div style="text-align:center; width:220px;">
+     <svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
+       <path d="M70,-80C100,-60,120,-20,110,20C100,60,60,90,20,110C-20,120,-60,110,-80,80C-100,50,-120,10,-110,-30C-100,-70,-60,-100,-20,-110C20,-120,60,-100,70,-80Z" fill="#f28585" transform="translate(100 100)"/>
+       <clipPath id="img3">
+         <circle cx="100" cy="100" r="70"/>
+       </clipPath>
+       <image href="t-photos/Naeem.jpg" width="200" height="200" clip-path="url(#img3)"/>
+     </svg>
+     <h3 style="margin:10px 0 5px; color:#fff;">Majedul Islam Naeem</h3>
+     <p style="margin:0; color:#fff; font-size:14px;">Electronics & Circuit Design</p>
+   </div>
 
-A versatile programmer with expertise in Python, JavaScript, HTML, CSS, and C++, and over 5 years of experience in software development. Skilled in building web applications using frameworks like Django, Flask, and FastAPI for the backend, and ReactJS for the frontend, with PostgreSQL for databases and Redis for caching. Experienced in deploying web applications on AWS and similar platforms with CI/CD integration.
+  </div>
+</div>
 
-Also proficient in working with Raspberry Pi and microcontrollers, with experience in home automation, WebSocket programming, RF communication, and integrating TinyML for lightweight AI projects.
-<p align="center">
-  <img src="t-photos/tanim.jpg" alt="Tanim SK" width="700"/>
-</p>
-
-### *Majedul Islam Naeem – Electronics & Circuit Design* 
-
-Majedul Islam Naeem is a passionate Robotics and Embedded Systems innovator with strong expertise in Electronics & Circuit Design. He excels at transforming ideas into practical, intelligent solutions, designing efficient circuits, and integrating electronics seamlessly with robotics projects. 
-
-Driven by curiosity and creativity, Naeem thrives in collaborative environments and is committed to pushing the boundaries of technology while inspiring others to innovate.
-<p align="center">
-  <img src="t-photos/Naeem.jpg" alt="Majedul Islam Naeem" width="700"/>
-</p>
-
-
+---
 
 ## Navigation Menu
 - [Project Overview](#project-overview)
@@ -91,30 +116,92 @@ Driven by curiosity and creativity, Naeem thrives in collaborative environments 
 
 ---
 
+## Competition Overview  
 
-## Our Robot
+WRO **Future Engineers** challenges teams to design autonomous electric vehicles (EVs) that can:  
 
-### Robot Overview
+- Navigate complex tracks  
+- Handle lane following, obstacle avoidance, parking, and overtaking  
+- Optimize performance for efficiency and reliability  
 
-Team **Echo Drift** is participating in **WRO Future Engineers 2025** with a **state-of-the-art autonomous drift-capable vehicle**.
-
-Our vehicle is engineered to:
-- Navigate complex tracks with high precision  
-- Detect and avoid dynamic obstacles in real time  
-- Execute controlled drift maneuvers for competitive advantage  
-- Maintain robust, repeatable, and safe performance  
-
-### Photos Of Our Robot 
+>  **For 2025, the challenge emphasizes real-world autonomous driving concepts aligned with SDG 11 — Sustainable Cities and Communities.**
 
 
+---
 
-### Videos Of Our Robot 
+##  Competition Rounds 
+
+The WRO Future Engineers 2025 competition is divided into **two progressive rounds**. Each round adds new layers of complexity and pushes teams to demonstrate engineering excellence.  
+
+
+| Round | Description | Key Tasks | Track Layout |
+|:------|:-----------:|:----------|:-------------|
+| **Round 1 – Endurance Lap** | Focuses on **reliability and lap consistency**. The robot must complete **3 laps** without error while maintaining smooth navigation. Judges emphasize **stability, accuracy, and precise lane following**. | - 🎯 Focus on **stability, accuracy, and smooth lane following**  <br> - 🏁 Complete **3 full laps** without error  <br> ⏱️ Time-based scoring adds pressure   | <img src="https://github.com/majednaeem/WRO/blob/main/Assets/Round%201.png" width="400" align="top" align="right">|
+| **Round 2 – Smart Navigation + Parking** | Introduces **real-time intelligence**. After completing laps, the robot must avoid **color-coded obstacles** and then park in a **designated zone**.| - 🟩 **Green obstacle → move left**  <br> - 🟥 **Red obstacle → move right**  <br> - 🏎️ Maintain speed while **avoiding collisions**   <br> -- 🅿️ Finish with **precision parking** inside a marked box  |<img src="https://github.com/majednaeem/WRO/blob/main/Assets/Round%202.png" width="400" align="top" align="left">   |
+
+
+> **Both rounds are aligned with the [official WRO 2025 Future Engineers Rules (PDF)](https://wro-association.org/wp-content/uploads/WRO-2025-Future-Engineers-Self-Driving-Cars-General-Rules.pdf).**
 
 
 
+---
 
 
-The entire chassis and drivetrain are **fully 3D-printed** in **STL format**, designed in **SolidWorks**, enabling a lightweight, modular, and customizable structure.
+##  Our Robot  
+
+### 🔎 Robot Overview  
+**Echo Drift** brings a **next-generation autonomous EV** to WRO 2025, built for speed, accuracy, and adaptability.
+  
+- 🚗 Precise track navigation  
+- ⚡ Real-time obstacle avoidance  
+- 🎯 Controlled drift maneuvers  
+- 🔒 Safe & reliable performance  
+
+🛠️ 3D-printed chassis | 🔌 Smart sensors & drivers | 🧠 Vision & PID control
+
+---
+
+## 📊 Robot Specifications  
+
+| Parameter | Value |
+|-----------|-------|
+| **Dimensions** | 280 mm (L) × 190 mm (W) × 160 mm (H) |
+| **Weight** | ~ 1.4 kg |
+| **Chassis** | Modular 3D-printed PLA with reinforced mounts |
+| **Motors** | N20  |
+| **Motor Driver** | TB6612FNG dual-channel |
+| **Steering** | MG995 Servo |
+| **Sensors** | HC-SR04 Ultrasonic × 2, IMU, Optional Camera |
+| **Controller** | Raspberry Pi 5 (8GB) |
+| **Battery** | 3S 11.1V Li-Po, 2200mAh |
+| **Special Feature** | Custom herringbone gear differential for drift |
+---
+
+## 📸 Vehicle Photos  
+
+| Front | Right | Back |
+|-------|-------|------|
+| <img src="images/robot-front.jpg" width="250"> | <img src="images/robot-right.jpg" width="250"> | <img src="images/robot-back.jpg" width="250"> |
+
+| Left | Top | Bottom |
+|------|-----|--------|
+| <img src="images/robot-left.jpg" width="250"> | <img src="images/robot-top.jpg" width="250"> | <img src="images/robot-bottom.jpg" width="250"> |
+
+---
+
+## 🎥 Videos of Our Robot  
+
+[![Test Run 1 – Track Navigation](https://img.youtube.com/vi/XXXXXXXX/0.jpg)](https://youtu.be/XXXXXXXX)  
+[![Test Run 2 – Obstacle Avoidance](https://img.youtube.com/vi/YYYYYYYY/0.jpg)](https://youtu.be/YYYYYYYY)  
+[![Test Run 3 – Precision Parking](https://img.youtube.com/vi/ZZZZZZZZ/0.jpg)](https://youtu.be/ZZZZZZZZ)  
+ 
+
+👉 *(Videos will be linked here once uploaded to YouTube)*  
+
+---
+
+
+
 
 <p align="center">
   <img src="v-photos/IMG_20250618_170008.webp" alt="Vehicle Front View" width="500"/>
