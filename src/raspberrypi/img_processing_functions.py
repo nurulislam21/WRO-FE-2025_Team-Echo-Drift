@@ -13,22 +13,12 @@ def replace_closest(polygon, new_point):
     return polygon
 
 
-def create_mask(frame, lower_limit, upper_limit, kernel):
-    """Creates a mask with given HSV limits and applies morphological operations using a precomputed kernel."""
-    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-    mask = cv2.inRange(hsv, lower_limit, upper_limit)
-    mask = cv2.dilate(mask, kernel, iterations=2)
-    mask = cv2.erode(mask, kernel, iterations=2)
-    return mask
-
-
-
 def find_contours(frame, lower_color, upper_color, roi, direction=None, use_convex_hull=False, consider_area=None):
     x1, y1, x2, y2 = roi
     roi_frame = frame[y1:y2, x1:x2]
     labImg = cv2.cvtColor(roi_frame, cv2.COLOR_RGB2Lab)
     img_blur = cv2.medianBlur(labImg, 7)
-    mask = create_mask(img_blur, lower_color, upper_color, kernel=np.ones((7, 7), np.uint8))
+    mask = cv2.inRange(img_blur, lower_color, upper_color)
     kernel = np.ones((7, 7), np.uint8)
     mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
     mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
