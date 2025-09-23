@@ -3,10 +3,11 @@ import numpy as np
 from picamera2 import Picamera2
 
 # LAB range (from your first script)
-# Lower LAB: 38, 141, 134
-# Upper LAB: 98, 181, 174
-LOWER = np.array([90, 129, 60])
-UPPER = np.array([150, 169, 100])
+# Lower LAB: 111, 76, 166
+# Upper LAB: 171, 116, 206
+
+LOWER = np.array([90, 76, 166])
+UPPER = np.array([180, 116, 206])
 
 def find_contours(frame, lower_color, upper_color, roi):
     x1, y1, x2, y2 = roi
@@ -34,6 +35,13 @@ def main():
     picam2 = Picamera2()
     config = picam2.create_preview_configuration(main={"format": "BGR888", "size": (640, 480)})
     picam2.configure(config)
+    picam2.set_controls({
+        "ExposureTime": 16000,
+        "AnalogueGain": 42.0,
+        "AeEnable": False,
+        "AwbEnable": False,
+        "FrameDurationLimits": (40000, 40000)
+    })
     picam2.start()
 
     roi = (100, 100, 540, 380)  # (x1, y1, x2, y2)
