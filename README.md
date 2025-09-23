@@ -181,11 +181,11 @@ The WRO Future Engineers 2025 competition is divided into **two progressive roun
 
 | Front | Right | Back |
 |-------|-------|------|
-| <img src="images/robot-front.jpg" width="250"> | <img src="images/robot-right.jpg" width="250"> | <img src="images/robot-back.jpg" width="250"> |
+| <img src="v-photos/front.jpg" width="250"> | <img src="v-photos/right.jpg" width="250"> | <img src="v-photos/back.jpg" width="250"> |
 
 | Left | Top | Bottom |
 |------|-----|--------|
-| <img src="images/robot-left.jpg" width="250"> | <img src="images/robot-top.jpg" width="250"> | <img src="images/robot-bottom.jpg" width="250"> |
+| <img src="v-photos/leftside.jpg" width="250"> | <img src="v-photos/top.jpg" width="250"> | <img src="v-photos/bottom.jpg" width="250"> |
 
 ---
 
