@@ -45,7 +45,7 @@ LEFT_REGION = [20, 220, 270, 280]  # left
 RIGHT_REGION = [370, 220, 620, 280]  # right
 LAP_REGION = [200, 300, 440, 350]  # lap detection
 OBS_REGION = [95, 140, 545, 320]  # obstacle detection
-REVERSE_REGION = [200, 300, 440, 320]  # reverse trigger area
+REVERSE_REGION = [210, 300, 430, 320]  # reverse trigger area
 FRONT_WALL_REGION = [300, 200, 340, 220]  # front wall detection
 PARKING_LOT_REGION = [0, 185, CAM_WIDTH, 400]  # parking lot detection
 
