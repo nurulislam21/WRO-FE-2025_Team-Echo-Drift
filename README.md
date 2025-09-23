@@ -51,48 +51,51 @@ A few months ago, we set ourselves a bigger goal—to represent Bangladesh in th
 <div style="background:#5ec6c6; padding:50px; border-radius:10px;">
 
   <h2 align="center" style="color:#2a3c3c; font-size:32px; margin-bottom:10px;">
-    Meet the Team
+    Our Teams
   </h2>
   <p align="center" style="color:#333; font-size:14px; margin-bottom:40px;">
     Robotics, Electronics & Mechanical Experts Working Together 🚀
   </p>
 
-  <div align="center" style="display:flex; justify-content:center; gap:60px; flex-wrap:wrap;">
+  <div align="center" style="display:flex; justify-content:center; gap:40px; flex-wrap:wrap;">
 
    <!-- Member 1 -->
-   <div style="text-align:center; max-width:250px;">
-     <div style="background:#2449d8; border-radius:50%; width:160px; height:160px; display:flex; align-items:center; justify-content:center; margin:auto;">
-       <img src="t-photos/Noman.jpg" alt="Nurul Islam Noman" style="border-radius:50%; width:140px; height:140px; object-fit:cover;">
-     </div>
-     <h3 style="margin:15px 0 5px; color:#fff;">Nurul Islam Noman</h3>
-     <p style="margin:0; color:#fff; font-size:14px; font-weight:bold;">Mechanical Design</p>
-     <p style="margin-top:10px; font-size:12px; color:#f0f0f0;">
-       Specializing in Mechanical Design with strong experience in Robotics and Embedded Systems. Passionate about integrating hardware, software, and system reliability.
-     </p>
+   <div style="text-align:center; width:220px;">
+     <svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
+       <path d="M60,-70C80,-50,100,-30,100,0C100,30,80,60,50,80C20,100,-20,100,-50,80C-80,60,-100,30,-100,0C-100,-30,-80,-60,-50,-70C-20,-80,20,-90,60,-70Z" fill="#2449d8" transform="translate(100 100)"/>
+       <clipPath id="img1">
+         <circle cx="100" cy="100" r="70"/>
+       </clipPath>
+       <image href="t-photos/Noman.jpg" width="200" height="200" clip-path="url(#img1)"/>
+     </svg>
+     <h3 style="margin:10px 0 5px; color:#fff;">Nurul Islam Noman</h3>
+     <p style="margin:0; color:#fff; font-size:14px;">Mechanical Design</p>
    </div>
 
    <!-- Member 2 -->
-   <div style="text-align:center; max-width:250px;">
-     <div style="background:#f2b844; border-radius:50%; width:160px; height:160px; display:flex; align-items:center; justify-content:center; margin:auto;">
-       <img src="t-photos/tanim.jpg" alt="Tanim SK" style="border-radius:50%; width:140px; height:140px; object-fit:cover;">
-     </div>
-     <h3 style="margin:15px 0 5px; color:#fff;">Tanim SK</h3>
-     <p style="margin:0; color:#fff; font-size:14px; font-weight:bold;">Programming & Software Architecture</p>
-     <p style="margin-top:10px; font-size:12px; color:#f0f0f0;">
-       Versatile programmer with 5+ years in Python, C++, JS, and web frameworks. Skilled in IoT, TinyML, and cloud deployment with CI/CD pipelines.
-     </p>
+   <div style="text-align:center; width:220px;">
+     <svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
+       <path d="M60,-70C90,-60,110,-20,100,20C90,60,50,90,10,100C-30,110,-70,100,-90,70C-110,40,-120,0,-100,-30C-80,-60,-40,-80,0,-90C40,-100,80,-90,60,-70Z" fill="#f2b844" transform="translate(100 100)"/>
+       <clipPath id="img2">
+         <circle cx="100" cy="100" r="70"/>
+       </clipPath>
+       <image href="t-photos/tanim.jpg" width="200" height="200" clip-path="url(#img2)"/>
+     </svg>
+     <h3 style="margin:10px 0 5px; color:#fff;">Tanim SK</h3>
+     <p style="margin:0; color:#fff; font-size:14px;">Programming & Software Architecture</p>
    </div>
 
    <!-- Member 3 -->
-   <div style="text-align:center; max-width:250px;">
-     <div style="background:#f28585; border-radius:50%; width:160px; height:160px; display:flex; align-items:center; justify-content:center; margin:auto;">
-       <img src="t-photos/Naeem.jpg" alt="Majedul Islam Naeem" style="border-radius:50%; width:140px; height:140px; object-fit:cover;">
-     </div>
-     <h3 style="margin:15px 0 5px; color:#fff;">Majedul Islam Naeem</h3>
-     <p style="margin:0; color:#fff; font-size:14px; font-weight:bold;">Electronics & Circuit Design</p>
-     <p style="margin-top:10px; font-size:12px; color:#f0f0f0;">
-       Robotics and Embedded Systems innovator, designing efficient circuits and integrating electronics seamlessly into robotics projects.
-     </p>
+   <div style="text-align:center; width:220px;">
+     <svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
+       <path d="M70,-80C100,-60,120,-20,110,20C100,60,60,90,20,110C-20,120,-60,110,-80,80C-100,50,-120,10,-110,-30C-100,-70,-60,-100,-20,-110C20,-120,60,-100,70,-80Z" fill="#f28585" transform="translate(100 100)"/>
+       <clipPath id="img3">
+         <circle cx="100" cy="100" r="70"/>
+       </clipPath>
+       <image href="t-photos/Naeem.jpg" width="200" height="200" clip-path="url(#img3)"/>
+     </svg>
+     <h3 style="margin:10px 0 5px; color:#fff;">Majedul Islam Naeem</h3>
+     <p style="margin:0; color:#fff; font-size:14px;">Electronics & Circuit Design</p>
    </div>
 
   </div>
