@@ -38,7 +38,7 @@ MAX_SPEED = 60
 MIN_SPEED = 45
 
 # Intersections
-TOTAL_INTERSECTIONS = 100
+TOTAL_INTERSECTIONS = 12
 
 # Region of Interest coordinates
 LEFT_REGION = [20, 220, 240, 280]  # left
@@ -316,7 +316,7 @@ def main():
                         left_result=left_result,
                         right_result=right_result,
                     )                    
-            continue
+                continue
 
             # --- Reversing logic ---
             if trigger_reverse:
@@ -566,7 +566,8 @@ def main():
                 print("Lap completed!")
                 arduino.write(f"0,-1,{angle}\n".encode())
                 print(angle)
-                break
+                contour_workers.parking_mode = True
+                # break
 
             if (
                 current_intersections >= TOTAL_INTERSECTIONS
