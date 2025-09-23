@@ -63,7 +63,7 @@ A versatile programmer with expertise in Python, JavaScript, HTML, CSS, and C++,
 
 Also proficient in working with Raspberry Pi and microcontrollers, with experience in home automation, WebSocket programming, RF communication, and integrating TinyML for lightweight AI projects.
 <p align="center">
-  <img src="t-photos/tanim.jpg" alt="Tanim SK" width="700" height="900"/>
+  <img src="t-photos/Tanim.jpeg" alt="Tanim SK" width="700" height="900"/>
 </p>
 
 
@@ -120,10 +120,8 @@ The WRO Future Engineers 2025 competition is divided into **two progressive roun
 
 ---
 
-
-##  Our Robot  
-
-### 🔎 Robot Overview  
+## Our Robot
+### Robot Overview  
 **Echo Drift** brings a **next-generation autonomous EV** to WRO 2025, built for speed, accuracy, and adaptability.
   
 - 🚗 Precise track navigation  
@@ -174,14 +172,75 @@ The WRO Future Engineers 2025 competition is divided into **two progressive roun
 
 ---
 
+## System Architecture  
 
+The **Echo Drift Autonomous EV** is designed with a **layered and modular architecture** to ensure clarity, testability, and compliance with WRO 2025 Future Engineers standards.  
 
+## System Flow Diagram
 
-<p align="center">
-  <img src="v-photos/IMG_20250618_170008.webp" alt="Vehicle Front View" width="500"/>
-</p>
+<img src="https://github.com/majednaeem/WRO/blob/main/Assets/System_Architecture_Flow_Infographic.png">  
+---
+## Layered Architecture Overview 
+
+| **Layer**                | **Key Components**                                                                                                                                                    | **Role & Engineering Considerations**                                                                                                                                                                                                                                                           |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Hardware**             | - PLA + Aluminum Hybrid Chassis  <br> - 2× DC Geared Motors (12V, 300RPM, 1.2Nm)  <br> - High-Torque Servo (15kg·cm)  <br> - 65mm Rubberized Wheels                   | - Rigid but lightweight frame ensures stability and durability. <br> - Motor torque chosen with ~30% safety margin for acceleration under load. <br> - Servo provides precise steering with quick response. <br> - Wheel diameter selected for balance between speed and traction.             |
+| **Power**                | - 3S LiPo (11.1V, 2200mAh)  <br> - Power Distribution Board (12V, 5V, 3.3V outputs)  <br> - Fuse + XT60 Connectors                                                    | - LiPo selected for high discharge rate, lightweight, and compact size. <br> - Separate regulated lines prevent voltage drop issues. <br> - Fuse + XT60 provide short-circuit and overload safety.                                                                                              |
+| **Perception**           | - Camera (USB/PiCam)  <br> - 2× Ultrasonic Sensors (front-left & front-right)  <br> - IMU (MPU6050)  <br> - Wheel Encoders                                            | - Camera handles **lane detection and vision-based markers**. <br> - Ultrasonic ensures reliable short-range obstacle sensing. <br> - IMU improves orientation and stability on turns. <br> - Encoders provide real-time speed & distance for closed-loop control.                              |
+| **Control & Processing** | - Raspberry Pi 4 (Python + OpenCV)  <br> - Arduino Mega (C++)  <br> - UART Serial Link                                                                                | - Pi processes camera input & makes high-level decisions. <br> - Arduino handles **PWM signals, interrupts, and motor control** with real-time precision. <br> - UART ensures fast, low-latency communication between subsystems.                                                               |
+| **Decision**             | - OpenCV Line Detection  <br> - Sensor Fusion (Camera + Ultrasonic)  <br> - PID Steering Control  <br> - Encoder-based Speed Feedback  <br> - Emergency Stop Failsafe | - Lane tracking optimized with **real-time vision algorithms**. <br> - Sensor fusion improves obstacle avoidance accuracy. <br> - PID ensures smooth steering corrections. <br> - Encoders maintain consistent velocity. <br> - Safety protocol: robot halts when conflicting data is detected. |
+| **Actuation**            | - H-Bridge Motor Driver (e.g., BTS7960)  <br> - PWM Servo Driver                                                                                                      | - H-Bridge supplies bidirectional control for drive motors. <br> - Servo driver ensures precise angle control. <br> - Final output: **smooth differential drive with adaptive steering**.                                                                                                       |
+---
+## Threads & Rates
+| Task         |       Rate | Notes                              |
+| ------------ | ---------: | ---------------------------------- |
+| Sensor read  |  50–100 Hz | median filter, timeouts            |
+| Vision       |  20–30 FPS | HSV masks for lane & pillar colors |
+| Fusion       |      50 Hz | complementary/Kalman (optional)    |
+| Navigation   |   20–50 Hz | lane-keeping, color rule, parking  |
+| Control      | 100–200 Hz | PID for speed + steering           |
+| Actuator I/O | 100–200 Hz | PWM/UART                           |
+| Logger       |      10 Hz | CSV + HUD overlay                  |
+| Watchdog     |       5 Hz | trips SAFE\_STOP                   |
 
 ---
+
+
+## Hardware & Mechanical Part
+Our robot is designed with a balanced mix of mechanical, electrical, and electronic components, ensuring rule compliance (size, weight, drive system) and performance (precision, stability, obstacle avoidance).
+
+### List of components
+
+| Component | Image | Qty | Notes |
+|-----------|-------|-----|-------|
+| **Arduino Nano A000005** | <img src="images/arduino-nano.jpg" width="120"> | x1 | Microcontroller for low-level control |
+| **Raspberry Pi 5** | <img src="images/rpi5.jpg" width="120"> | x1 | Main controller for vision & navigation |
+| **TB6612FNG Motor Driver** | <img src="images/tb6612fng.jpg" width="120"> | x1 | Controls 2 DC motors |
+| **L298N Motor Driver (Backup)** | <img src="images/l298n.jpg" width="120"> | x1 | Legacy driver for testing |
+| **DC Gear Motors (12V)** | <img src="images/dc-motor.jpg" width="120"> | x2 | Linked to rear axle |
+| **MG995 Servo** | <img src="images/mg995.jpg" width="120"> | x1 | Ackermann steering |
+| **HC-SR04 Ultrasonic Sensor** | <img src="images/hcsr04.jpg" width="120"> | x3 | Obstacle detection (front + side) |
+| **IMU MPU6050 Gyroscope** | <img src="images/mpu6050.jpg" width="120"> | x1 | Orientation & stability |
+| **Camera Module (CSI/USB)** | <img src="images/camera.jpg" width="120"> | x1 | Lane & obstacle detection |
+| **Neo-6M GPS Module** | <img src="images/gps.jpg" width="120"> | x1 | Outdoor navigation (optional) |
+| **Li-Po Battery (3S, 11.1V, 2200mAh)** | <img src="images/lipo.jpg" width="120"> | x1 | Main power source |
+| **LM2596 Step-down Converter** | <img src="images/lm2596.jpg" width="120"> | x2 | Voltage regulation (5V & 3.3V) |
+| **Prototype PCB Board** | <img src="images/pcb-proto.jpg" width="120"> | x2 | Custom wiring layout |
+| **Breadboard (Mini)** | <img src="images/breadboard.jpg" width="120"> | x1 | Quick prototyping |
+| **Wheels with Rubber Tires** | <img src="images/wheel.jpg" width="120"> | x4 | High grip on track |
+| **3D Printed Chassis Parts** | <img src="images/chassis.jpg" width="120"> | - | Lightweight & modular |
+| **Power Switch** | <img src="images/switch.jpg" width="120"> | x1 | Main power control |
+| **Start Button** | <img src="images/button.jpg" width="120"> | x1 | Competition start |
+| **Emergency Stop (E-Stop) Switch** | <img src="images/estop.jpg" width="120"> | x1 | Safety cutoff |
+| **Jumper Wires (Male-Female)** | <img src="images/jumpers.jpg" width="120"> | 40+ | Connections |
+| **Heat Shrink Tubes** | <img src="images/heatshrink.jpg" width="120"> | Pack | Wire insulation |
+| **Screws & Standoffs** | <img src="images/screws.jpg" width="120"> | - | Mounting hardware |
+| **Cooling Fan (5V)** | <img src="images/fan.jpg" width="120"> | x1 | Keeps Pi cool |
+| **USB Power Bank (Backup)** | <img src="images/powerbank.jpg" width="120"> | x1 | Debugging power |
+| **LED Indicators (Red/Green)** | <img src="images/led.jpg" width="120"> | x2 | Status display |
+
+
+### Mobility 
 
 ## Hardware Design & Gear System
 
