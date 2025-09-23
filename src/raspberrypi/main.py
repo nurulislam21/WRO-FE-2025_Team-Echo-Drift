@@ -357,7 +357,7 @@ def main():
             #         )
             #     if cv2.waitKey(1) & 0xFF == ord("q"):
             #         break
-                
+
             #     continue
 
             # if parking_walls_count == 2:
@@ -379,8 +379,8 @@ def main():
                 # get object coordinates
                 red_obj_x, green_obj_y = get_max_y_coord(green_result.contours)
                 green_obj_x, red_obj_y = get_max_y_coord(red_result.contours)
-                _ , _ = get_overall_centroid(red_result.contours)
-                _ , _ = get_overall_centroid(green_result.contours)
+                _, _ = get_overall_centroid(red_result.contours)
+                _, _ = get_overall_centroid(green_result.contours)
 
                 # set inf if no object detected
                 if green_obj_y is None or green_obj_x is None:
@@ -390,9 +390,9 @@ def main():
                 if red_obj_y is None or red_obj_x is None:
                     red_obj_x = -1
                     red_obj_y = -1
-                
+
                 direction_turing = ""
-                
+
                 # only proceed if both are not -1
                 if not (
                     (green_obj_x == -1 and green_obj_y == -1)
@@ -414,10 +414,13 @@ def main():
                     ):
                         print("Object too close! Backing off.")
                         trigger_reverse = True
-                        reverse_start_time = time.time()                    
+                        reverse_start_time = time.time()
 
                     # if red obj is closer & right to the left danger zone
-                    if red_obj_y > green_obj_y and (red_obj_x + OBS_REGION[0]) > DANGER_ZONE[0]:
+                    if (
+                        red_obj_y > green_obj_y
+                        and (red_obj_x + OBS_REGION[0]) > DANGER_ZONE[0]
+                    ):
                         print("Red")
 
                         if front_wall_area > 350:
@@ -462,7 +465,10 @@ def main():
                         direction_turing = "right"
 
                     # if green obj is closer & left to the right danger zone
-                    elif green_obj_y > red_obj_y and (green_obj_x + OBS_REGION[0]) < DANGER_ZONE[2]:
+                    elif (
+                        green_obj_y > red_obj_y
+                        and (green_obj_x + OBS_REGION[0]) < DANGER_ZONE[2]
+                    ):
                         print("Green")
 
                         if front_wall_area > 350:
@@ -529,15 +535,30 @@ def main():
                     speed_factor = 1 - (0.3 * y_gain)  # slow down when closer to object
                     print(
                         f"Norm: {normalized_angle_offset} | Ygain: {y_gain} | OBJ error: {obj_error}"
-                    )                
-                
+                    )
+
                 elif front_wall_area > 400:
                     normalized_angle_offset = -1
                 # print(f"Obj: {red_obj_x}, {red_obj_y} | Wall: {r_wall_x}, {r_wall_y}")
 
-            if (not ((red_result.contours and red_area > 300) or (green_result.contours and green_area > 300))) or 
-            (not (red_obj_x and green_obj_x and red_obj_y and green_obj_y)) or
-            (not ((red_obj_x + OBS_REGION[0]) > DANGER_ZONE[0] and (green_obj_x + OBS_REGION[0]) < DANGER_ZONE[2])):
+            if (
+                (
+                    # if no obstacles detected
+                    not (
+                        (red_result.contours and red_area > 300)
+                        or (green_result.contours and green_area > 300)
+                    )
+                )
+                # or if x or y coords are not assigned
+                or (not (red_obj_x and green_obj_x and red_obj_y and green_obj_y))
+                or (
+                    # or if both obstacles are outside the danger zone
+                    not (
+                        (red_obj_x + OBS_REGION[0]) > DANGER_ZONE[0]
+                        and (green_obj_x + OBS_REGION[0]) < DANGER_ZONE[2]
+                    )
+                )
+            ):
                 obstacle_wall_pivot = (None, None)
                 # PID controller
                 left_buf.append(left_area)
@@ -599,7 +620,7 @@ def main():
             # Stopping logic
             if (
                 # contour_workers.mode == "NO_OBSTACLE"
-                # and 
+                # and
                 stopFlag
                 and (int(time.time()) - stopTime) > 1.7
             ):
@@ -608,10 +629,7 @@ def main():
                 print(angle)
                 break
 
-            if (
-                current_intersections >= TOTAL_INTERSECTIONS                
-                and not stopFlag
-            ):
+            if current_intersections >= TOTAL_INTERSECTIONS and not stopFlag:
                 stopFlag = True
                 # Enable parking mode if in obstacle mode
                 contour_workers.parking_mode = True if MODE == "OBSTACLE" else False
