@@ -42,8 +42,12 @@ MIN_SPEED = 50
 TOTAL_INTERSECTIONS = 12
 
 # Region of Interest coordinates
-LEFT_REGION = [20, 220, 270, 280]  if MODE == "NO_OBSTACLE" else [20, 220, 250, 280]  # left
-RIGHT_REGION = [370, 220, 620, 280]  if MODE == "NO_OBSTACLE" else [390, 220, 620, 280]  # right
+LEFT_REGION = (
+    [20, 220, 270, 280] if MODE == "NO_OBSTACLE" else [20, 220, 250, 280]
+)  # left
+RIGHT_REGION = (
+    [370, 220, 620, 280] if MODE == "NO_OBSTACLE" else [390, 220, 620, 280]
+)  # right
 LAP_REGION = [200, 300, 440, 350]  # lap detection
 OBS_REGION = [95, 140, 545, 320]  # obstacle detection
 REVERSE_REGION = [225, 300, 415, 320]  # reverse trigger area
@@ -80,8 +84,8 @@ UPPER_MAGENTA = np.array([170, 121, 145])
 
 
 contour_workers = ContourWorkers(
-    #mode="NO_OBSTACLE",
-    mode=MODE,    
+    # mode="NO_OBSTACLE",
+    mode=MODE,
     has_parked_out=False,
     # color ranges
     lower_blue=LOWER_BLUE,
@@ -112,12 +116,9 @@ STRAIGHT_CONST = 95
 turnThresh = 150
 exitThresh = 1500
 
-
-MAX_OFFSET_DEGREE = 50
+MAX_OFFSET_DEGREE = 40
 maxRight = STRAIGHT_CONST + MAX_OFFSET_DEGREE
 maxLeft = STRAIGHT_CONST - MAX_OFFSET_DEGREE
-slightRight = STRAIGHT_CONST + 20
-slightLeft = STRAIGHT_CONST - 20
 
 # PID controller constants
 kp = 1.5
@@ -143,7 +144,9 @@ stopTime = 0
 
 # Intersection crossing
 current_intersections = 0
-intersection_crossing_duration = 1.1 if MODE == "NO_OBSTACLE" else 1.5 # longer for obstacle mode
+intersection_crossing_duration = (
+    1.1 if MODE == "NO_OBSTACLE" else 1.5
+)  # longer for obstacle mode
 intersection_crossing_start = 0
 intersection_detected = False
 
@@ -310,18 +313,6 @@ def main():
                     parking.has_parked_out = contour_workers.has_parked_out = True
                     continue
 
-                # process parking, when parking mode is active
-                if contour_workers.parking_mode:
-                    angle = parking.process_parking(
-                        parking_result=parking_result,
-                        pid=pid,
-                        left_result=left_result,
-                        right_result=right_result,
-                    )
-                    if cv2.waitKey(1) & 0xFF == ord("q"):
-                        break
-                    continue
-
             # --- Reversing logic ---
             if trigger_reverse:
                 speed = -MIN_SPEED
@@ -347,6 +338,19 @@ def main():
                     break
 
                 print("continue")
+                continue
+
+            # --- Parking logic ---
+            if contour_workers.parking_mode:
+                angle = parking.process_parking(
+                        parking_result=parking_result,
+                        pid=pid,
+                        left_result=left_result,
+                        right_result=right_result,
+                    )
+                if cv2.waitKey(1) & 0xFF == ord("q"):
+                    break
+                
                 continue
 
             # if parking_walls_count == 2:
@@ -548,11 +552,13 @@ def main():
             # intersection detection
             # work here
             if not intersection_detected:
-                if ((orange_result.contours and orange_area > 80) or (
-                    blue_result.contours and blue_area > 80
-                )) and (
+                if (
+                    (orange_result.contours and orange_area > 80)
+                    or (blue_result.contours and blue_area > 80)
+                ) and (
                     # ignore laps if just reversed recently for 1.4 second
-                    reverse_start_time + reverse_duration + 1.4 < time.time()
+                    reverse_start_time + reverse_duration + 1.4
+                    < time.time()
                 ):
                     intersection_detected = True
                     intersection_crossing_start = int(time.time())
@@ -580,12 +586,12 @@ def main():
                 break
 
             if (
-                current_intersections >= TOTAL_INTERSECTIONS
-                # and abs(angle - STRAIGHT_CONST) <= 15
+                current_intersections >= TOTAL_INTERSECTIONS                
                 and not stopFlag
             ):
                 stopFlag = True
-                contour_workers.parking_mode = True
+                # Enable parking mode if in obstacle mode
+                contour_workers.parking_mode = True if MODE == "OBSTACLE" else False
                 stopTime = int(time.time())
                 print("Preparing to stop...")
 

@@ -39,9 +39,9 @@ class Parking:
         self.MAX_OFFSET_DEGREE = MAX_OFFSET_DEGREE
 
         # states
-        self.has_parked_out = False
-        self.last_wall_count = 0
-        self.stop_tolerance = 5
+        # self.has_parked_out = False
+        # self.last_wall_count = 0
+        # self.stop_tolerance = 5
 
         self.seen_parking_lot = "NOT_SEEN"
         self.parking_lot_side = None
@@ -125,10 +125,12 @@ class Parking:
             # exit to the right
             print(f"Parking Out | Left Area: {left_area}, Right Area: {right_area}")
             parking_out_instructions = self.parking_out_instructions["right"]
+            self.parking_lot_side = "left" # parking lot is on the left
         else:
             # exit to the left
             print(f"Parking Out | Left Area: {left_area}, Right Area: {right_area}")
             parking_out_instructions = self.parking_out_instructions["left"]
+            self.parking_lot_side = "right" # parking lot is on the right
 
         for speed, steps, angle in parking_out_instructions:
             self.arduino.write(f"{speed},{steps},{angle}\n".encode())
@@ -154,7 +156,7 @@ class Parking:
         self,
         parking_result: ContourResult,
         left_result: ContourResult,
-        right_result: ContourResult,
+        right_result: ContourResult,        
         pid: PID,
     ):
         print(left_result.metadata)
