@@ -34,15 +34,15 @@ print("DEBUG MODE" if DEBUG else "PRODUCTION")
 # Simulated camera settings
 CAM_WIDTH = 640
 CAM_HEIGHT = 480
-MAX_SPEED = 60
-MIN_SPEED = 45
+MAX_SPEED = 100
+MIN_SPEED = 60
 
 # Intersections
 TOTAL_INTERSECTIONS = 12
 
 # Region of Interest coordinates
-LEFT_REGION = [20, 220, 240, 280]  # left
-RIGHT_REGION = [400, 220, 620, 280]  # right
+LEFT_REGION = [20, 220, 280, 280]  # left
+RIGHT_REGION = [360, 220, 620, 280]  # right
 LAP_REGION = [200, 300, 440, 350]  # lap detection
 OBS_REGION = [95, 140, 545, 320]  # obstacle detection
 REVERSE_REGION = [200, 300, 440, 320]  # reverse trigger area
@@ -57,8 +57,8 @@ OBSTACLE_DETECTOR_Y = OBS_REGION[3] - OBS_REGION[1]
 obstacle_wall_pivot = (None, None)
 
 # Color ranges
-LOWER_BLACK = np.array([0, 114, 116])
-UPPER_BLACK = np.array([65, 154, 156])
+LOWER_BLACK = np.array([0, 111, 116])
+UPPER_BLACK = np.array([80, 151, 156])
 
 LOWER_ORANGE = np.array([105, 125, 87])
 UPPER_ORANGE = np.array([185, 165, 127])
@@ -79,8 +79,8 @@ UPPER_MAGENTA = np.array([160, 129, 145])
 
 
 contour_workers = ContourWorkers(
-    # mode="NO_OBSTACLE",
-    mode="OBSTACLE",
+    mode="NO_OBSTACLE",
+    #mode="OBSTACLE",
     has_parked_out=False,
     # color ranges
     lower_blue=LOWER_BLUE,
@@ -573,7 +573,7 @@ def main():
                 print("Lap completed!")
                 arduino.write(f"-5,-1,{angle}\n".encode())
                 print(angle)
-                # break
+                break
 
             if (
                 current_intersections >= TOTAL_INTERSECTIONS
