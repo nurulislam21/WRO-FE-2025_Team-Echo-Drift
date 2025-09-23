@@ -17,6 +17,14 @@ def find_contours(frame, lower_color, upper_color, roi, direction=None, use_conv
     x1, y1, x2, y2 = roi
     roi_frame = frame[y1:y2, x1:x2]
     labImg = cv2.cvtColor(roi_frame, cv2.COLOR_RGB2Lab)
+
+    # lighting normalization
+    l, a, b = cv2.split(labImg)
+    clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8,8))
+    l = clahe.apply(l)
+    labImg = cv2.merge((l,a,b))
+
+    # blur and mask
     img_blur = cv2.medianBlur(labImg, 7)
     mask = cv2.inRange(img_blur, lower_color, upper_color)
     kernel = np.ones((7, 7), np.uint8)

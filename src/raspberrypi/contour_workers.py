@@ -320,7 +320,7 @@ class ContourWorkers:
             try:
                 frame = self.frame_queue_orange.get(timeout=0.1)
                 contours = find_contours(
-                    frame, self.LOWER_ORANGE, self.UPPER_ORANGE, self.LAP_REGION
+                    frame, self.LOWER_ORANGE, self.UPPER_ORANGE, self.LAP_REGION, use_convex_hull=True
                 )
                 area, _ = max_contour_area(contours)
                 result = ContourResult(area, contours)
