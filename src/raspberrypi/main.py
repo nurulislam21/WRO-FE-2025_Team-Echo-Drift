@@ -32,6 +32,7 @@ DEBUG = True
 print("DEBUG MODE" if DEBUG else "PRODUCTION")
 
 # Simulated camera settings
+MODE = "OBSTACLE"  # "NO_OBSTACLE" or "OBSTACLE"
 CAM_WIDTH = 640
 CAM_HEIGHT = 480
 MAX_SPEED = 60
@@ -41,11 +42,11 @@ MIN_SPEED = 50
 TOTAL_INTERSECTIONS = 12
 
 # Region of Interest coordinates
-LEFT_REGION = [20, 220, 270, 280]  # left
-RIGHT_REGION = [370, 220, 620, 280]  # right
+LEFT_REGION = [20, 220, 270, 280]  if MODE == "NO_OBSTACLE" else [20, 220, 250, 280]  # left
+RIGHT_REGION = [370, 220, 620, 280]  if MODE == "NO_OBSTACLE" else [390, 220, 620, 280]  # right
 LAP_REGION = [200, 300, 440, 350]  # lap detection
 OBS_REGION = [95, 140, 545, 320]  # obstacle detection
-REVERSE_REGION = [210, 300, 430, 320]  # reverse trigger area
+REVERSE_REGION = [225, 300, 415, 320]  # reverse trigger area
 FRONT_WALL_REGION = [300, 200, 340, 220]  # front wall detection
 PARKING_LOT_REGION = [0, 185, CAM_WIDTH, 400]  # parking lot detection
 
@@ -70,17 +71,17 @@ UPPER_BLUE = np.array([152, 190, 206])
 LOWER_RED = np.array([50, 163, 42])
 UPPER_RED = np.array([120, 203, 82])
 
-LOWER_GREEN = np.array([95, 96, 165])
-UPPER_GREEN = np.array([180, 136, 205])
+LOWER_GREEN = np.array([90, 78, 165])
+UPPER_GREEN = np.array([180, 118, 205])
 
 # parking color ranges
-LOWER_MAGENTA = np.array([90, 89, 105])
-UPPER_MAGENTA = np.array([160, 129, 145])
+LOWER_MAGENTA = np.array([100, 81, 105])
+UPPER_MAGENTA = np.array([170, 121, 145])
 
 
 contour_workers = ContourWorkers(
     #mode="NO_OBSTACLE",
-    mode="OBSTACLE",
+    mode=MODE,    
     has_parked_out=False,
     # color ranges
     lower_blue=LOWER_BLUE,
@@ -112,7 +113,7 @@ turnThresh = 150
 exitThresh = 1500
 
 
-MAX_OFFSET_DEGREE = 40
+MAX_OFFSET_DEGREE = 50
 maxRight = STRAIGHT_CONST + MAX_OFFSET_DEGREE
 maxLeft = STRAIGHT_CONST - MAX_OFFSET_DEGREE
 slightRight = STRAIGHT_CONST + 20
@@ -142,7 +143,7 @@ stopTime = 0
 
 # Intersection crossing
 current_intersections = 0
-intersection_crossing_duration = 1.1  # seconds
+intersection_crossing_duration = 1.1 if MODE == "NO_OBSTACLE" else 1.5 # longer for obstacle mode
 intersection_crossing_start = 0
 intersection_detected = False
 
@@ -173,9 +174,9 @@ def main():
     global current_intersections, intersection_detected, intersection_crossing_start
     global startProcessing, obstacle_wall_pivot
 
-    parking_walls = []
-    parking_walls_count = 0
-    parking_wall_pivot = (None, None)
+    # parking_walls = []
+    # parking_walls_count = 0
+    # parking_wall_pivot = (None, None)
 
     # Initialize PiCamera2
     picam2 = Picamera2()
@@ -547,8 +548,11 @@ def main():
             # intersection detection
             # work here
             if not intersection_detected:
-                if (orange_result.contours and orange_area > 80) or (
+                if ((orange_result.contours and orange_area > 80) or (
                     blue_result.contours and blue_area > 80
+                )) and (
+                    # ignore laps if just reversed recently for 1.4 second
+                    reverse_start_time + reverse_duration + 1.4 < time.time()
                 ):
                     intersection_detected = True
                     intersection_crossing_start = int(time.time())
