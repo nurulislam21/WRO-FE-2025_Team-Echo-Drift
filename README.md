@@ -255,15 +255,17 @@ Mobility management defines how the robot moves, steers, and maintains stability
 - **Reason:** Quick, precise steering even under load.
 
 #### Engineering Principle
-\[
-\text{Torque Required} = \text{Wheel Radius} \times \text{Force (Load + Friction)}
-\]
+Torque Required = Wheel Radius × Force (Load + Friction)
 
-- Required torque ≈ **0.9 Nm**  
+-Our calculation showed motor Required torque ≈ **0.9 Nm**  
 - Selected N20 motors rated ≈ **1.2 Nm** → safe margin  
 - Speed doubles from ~1.0 m/s (300 RPM) to ~2.0 m/s (600 RPM) on 65 mm wheels.
 
 📂 Encoders connected to Arduino for speed control and stability.
+
+| Drive Motors (N20 with Encoders) | Steering Servo Assembly |
+|----------------------------------|--------------------------|
+| [N20 Motors] <img src="https://github.com/majednaeem/WRO/blob/main/Assets/n20.jpg"> | [Steering Servo] <img src="https://github.com/majednaeem/WRO/blob/main/Assets/n20.jpg"> |
 
 
 ## Hardware Design & Gear System
