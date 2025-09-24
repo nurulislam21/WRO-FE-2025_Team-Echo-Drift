@@ -41,7 +41,7 @@ From the very start, we have built a strong bond based on trust, hard work, and 
 A few months ago, we set ourselves a bigger goal—to represent Bangladesh in the World Robot Olympiad. Since then, we have been working with full dedication and determination. Our dream is simple but powerful: to raise the flag of Bangladesh high on the international stage and prove that with passion, teamwork, and belief, anything is possible.
  
 <p align="center">
-  <img src="t-photos/GP_WRO.jpg" alt="Team Echo Drift" width="700"/>
+  <img src="t-photos/WROGP.png" alt="Team Echo Drift" width="700"/>
 </p>
 
 ---
@@ -240,7 +240,31 @@ Our robot is designed with a balanced mix of mechanical, electrical, and electro
 | **LED Indicators (Red/Green)** | <img src="images/led.jpg" width="120"> | x2 | Status display |
 
 
-### Mobility 
+## Mobility Management
+Mobility management defines how the robot moves, steers, and maintains stability. For Echo Drift, we adopted a rear-wheel drive + front servo steering configuration. This gives better maneuverability, efficient obstacle avoidance, and realistic car-like motion.
+
+### Motor Selection 
+
+#### Drive Motors
+- **Type:** N20 DC Geared Motors with Encoders  
+- **Specs:** 12V, ~600 RPM, ~1.2 Nm torque  
+- **Reason:** Higher speed compared to 300 RPM version. Encoders provide feedback for closed-loop control (speed & distance). Torque margin (~30% extra) ensures reliable acceleration.
+
+#### Steering Servo
+- **Type:** High-torque Servo (~15 kg·cm)  
+- **Reason:** Quick, precise steering even under load.
+
+#### Engineering Principle
+\[
+\text{Torque Required} = \text{Wheel Radius} \times \text{Force (Load + Friction)}
+\]
+
+- Required torque ≈ **0.9 Nm**  
+- Selected N20 motors rated ≈ **1.2 Nm** → safe margin  
+- Speed doubles from ~1.0 m/s (300 RPM) to ~2.0 m/s (600 RPM) on 65 mm wheels.
+
+📂 Encoders connected to Arduino for speed control and stability.
+
 
 ## Hardware Design & Gear System
 
