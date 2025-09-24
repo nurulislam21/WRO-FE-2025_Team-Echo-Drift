@@ -1,4 +1,4 @@
-from img_processing_functions import find_contours, max_contour_area
+from img_processing_functions import find_contours, max_contour_area, find_color_signal_box
 import threading
 from queue import Queue, Empty
 import cv2
@@ -373,8 +373,8 @@ class ContourWorkers:
         while not self.stop_processing.is_set():
             try:
                 frame = self.frame_queue_green.get(timeout=0.1)
-                contours = find_contours(
-                    frame, self.LOWER_GREEN, self.UPPER_GREEN, self.OBS_REGION, consider_area=800
+                contours = find_color_signal_box(
+                    frame, self.LOWER_GREEN, self.UPPER_GREEN, self.OBS_REGION, consider_area=3000
                 )
                 area, _ = max_contour_area(contours)
                 result = ContourResult(area, contours, "green_pillar")
@@ -400,8 +400,8 @@ class ContourWorkers:
         while not self.stop_processing.is_set():
             try:
                 frame = self.frame_queue_red.get(timeout=0.1)
-                contours = find_contours(
-                    frame, self.LOWER_RED, self.UPPER_RED, self.OBS_REGION, consider_area=800
+                contours = find_color_signal_box(
+                    frame, self.LOWER_RED, self.UPPER_RED, self.OBS_REGION, consider_area=3000
                 )
                 area, _ = max_contour_area(contours)
                 result = ContourResult(area, contours, "red_pillar")
