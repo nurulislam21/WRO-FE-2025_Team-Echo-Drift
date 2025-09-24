@@ -13,6 +13,22 @@ def replace_closest(polygon, new_point):
     return polygon
 
 
+def transform_danger_zone_xshift(points, steering_angle, sensitivity=2):
+    transformed = []
+    for i, line in enumerate(points):
+        x1, y1, x2, y2 = line["x1"], line["y1"], line["x2"], line["y2"]
+
+        # shift top x1 only (keep y same, keep bottom fixed)
+        if i == 0:  # left line
+            x1_new = int(x1 - steering_angle * sensitivity)
+        else:  # right line
+            x1_new = int(x1 - steering_angle * sensitivity)
+
+        transformed.append({"x1": x1_new, "y1": y1, "x2": x2, "y2": y2})
+    return transformed
+
+
+
 def find_contours(frame, lower_color, upper_color, roi, direction=None, use_convex_hull=False, consider_area=None):
     x1, y1, x2, y2 = roi
     roi_frame = frame[y1:y2, x1:x2]
