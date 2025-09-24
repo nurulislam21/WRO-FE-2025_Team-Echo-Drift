@@ -15,6 +15,7 @@ from img_processing_functions import (
     get_max_x_coord,
     get_overall_centroid,
     point_position,
+    transform_danger_zone_xshift,
 )
 from contour_workers import ContourWorkers
 from parking import Parking
@@ -197,7 +198,7 @@ def main():
     global stopFlag, stopTime, speed, trigger_reverse, reverse_angle
     global current_intersections, intersection_detected, intersection_crossing_start
     global startProcessing, obstacle_wall_pivot, reverse_start_time, last_reverse_end_time
-
+    DANGER_ZONE_POINTS_COPY = copy.deepcopy(DANGER_ZONE_POINTS)
     # parking_walls = []
     # parking_walls_count = 0
     # parking_wall_pivot = (None, None)
@@ -312,7 +313,7 @@ def main():
                     OBS_REGION=OBS_REGION,
                     REVERSE_REGION=REVERSE_REGION,
                     FRONT_WALL_REGION=FRONT_WALL_REGION,
-                    DANGER_ZONE_POINTS=DANGER_ZONE_POINTS,
+                    DANGER_ZONE_POINTS=DANGER_ZONE_POINTS_COPY,
                     front_wall_result=front_wall_result,
                     angle=angle,
                     current_intersections=current_intersections,
@@ -750,6 +751,11 @@ def main():
                     ),
                     maxLeft,
                 )
+            )
+
+            # shift the danger zone points according to the steering angle
+            DANGER_ZONE_POINTS_COPY = transform_danger_zone_xshift(
+                DANGER_ZONE_POINTS, STRAIGHT_CONST - angle, 2
             )
 
             # map speed with angle
