@@ -154,6 +154,9 @@ trigger_reverse = False
 reverse_start_time = 0
 reverse_duration = 0.6  # seconds
 reverse_angle = STRAIGHT_CONST
+reverse_pause_time = (
+    1.0  # seconds to wait after reversing, will not initiate reverse during this period
+)
 
 startProcessing = False
 stopFlag = False
@@ -338,10 +341,18 @@ def main():
 
             # --- Reversing logic ---
             if trigger_reverse:
+                # dont trigger another reverse if just reversed recently
+                if (reverse_start_time + reverse_duration + reverse_pause_time) > time.time():
+                    if cv2.waitKey(1) & 0xFF == ord("q"):
+                        break
+                    trigger_reverse = False
+                    print("continue")
+                    continue
+
                 speed = -MIN_SPEED
                 if (time.time() - reverse_start_time) > reverse_duration:
                     trigger_reverse = False
-                    speed = 0  # stop after reversing                
+                    speed = 0  # stop after reversing
                 arduino.write(f"{speed},-1,{reverse_angle}\n".encode())
                 print(f"Reversing... Speed: {speed}, Angle: {reverse_angle}")
                 if cv2.waitKey(1) & 0xFF == ord("q"):
@@ -355,7 +366,7 @@ def main():
                 reverse_start_time = time.time()
                 speed = 0  # stop before reversing
                 reverse_angle = STRAIGHT_CONST
-                arduino.write(f"{speed},-1,{reverse_angle}\n".encode())                
+                arduino.write(f"{speed},-1,{reverse_angle}\n".encode())
                 if cv2.waitKey(1) & 0xFF == ord("q"):
                     break
 
@@ -428,7 +439,7 @@ def main():
                         reverse_angle = STRAIGHT_CONST - 25  # turn left when reversing
                         trigger_reverse = True
                         reverse_start_time = time.time()
-                    
+
                     elif (
                         (green_obj_y + OBS_REGION[1]) > REVERSE_REGION[1]
                         and (green_obj_x + OBS_REGION[0]) > REVERSE_REGION[0]
@@ -586,11 +597,10 @@ def main():
                     normalized_angle_offset = -1  # turn left hard
                     print("right area too big")
                 else:
-                    normalized_angle_offset = -1 # -1 -> turn left, 1 -> turn right
+                    normalized_angle_offset = -1  # -1 -> turn left, 1 -> turn right
                     print("only front wall")
 
                 obstacle_wall_pivot = (None, None)
-                
 
             if (
                 # or if x or y coords are not assigned and front area is small
@@ -674,26 +684,26 @@ def main():
 
                 print(red_obj_x, red_obj_y)
 
-                print("2nd: 2",
+                print(
+                    "2nd: 2",
                     bool(
-                            (
-                                green_obj_x is not None
-                                and green_obj_y is not None
-                                and point_position(
-                                    DANGER_ZONE_POINTS[1]["x1"],
-                                    DANGER_ZONE_POINTS[1]["y1"],
-                                    DANGER_ZONE_POINTS[1]["x2"],
-                                    DANGER_ZONE_POINTS[1]["y2"],
-                                    green_obj_x + OBS_REGION[0],
-                                    green_obj_y + OBS_REGION[1],
-                                )
-                                == "RIGHT"
+                        (
+                            green_obj_x is not None
+                            and green_obj_y is not None
+                            and point_position(
+                                DANGER_ZONE_POINTS[1]["x1"],
+                                DANGER_ZONE_POINTS[1]["y1"],
+                                DANGER_ZONE_POINTS[1]["x2"],
+                                DANGER_ZONE_POINTS[1]["y2"],
+                                green_obj_x + OBS_REGION[0],
+                                green_obj_y + OBS_REGION[1],
                             )
+                            == "RIGHT"
                         )
-                    )
-                
-                print(green_obj_x, green_obj_y)
+                    ),
+                )
 
+                print(green_obj_x, green_obj_y)
 
                 obstacle_wall_pivot = (None, None)
                 # PID controller
@@ -706,7 +716,9 @@ def main():
                 error = aDiff / (aSum + 1e-6)  # normalized between roughly [-1,1]
                 normalized_angle_offset = pid(error)
 
-                print(f"Wall following | Norm: {normalized_angle_offset} | Error: {error}")
+                print(
+                    f"Wall following | Norm: {normalized_angle_offset} | Error: {error}"
+                )
 
             # --- Map normalized control to servo angle ---
             angle = int(
@@ -755,10 +767,9 @@ def main():
                     intersection_detected = False
                     print("Intersection crossing ended.")
                 else:
-                    if (
-                    (orange_result.contours and orange_area > 80)
-                    or (blue_result.contours and blue_area > 80)
-                ):
+                    if (orange_result.contours and orange_area > 80) or (
+                        blue_result.contours and blue_area > 80
+                    ):
                         # keep latest time to avoid multiple increments
                         intersection_crossing_start = int(time.time())
 
