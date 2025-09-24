@@ -2,8 +2,13 @@ import cv2
 import numpy as np
 from picamera2 import Picamera2
 
-# LAB Lower: [85, 141, 56]
-# LAB Upper: [145, 181, 96]
+# 1
+# LAB Lower: [119, 86, 166]
+# LAB Upper: [200, 126, 206]
+
+# 2 [191  97 203]
+# LAB Lower: [161, 77, 183]
+# LAB Upper: [221, 117, 223]
 
 
 

@@ -13,18 +13,41 @@ def replace_closest(polygon, new_point):
     return polygon
 
 
+def check_overlap(region, contours):
+    """
+    region: [x1, y1, x2, y2] -> rectangle region
+    contours: list of contours from cv2.findContours
+    return: True if any contour overlaps region, else False
+    """
+
+    # Convert region into a rectangle contour
+    rect_pts = np.array([
+        [region[0], region[1]],  # top-left
+        [region[2], region[1]],  # top-right
+        [region[2], region[3]],  # bottom-right
+        [region[0], region[3]],  # bottom-left
+    ]).reshape((-1, 1, 2)).astype(np.int32)
+
+    for cnt in contours:
+        area, _ = cv2.intersectConvexConvex(cnt.astype(np.float32), rect_pts.astype(np.float32))
+        if area > 0:  # overlap detected
+            return True
+
+    return False
+
+
 def transform_danger_zone_xshift(points, steering_angle, sensitivity=2):
-    transformed = []
-    for i, line in enumerate(points):
-        x1, y1, x2, y2 = line["x1"], line["y1"], line["x2"], line["y2"]
+    transformed = points
+    # for i, line in enumerate(points):
+    #     x1, y1, x2, y2 = line["x1"], line["y1"], line["x2"], line["y2"]
 
-        # shift top x1 only (keep y same, keep bottom fixed)
-        if i == 0:  # left line
-            x1_new = int(x1 - steering_angle * sensitivity)
-        else:  # right line
-            x1_new = int(x1 - steering_angle * sensitivity)
+    #     # shift top x1 only (keep y same, keep bottom fixed)
+    #     if i == 0:  # left line
+    #         x1_new = int(x1 - steering_angle * sensitivity)
+    #     else:  # right line
+    #         x1_new = int(x1 - steering_angle * sensitivity)
 
-        transformed.append({"x1": x1_new, "y1": y1, "x2": x2, "y2": y2})
+    #     transformed.append({"x1": x1_new, "y1": y1, "x2": x2, "y2": y2})
     return transformed
 
 
@@ -41,7 +64,8 @@ def find_contours(frame, lower_color, upper_color, roi, direction=None, use_conv
     # labImg = cv2.merge((l,a,b))
 
     # blur and mask
-    img_blur = cv2.medianBlur(labImg, 7)
+    # img_blur = cv2.medianBlur(labImg, 7)
+    img_blur = cv2.bilateralFilter(labImg, d=7, sigmaColor=75, sigmaSpace=75)
     mask = cv2.inRange(img_blur, lower_color, upper_color)
     kernel = np.ones((7, 7), np.uint8)
     mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
@@ -101,6 +125,7 @@ def display_debug_screen(
     LAP_REGION,
     OBS_REGION,
     FRONT_WALL_REGION,
+    show_front_wall,
     front_wall_result,
     REVERSE_REGION,
     DANGER_ZONE_POINTS,
@@ -122,7 +147,10 @@ def display_debug_screen(
 ):
     debug_frame = frame.copy()
     debug_frame = display_roi(debug_frame, [LEFT_REGION, RIGHT_REGION, LAP_REGION, OBS_REGION], (255, 0, 255))
-    debug_frame = display_roi(debug_frame, [REVERSE_REGION, FRONT_WALL_REGION], (0, 255, 255))
+
+    if show_front_wall:
+        debug_frame = display_roi(debug_frame, [REVERSE_REGION, FRONT_WALL_REGION], (0, 255, 255))
+        
     if parking_mode:
         debug_frame = display_roi(debug_frame, [parking_lot_region], (0, 255, 0))
 
@@ -207,7 +235,7 @@ def display_debug_screen(
             2,
         )
     
-    if front_wall_result.contours:
+    if show_front_wall and front_wall_result.contours:
         cv2.drawContours(
             debug_frame[FRONT_WALL_REGION[1] : FRONT_WALL_REGION[3], FRONT_WALL_REGION[0] : FRONT_WALL_REGION[2]],
             front_wall_result.contours,
