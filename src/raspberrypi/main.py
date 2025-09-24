@@ -50,14 +50,14 @@ RIGHT_REGION = (
     [370, 220, 620, 280] if MODE == "NO_OBSTACLE" else [390, 220, 640, 280]
 )  # right
 LAP_REGION = [225, 295, 415, 350]  # lap detection
-OBS_REGION = [85, 140, 555, 320]  # obstacle detection
+OBS_REGION = [85, 140, 555, 340]  # obstacle detection
 REVERSE_REGION = [233, 300, 407, 320]  # reverse trigger area
-FRONT_WALL_REGION = [300, 195, 340, 215]  # front wall detection
+FRONT_WALL_REGION = [300, 202, 340, 222]  # front wall detection
 PARKING_LOT_REGION = [0, 185, CAM_WIDTH, 400]  # parking lot detection
 # DANGER_ZONE_POINTS = [175, OBS_REGION[1], 465, OBS_REGION[3]]  # area to check for obstacles
 DANGER_ZONE_POINTS = [
     {
-        "x1": 302,
+        "x1": 295,
         "y1": OBS_REGION[1],
         "x2": 205,
         "y2": OBS_REGION[3],
@@ -157,6 +157,7 @@ reverse_angle = STRAIGHT_CONST
 reverse_pause_time = (
     1.0  # seconds to wait after reversing, will not initiate reverse during this period
 )
+last_reverse_end_time = 0
 
 startProcessing = False
 stopFlag = False
@@ -195,7 +196,7 @@ parking.has_parked_out = False
 def main():
     global stopFlag, stopTime, speed, trigger_reverse, reverse_angle
     global current_intersections, intersection_detected, intersection_crossing_start
-    global startProcessing, obstacle_wall_pivot, reverse_start_time
+    global startProcessing, obstacle_wall_pivot, reverse_start_time, last_reverse_end_time
 
     # parking_walls = []
     # parking_walls_count = 0
@@ -340,19 +341,13 @@ def main():
             #         continue
 
             # --- Reversing logic ---
-            if trigger_reverse:
-                # dont trigger another reverse if just reversed recently
-                if (reverse_start_time + reverse_duration + reverse_pause_time) > time.time():
-                    if cv2.waitKey(1) & 0xFF == ord("q"):
-                        break
-                    trigger_reverse = False
-                    print("continue")
-                    continue
-
+            if trigger_reverse and (last_reverse_end_time + reverse_pause_time) < time.time():
                 speed = -MIN_SPEED
                 if (time.time() - reverse_start_time) > reverse_duration:
                     trigger_reverse = False
-                    speed = 0  # stop after reversing
+                    last_reverse_end_time = time.time()
+                    speed = 20  # stop after reversing
+                    reverse_angle = STRAIGHT_CONST
                 arduino.write(f"{speed},-1,{reverse_angle}\n".encode())
                 print(f"Reversing... Speed: {speed}, Angle: {reverse_angle}")
                 if cv2.waitKey(1) & 0xFF == ord("q"):
@@ -397,7 +392,7 @@ def main():
             # obstacle position
             red_obj_x, red_obj_y = None, None
             green_obj_x, green_obj_y = None, None
-            obj_error = 0
+            obj_error = None
 
             if contour_workers.mode == "OBSTACLE" and (
                 (red_result.contours and red_area > 300)
@@ -467,28 +462,40 @@ def main():
                     ):
                         print("Red")
 
-                        if front_wall_area > 350:
-                            print("Front wall is priority, ignoring side walls")
-                            r_wall_x = (
-                                FRONT_WALL_REGION[0]
-                                + (FRONT_WALL_REGION[2] - FRONT_WALL_REGION[0]) // 2
-                            )
-                            r_wall_y = (
-                                FRONT_WALL_REGION[1]
-                                + (FRONT_WALL_REGION[3] - FRONT_WALL_REGION[1]) // 2
-                            )
-                        else:
-                            r_wall_x, r_wall_y = get_overall_centroid(
-                                right_result.contours
-                            )
+                        # if front_wall_area > 350:
+                            # print("Front wall is priority, ignoring side walls")
+                            # r_wall_x = (
+                            #     FRONT_WALL_REGION[0]
+                            #     + (FRONT_WALL_REGION[2] - FRONT_WALL_REGION[0]) // 2
+                            # )
+                            # r_wall_y = (
+                            #     FRONT_WALL_REGION[1]
+                            #     + (FRONT_WALL_REGION[3] - FRONT_WALL_REGION[1]) // 2
+                            # )
+                        # else:
+                        #     r_wall_x, r_wall_y = get_overall_centroid(
+                        #         right_result.contours
+                        #     )
 
-                            if r_wall_x is None:
-                                print("No wall detected!")
-                                # set default wall position if none detected
-                                r_wall_x = CAM_WIDTH
-                            else:
-                                # transform to global coordinates
-                                r_wall_x += RIGHT_REGION[0]
+                        #     if r_wall_x is None:
+                        #         print("No wall detected!")
+                        #         # set default wall position if none detected
+                        #         r_wall_x = CAM_WIDTH
+                        #     else:
+                        #         # transform to global coordinates
+                        #         r_wall_x += RIGHT_REGION[0]
+
+                        r_wall_x, r_wall_y = get_overall_centroid(
+                            right_result.contours
+                        )
+
+                        if r_wall_x is None:
+                            print("No wall detected!")
+                            # set default wall position if none detected
+                            r_wall_x = CAM_WIDTH
+                        else:
+                            # transform to global coordinates
+                            r_wall_x += RIGHT_REGION[0]
 
                         # transform to global coordinates
                         red_obj_x += OBS_REGION[0]
@@ -523,28 +530,41 @@ def main():
                     ):
                         print("Green")
 
-                        if front_wall_area > 350:
-                            print("Front wall is priority, ignoring side walls")
-                            l_wall_x = (
-                                FRONT_WALL_REGION[0]
-                                + (FRONT_WALL_REGION[2] - FRONT_WALL_REGION[0]) // 2
-                            )
-                            l_wall_y = (
-                                FRONT_WALL_REGION[1]
-                                + (FRONT_WALL_REGION[3] - FRONT_WALL_REGION[1]) // 2
-                            )
-                        else:
-                            l_wall_x, l_wall_y = get_overall_centroid(
-                                left_result.contours
-                            )
+                        # if front_wall_area > 350:
+                        #     print("Front wall is priority, ignoring side walls")
+                        #     l_wall_x = (
+                        #         FRONT_WALL_REGION[0]
+                        #         + (FRONT_WALL_REGION[2] - FRONT_WALL_REGION[0]) // 2
+                        #     )
+                        #     l_wall_y = (
+                        #         FRONT_WALL_REGION[1]
+                        #         + (FRONT_WALL_REGION[3] - FRONT_WALL_REGION[1]) // 2
+                        #     )
+                        # else:
+                        #     l_wall_x, l_wall_y = get_overall_centroid(
+                        #         left_result.contours
+                        #     )
 
-                            if l_wall_x is None:
-                                print("No wall detected!")
-                                # set default wall position if none detected
-                                l_wall_x = 0
-                            else:
-                                # transform to global coordinates
-                                l_wall_x += LEFT_REGION[0]
+                        #     if l_wall_x is None:
+                        #         print("No wall detected!")
+                        #         # set default wall position if none detected
+                        #         l_wall_x = 0
+                        #     else:
+                        #         # transform to global coordinates
+                        #         l_wall_x += LEFT_REGION[0]
+
+
+                        l_wall_x, l_wall_y = get_overall_centroid(
+                            left_result.contours
+                        )
+
+                        if l_wall_x is None:
+                            print("No wall detected!")
+                            # set default wall position if none detected
+                            l_wall_x = 0
+                        else:
+                            # transform to global coordinates
+                            l_wall_x += LEFT_REGION[0]
 
                         # transform to global coordinates
                         green_obj_x += OBS_REGION[0]
@@ -565,40 +585,41 @@ def main():
                         direction_turing = "left"
 
                     # amplify to make it more responsive
-                    obj_error = -np.clip(obj_error * 7.5, -1, 1)
-                    normalized_angle_offset = pid(obj_error)
+                    if obj_error is not None:
+                        obj_error = -np.clip(obj_error * 7.5, -1, 1)
+                        normalized_angle_offset = pid(obj_error)
 
-                    # steer more aggressively when closer to object
-                    y_gain = np.interp(
-                        (
-                            red_obj_y
-                            if direction_turing == "right"
-                            else (green_obj_y if direction_turing == "left" else 0)
-                        ),
-                        [
-                            0,
-                            (CAM_HEIGHT // 2) - 50,
-                            (CAM_HEIGHT // 2) - 20,
-                            OBS_REGION[3],
-                        ],
-                        [0, 0.2, 0.7, 1],
-                    )
-                    normalized_angle_offset *= y_gain
-                    speed_factor = 1 - (0.3 * y_gain)  # slow down when closer to object
-                    print(
-                        f"Norm: {normalized_angle_offset} | Ygain: {y_gain} | OBJ error: {obj_error}"
-                    )
+                        # steer more aggressively when closer to object
+                        y_gain = np.interp(
+                            (
+                                red_obj_y
+                                if direction_turing == "right"
+                                else (green_obj_y if direction_turing == "left" else 0)
+                            ),
+                            [
+                                0,
+                                (CAM_HEIGHT // 2) - 50,
+                                (CAM_HEIGHT // 2) - 20,
+                                OBS_REGION[3],
+                            ],
+                            [0, 0.2, 0.7, 1],
+                        )
+                        normalized_angle_offset *= y_gain
+                        speed_factor = 1 - (0.3 * y_gain)  # slow down when closer to object
+                        print(
+                            f"Norm: {normalized_angle_offset} | Ygain: {y_gain} | OBJ error: {obj_error}"
+                        )
                 # print(f"Obj: {red_obj_x}, {red_obj_y} | Wall: {r_wall_x}, {r_wall_y}")
-            elif front_wall_area > 350:
-                if left_area - right_area > 1500:
-                    normalized_angle_offset = 1  # turn right hard
-                    print("left area too big")
-                elif right_area - left_area > 1500:
-                    normalized_angle_offset = -1  # turn left hard
-                    print("right area too big")
-                else:
-                    normalized_angle_offset = -1  # -1 -> turn left, 1 -> turn right
-                    print("only front wall")
+            elif front_wall_area > 500:
+                # if left_area - right_area > 1500:
+                #     normalized_angle_offset = 1  # turn right hard
+                #     print("left area too big")
+                # elif right_area - left_area > 1500:
+                #     normalized_angle_offset = -1  # turn left hard
+                #     print("right area too big")
+                # else:
+                normalized_angle_offset = -1  # -1 -> turn left, 1 -> turn right
+                print("only front wall")
 
                 obstacle_wall_pivot = (None, None)
 
@@ -611,7 +632,7 @@ def main():
                         and red_obj_y is None
                         and green_obj_y is None
                     )
-                    and front_wall_area < 350
+                    and front_wall_area < 500
                 )
                 or (
                     # or if both obstacles are outside the danger zone
@@ -659,7 +680,7 @@ def main():
                                 and red_obj_y is None
                                 and green_obj_y is None
                             )
-                            and front_wall_area < 350
+                            and front_wall_area < 500
                         )
                     ),
                 )
