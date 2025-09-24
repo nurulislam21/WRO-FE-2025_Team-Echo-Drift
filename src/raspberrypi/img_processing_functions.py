@@ -50,6 +50,46 @@ def transform_danger_zone_xshift(points, steering_angle, sensitivity=2):
     #     transformed.append({"x1": x1_new, "y1": y1, "x2": x2, "y2": y2})
     return transformed
 
+def create_mask(hsv, lower_limit, upper_limit, kernel):
+    """Creates a mask with given HSV limits and applies morphological operations using a precomputed kernel."""
+    mask = cv2.inRange(hsv, lower_limit, upper_limit)
+    mask = cv2.dilate(mask, kernel, iterations=2)
+    mask = cv2.erode(mask, kernel, iterations=2)
+    return mask
+
+def boxes_to_contours(boxes):
+    contours = []
+    for (x, y, w, h) in boxes:
+        contour = np.array([
+            [[x, y]],
+            [[x + w, y]],
+            [[x + w, y + h]],
+            [[x, y + h]]
+        ], dtype=np.int32)
+        contours.append(contour)
+    return contours
+
+
+def find_color_signal_box(frame, lower_color, upper_color, roi, consider_area=3000):
+    x1, y1, x2, y2 = roi
+    roi_frame = frame[y1:y2, x1:x2]
+    blurred = cv2.medianBlur(roi_frame, 7)  # Reduced from 15 to 7
+    hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
+    kernel = np.ones((11, 11), np.uint8)
+    mask = create_mask(hsv, lower_color, upper_color, kernel)
+    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    # Process largest contours first
+    contours = sorted(contours, key=cv2.contourArea, reverse=True)
+    detected_boxes = []
+
+    for cnt in contours:
+        if cv2.contourArea(cnt) < consider_area:
+            continue  # Skip small contours
+        x, y, w, h = cv2.boundingRect(cnt)
+        detected_boxes.append((x, y, w, h))  # Adjust coordinates to original frame
+    
+    return boxes_to_contours(detected_boxes)
+    
 
 
 def find_contours(frame, lower_color, upper_color, roi, direction=None, use_convex_hull=False, consider_area=None):

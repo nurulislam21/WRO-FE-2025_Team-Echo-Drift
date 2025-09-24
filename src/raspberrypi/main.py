@@ -87,12 +87,13 @@ UPPER_ORANGE = np.array([195, 165, 123])
 LOWER_BLUE = np.array([93, 144, 164])
 UPPER_BLUE = np.array([153, 184, 204])
 
-# obstacle color ranges
-LOWER_RED = np.array([85, 141, 56])
-UPPER_RED = np.array([165, 185, 96])
+# obstacle color ranges HSV
+LOWER_RED = np.array([35, 100, 50])
+UPPER_RED = np.array([85, 255, 255])
 
-LOWER_GREEN = np.array([119, 86, 166])
-UPPER_GREEN = np.array([[200, 126, 206]])
+# HSV
+LOWER_GREEN = np.array([160, 100, 200])
+UPPER_GREEN = np.array([180, 255, 255])
 
 # parking color ranges
 LOWER_MAGENTA = np.array([100, 81, 105])
@@ -343,7 +344,10 @@ def main():
             #         continue
 
             # --- Reversing logic ---
-            if trigger_reverse and (last_reverse_end_time + reverse_pause_time) < time.time():
+            if (
+                trigger_reverse
+                and (last_reverse_end_time + reverse_pause_time) < time.time()
+            ):
                 speed = -MIN_SPEED
                 if (time.time() - reverse_start_time) > reverse_duration:
                     trigger_reverse = False
@@ -435,7 +439,7 @@ def main():
                         reverse_angle = STRAIGHT_CONST - 20  # turn left when reversing
                         trigger_reverse = True
                         reverse_start_time = time.time()
-                    
+
                     elif (
                         (green_obj_y + OBS_REGION[1]) > REVERSE_REGION[1]
                         and (green_obj_x + OBS_REGION[0]) > REVERSE_REGION[0]
@@ -474,9 +478,7 @@ def main():
                         #         + (FRONT_WALL_REGION[3] - FRONT_WALL_REGION[1]) // 2
                         #     )
                         # else:
-                        r_wall_x, r_wall_y = get_overall_centroid(
-                            right_result.contours
-                        )
+                        r_wall_x, r_wall_y = get_overall_centroid(right_result.contours)
 
                         if r_wall_x is None:
                             print("No wall detected!")
@@ -530,9 +532,7 @@ def main():
                         #         + (FRONT_WALL_REGION[3] - FRONT_WALL_REGION[1]) // 2
                         #     )
                         # else:
-                        l_wall_x, l_wall_y = get_overall_centroid(
-                            left_result.contours
-                        )
+                        l_wall_x, l_wall_y = get_overall_centroid(left_result.contours)
 
                         if l_wall_x is None:
                             print("No wall detected!")
@@ -586,8 +586,10 @@ def main():
                     )
                 # print(f"Obj: {red_obj_x}, {red_obj_y} | Wall: {r_wall_x}, {r_wall_y}")
             elif contour_workers.mode == "OBSTACLE":
-                if front_wall_area > 350 and (red_area == 0 and green_area == 0) and (
-                    left_area > 800 and right_area > 800
+                if (
+                    front_wall_area > 350
+                    and (red_area == 0 and green_area == 0)
+                    and (left_area > 800 and right_area > 800)
                 ):
                     # if left_area - right_area > 1500:
                     #     normalized_angle_offset = 1  # turn right hard
@@ -596,7 +598,7 @@ def main():
                     #     normalized_angle_offset = -1  # turn left hard
                     #     print("right area too big")
                     # else:
-                    normalized_angle_offset = -1 # -1 -> turn left, 1 -> turn right
+                    normalized_angle_offset = -1  # -1 -> turn left, 1 -> turn right
                     print("only front wall")
                     obstacle_wall_pivot = (None, None)
                     show_front_wall = True
@@ -686,26 +688,26 @@ def main():
 
                 print(red_obj_x, red_obj_y)
 
-                print("2nd: 2",
+                print(
+                    "2nd: 2",
                     bool(
-                            (
-                                green_obj_x is not None
-                                and green_obj_y is not None
-                                and point_position(
-                                    DANGER_ZONE_POINTS[1]["x1"],
-                                    DANGER_ZONE_POINTS[1]["y1"],
-                                    DANGER_ZONE_POINTS[1]["x2"],
-                                    DANGER_ZONE_POINTS[1]["y2"],
-                                    green_obj_x + OBS_REGION[0],
-                                    green_obj_y + OBS_REGION[1],
-                                )
-                                == "RIGHT"
+                        (
+                            green_obj_x is not None
+                            and green_obj_y is not None
+                            and point_position(
+                                DANGER_ZONE_POINTS[1]["x1"],
+                                DANGER_ZONE_POINTS[1]["y1"],
+                                DANGER_ZONE_POINTS[1]["x2"],
+                                DANGER_ZONE_POINTS[1]["y2"],
+                                green_obj_x + OBS_REGION[0],
+                                green_obj_y + OBS_REGION[1],
                             )
+                            == "RIGHT"
                         )
-                    )
-                
-                print(green_obj_x, green_obj_y)
+                    ),
+                )
 
+                print(green_obj_x, green_obj_y)
 
                 obstacle_wall_pivot = (None, None)
                 # PID controller
@@ -718,7 +720,9 @@ def main():
                 error = aDiff / (aSum + 1e-6)  # normalized between roughly [-1,1]
                 normalized_angle_offset = pid(error)
 
-                print(f"Wall following | Norm: {normalized_angle_offset} | Error: {error}")
+                print(
+                    f"Wall following | Norm: {normalized_angle_offset} | Error: {error}"
+                )
 
             # --- Map normalized control to servo angle ---
             angle = int(
@@ -767,10 +771,9 @@ def main():
                     intersection_detected = False
                     print("Intersection crossing ended.")
                 else:
-                    if (
-                    (orange_result.contours and orange_area > 80)
-                    or (blue_result.contours and blue_area > 80)
-                ):
+                    if (orange_result.contours and orange_area > 80) or (
+                        blue_result.contours and blue_area > 80
+                    ):
                         # keep latest time to avoid multiple increments
                         intersection_crossing_start = int(time.time())
 
