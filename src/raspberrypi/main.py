@@ -88,12 +88,12 @@ LOWER_BLUE = np.array([93, 144, 164])
 UPPER_BLUE = np.array([153, 184, 204])
 
 # obstacle color ranges HSV
-LOWER_RED = np.array([35, 100, 50])
-UPPER_RED = np.array([85, 255, 255])
+LOWER_RED = np.array([160, 100, 200])
+UPPER_RED = np.array([180, 255, 255])
 
 # HSV
-LOWER_GREEN = np.array([160, 100, 200])
-UPPER_GREEN = np.array([180, 255, 255])
+LOWER_GREEN = np.array([35, 100, 50])
+UPPER_GREEN = np.array([85, 255, 255])
 
 # parking color ranges
 LOWER_MAGENTA = np.array([100, 81, 105])
