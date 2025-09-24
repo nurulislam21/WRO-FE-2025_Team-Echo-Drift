@@ -92,7 +92,7 @@ LOWER_RED = np.array([85, 141, 56])
 UPPER_RED = np.array([165, 185, 96])
 
 LOWER_GREEN = np.array([150, 80, 179])
-UPPER_GREEN = np.array([215, 120, 219])
+UPPER_GREEN = np.array([208, 120, 219])
 
 # parking color ranges
 LOWER_MAGENTA = np.array([100, 81, 105])
@@ -341,9 +341,7 @@ def main():
                 speed = -MIN_SPEED
                 if (time.time() - reverse_start_time) > reverse_duration:
                     trigger_reverse = False
-                    speed = 0  # stop after reversing
-                else:
-                    reverse_angle = STRAIGHT_CONST  # go straight when reversing
+                    speed = 0  # stop after reversing                
                 arduino.write(f"{speed},-1,{reverse_angle}\n".encode())
                 print(f"Reversing... Speed: {speed}, Angle: {reverse_angle}")
                 if cv2.waitKey(1) & 0xFF == ord("q"):
@@ -356,7 +354,8 @@ def main():
                 trigger_reverse = True
                 reverse_start_time = time.time()
                 speed = 0  # stop before reversing
-                arduino.write(f"{speed},-1,{reverse_angle}\n".encode())
+                reverse_angle = STRAIGHT_CONST
+                arduino.write(f"{speed},-1,{reverse_angle}\n".encode())                
                 if cv2.waitKey(1) & 0xFF == ord("q"):
                     break
 
@@ -426,7 +425,7 @@ def main():
                         and (red_obj_x + OBS_REGION[0]) < REVERSE_REGION[2]
                     ):
                         print("Object too close! Backing off. RED Object")
-                        reverse_angle = STRAIGHT_CONST - 20  # turn left when reversing
+                        reverse_angle = STRAIGHT_CONST - 25  # turn left when reversing
                         trigger_reverse = True
                         reverse_start_time = time.time()
                     
@@ -436,7 +435,7 @@ def main():
                         and (green_obj_x + OBS_REGION[0]) < REVERSE_REGION[2]
                     ):
                         print("Object too close! Backing off. GREEN Object")
-                        reverse_angle = STRAIGHT_CONST + 20  # turn right when reversing
+                        reverse_angle = STRAIGHT_CONST + 25  # turn right when reversing
                         trigger_reverse = True
                         reverse_start_time = time.time()
 
@@ -587,7 +586,7 @@ def main():
                     normalized_angle_offset = -1  # turn left hard
                     print("right area too big")
                 else:
-                    normalized_angle_offset = 1 # -1 -> turn left, 1 -> turn right
+                    normalized_angle_offset = -1 # -1 -> turn left, 1 -> turn right
                     print("only front wall")
 
                 obstacle_wall_pivot = (None, None)
