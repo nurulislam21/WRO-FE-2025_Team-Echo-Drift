@@ -452,10 +452,10 @@ def main():
                     if (
                         red_obj_y > green_obj_y
                         and point_position(
-                            DANGER_ZONE_POINTS[0]["x1"],
-                            DANGER_ZONE_POINTS[0]["y1"],
-                            DANGER_ZONE_POINTS[0]["x2"],
-                            DANGER_ZONE_POINTS[0]["y2"],
+                            DANGER_ZONE_POINTS_COPY[0]["x1"],
+                            DANGER_ZONE_POINTS_COPY[0]["y1"],
+                            DANGER_ZONE_POINTS_COPY[0]["x2"],
+                            DANGER_ZONE_POINTS_COPY[0]["y2"],
                             red_obj_x + OBS_REGION[0],
                             red_obj_y + OBS_REGION[1],
                         )
@@ -520,10 +520,10 @@ def main():
                     elif (
                         green_obj_y > red_obj_y
                         and point_position(
-                            DANGER_ZONE_POINTS[1]["x1"],
-                            DANGER_ZONE_POINTS[1]["y1"],
-                            DANGER_ZONE_POINTS[1]["x2"],
-                            DANGER_ZONE_POINTS[1]["y2"],
+                            DANGER_ZONE_POINTS_COPY[1]["x1"],
+                            DANGER_ZONE_POINTS_COPY[1]["y1"],
+                            DANGER_ZONE_POINTS_COPY[1]["x2"],
+                            DANGER_ZONE_POINTS_COPY[1]["y2"],
                             green_obj_x + OBS_REGION[0],
                             green_obj_y + OBS_REGION[1],
                         )
@@ -644,10 +644,10 @@ def main():
                             and red_obj_x != -1
                             and red_obj_y != -1
                             and point_position(
-                                DANGER_ZONE_POINTS[0]["x1"],
-                                DANGER_ZONE_POINTS[0]["y1"],
-                                DANGER_ZONE_POINTS[0]["x2"],
-                                DANGER_ZONE_POINTS[0]["y2"],
+                                DANGER_ZONE_POINTS_COPY[0]["x1"],
+                                DANGER_ZONE_POINTS_COPY[0]["y1"],
+                                DANGER_ZONE_POINTS_COPY[0]["x2"],
+                                DANGER_ZONE_POINTS_COPY[0]["y2"],
                                 red_obj_x + OBS_REGION[0],
                                 red_obj_y + OBS_REGION[1],
                             )
@@ -659,10 +659,10 @@ def main():
                             and green_obj_x != -1
                             and green_obj_y != -1
                             and point_position(
-                                DANGER_ZONE_POINTS[1]["x1"],
-                                DANGER_ZONE_POINTS[1]["y1"],
-                                DANGER_ZONE_POINTS[1]["x2"],
-                                DANGER_ZONE_POINTS[1]["y2"],
+                                DANGER_ZONE_POINTS_COPY[1]["x1"],
+                                DANGER_ZONE_POINTS_COPY[1]["y1"],
+                                DANGER_ZONE_POINTS_COPY[1]["x2"],
+                                DANGER_ZONE_POINTS_COPY[1]["y2"],
                                 green_obj_x + OBS_REGION[0],
                                 green_obj_y + OBS_REGION[1],
                             )
@@ -692,10 +692,10 @@ def main():
                             red_obj_x is not None
                             and red_obj_y is not None
                             and point_position(
-                                DANGER_ZONE_POINTS[0]["x1"],
-                                DANGER_ZONE_POINTS[0]["y1"],
-                                DANGER_ZONE_POINTS[0]["x2"],
-                                DANGER_ZONE_POINTS[0]["y2"],
+                                DANGER_ZONE_POINTS_COPY[0]["x1"],
+                                DANGER_ZONE_POINTS_COPY[0]["y1"],
+                                DANGER_ZONE_POINTS_COPY[0]["x2"],
+                                DANGER_ZONE_POINTS_COPY[0]["y2"],
                                 red_obj_x + OBS_REGION[0],
                                 red_obj_y + OBS_REGION[1],
                             )
@@ -713,10 +713,10 @@ def main():
                             green_obj_x is not None
                             and green_obj_y is not None
                             and point_position(
-                                DANGER_ZONE_POINTS[1]["x1"],
-                                DANGER_ZONE_POINTS[1]["y1"],
-                                DANGER_ZONE_POINTS[1]["x2"],
-                                DANGER_ZONE_POINTS[1]["y2"],
+                                DANGER_ZONE_POINTS_COPY[1]["x1"],
+                                DANGER_ZONE_POINTS_COPY[1]["y1"],
+                                DANGER_ZONE_POINTS_COPY[1]["x2"],
+                                DANGER_ZONE_POINTS_COPY[1]["y2"],
                                 green_obj_x + OBS_REGION[0],
                                 green_obj_y + OBS_REGION[1],
                             )
