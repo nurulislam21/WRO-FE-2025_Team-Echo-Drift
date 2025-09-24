@@ -2,14 +2,13 @@ import cv2
 import numpy as np
 from picamera2 import Picamera2
 
-# LAB range (from your first script)
-# LAB Lower: [103, 75, 163]
-# LAB Upper: [163, 115, 203]
-#  [211  85 209]
+# LAB Lower: [85, 141, 56]
+# LAB Upper: [145, 181, 96]
 
 
-LOWER = np.array([103, 75, 163])
-UPPER = np.array([210, 115, 203])
+
+LOWER = np.array([150, 80, 179])
+UPPER = np.array([215, 120, 219])
 
 
 def find_contours(frame, lower_color, upper_color, roi):
