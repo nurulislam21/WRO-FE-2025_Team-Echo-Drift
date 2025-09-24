@@ -49,23 +49,23 @@ LEFT_REGION = (
 RIGHT_REGION = (
     [370, 220, 620, 280] if MODE == "NO_OBSTACLE" else [390, 220, 640, 280]
 )  # right
-LAP_REGION = [200, 300, 440, 350]  # lap detection
+LAP_REGION = [225, 295, 415, 350]  # lap detection
 OBS_REGION = [85, 140, 555, 320]  # obstacle detection
-REVERSE_REGION = [225, 300, 415, 320]  # reverse trigger area
+REVERSE_REGION = [233, 300, 407, 320]  # reverse trigger area
 FRONT_WALL_REGION = [300, 195, 340, 215]  # front wall detection
 PARKING_LOT_REGION = [0, 185, CAM_WIDTH, 400]  # parking lot detection
 # DANGER_ZONE_POINTS = [175, OBS_REGION[1], 465, OBS_REGION[3]]  # area to check for obstacles
 DANGER_ZONE_POINTS = [
     {
-        "x1": 298,
+        "x1": 302,
         "y1": OBS_REGION[1],
-        "x2": 207,
+        "x2": 205,
         "y2": OBS_REGION[3],
     },
     {
-        "x1": 352,
+        "x1": 350,
         "y1": OBS_REGION[1],
-        "x2": 433,
+        "x2": 435,
         "y2": OBS_REGION[3],
     },
 ]
@@ -88,11 +88,11 @@ LOWER_BLUE = np.array([93, 144, 164])
 UPPER_BLUE = np.array([153, 184, 204])
 
 # obstacle color ranges
-LOWER_RED = np.array([41, 157, 38])
-UPPER_RED = np.array([125, 197, 78])
+LOWER_RED = np.array([85, 141, 56])
+UPPER_RED = np.array([165, 185, 96])
 
-LOWER_GREEN = np.array([103, 75, 163])
-UPPER_GREEN = np.array([210, 115, 203])
+LOWER_GREEN = np.array([150, 80, 179])
+UPPER_GREEN = np.array([215, 120, 219])
 
 # parking color ranges
 LOWER_MAGENTA = np.array([100, 81, 105])
@@ -137,7 +137,7 @@ maxRight = STRAIGHT_CONST + MAX_OFFSET_DEGREE
 maxLeft = STRAIGHT_CONST - MAX_OFFSET_DEGREE
 
 # PID controller constants
-kp = 1.5
+kp = 1.6
 ki = 0.0
 kd = 0.07
 pid = PID(Kp=kp, Ki=ki, Kd=kd, setpoint=0)
@@ -153,6 +153,7 @@ speed = 0
 trigger_reverse = False
 reverse_start_time = 0
 reverse_duration = 0.6  # seconds
+reverse_angle = STRAIGHT_CONST
 
 startProcessing = False
 stopFlag = False
@@ -189,7 +190,7 @@ parking.has_parked_out = False
 
 # Threading variables - separate queues for each detection task
 def main():
-    global stopFlag, stopTime, speed, trigger_reverse
+    global stopFlag, stopTime, speed, trigger_reverse, reverse_angle
     global current_intersections, intersection_detected, intersection_crossing_start
     global startProcessing, obstacle_wall_pivot, reverse_start_time
 
@@ -342,9 +343,9 @@ def main():
                     trigger_reverse = False
                     speed = 0  # stop after reversing
                 else:
-                    angle = STRAIGHT_CONST  # go straight when reversing
-                arduino.write(f"{speed},-1,{angle}\n".encode())
-                print(f"Reversing... Speed: {speed}, Angle: {angle}")
+                    reverse_angle = STRAIGHT_CONST  # go straight when reversing
+                arduino.write(f"{speed},-1,{reverse_angle}\n".encode())
+                print(f"Reversing... Speed: {speed}, Angle: {reverse_angle}")
                 if cv2.waitKey(1) & 0xFF == ord("q"):
                     break
                 print("continue")
@@ -355,7 +356,7 @@ def main():
                 trigger_reverse = True
                 reverse_start_time = time.time()
                 speed = 0  # stop before reversing
-                arduino.write(f"{speed},-1,{angle}\n".encode())
+                arduino.write(f"{speed},-1,{reverse_angle}\n".encode())
                 if cv2.waitKey(1) & 0xFF == ord("q"):
                     break
 
@@ -386,6 +387,7 @@ def main():
             # obstacle position
             red_obj_x, red_obj_y = None, None
             green_obj_x, green_obj_y = None, None
+            obj_error = 0
 
             if contour_workers.mode == "OBSTACLE" and (
                 (red_result.contours and red_area > 300)
@@ -395,8 +397,8 @@ def main():
                 green_obj_x, green_obj_y = get_max_y_coord(green_result.contours)
                 red_obj_x, red_obj_y = get_max_y_coord(red_result.contours)
 
-                red_obj_x, _ = get_overall_centroid(red_result.contours)
-                green_obj_x, _ = get_overall_centroid(green_result.contours)
+                # red_obj_x, _ = get_overall_centroid(red_result.contours)
+                # green_obj_x, _ = get_overall_centroid(green_result.contours)
 
                 # print(f"Raw Green: {green_obj_x}, {green_obj_y} | Raw Red: {red_obj_x}, {red_obj_y}")
 
@@ -422,12 +424,19 @@ def main():
                         (red_obj_y + OBS_REGION[1]) > REVERSE_REGION[1]
                         and (red_obj_x + OBS_REGION[0]) > REVERSE_REGION[0]
                         and (red_obj_x + OBS_REGION[0]) < REVERSE_REGION[2]
-                    ) or (
+                    ):
+                        print("Object too close! Backing off. RED Object")
+                        reverse_angle = STRAIGHT_CONST - 20  # turn left when reversing
+                        trigger_reverse = True
+                        reverse_start_time = time.time()
+                    
+                    elif (
                         (green_obj_y + OBS_REGION[1]) > REVERSE_REGION[1]
                         and (green_obj_x + OBS_REGION[0]) > REVERSE_REGION[0]
                         and (green_obj_x + OBS_REGION[0]) < REVERSE_REGION[2]
                     ):
-                        print("Object too close! Backing off.")
+                        print("Object too close! Backing off. GREEN Object")
+                        reverse_angle = STRAIGHT_CONST + 20  # turn right when reversing
                         trigger_reverse = True
                         reverse_start_time = time.time()
 
@@ -571,9 +580,18 @@ def main():
                     )
                 # print(f"Obj: {red_obj_x}, {red_obj_y} | Wall: {r_wall_x}, {r_wall_y}")
             elif front_wall_area > 350:
-                normalized_angle_offset = -1
+                if left_area - right_area > 1500:
+                    normalized_angle_offset = 1  # turn right hard
+                    print("left area too big")
+                elif right_area - left_area > 1500:
+                    normalized_angle_offset = -1  # turn left hard
+                    print("right area too big")
+                else:
+                    normalized_angle_offset = 1 # -1 -> turn left, 1 -> turn right
+                    print("only front wall")
+
                 obstacle_wall_pivot = (None, None)
-                print("only front wall")
+                
 
             if (
                 # or if x or y coords are not assigned and front area is small
@@ -592,6 +610,8 @@ def main():
                         (
                             red_obj_x is not None
                             and red_obj_y is not None
+                            and red_obj_x != -1
+                            and red_obj_y != -1
                             and point_position(
                                 DANGER_ZONE_POINTS[0]["x1"],
                                 DANGER_ZONE_POINTS[0]["y1"],
@@ -605,6 +625,8 @@ def main():
                         or (
                             green_obj_x is not None
                             and green_obj_y is not None
+                            and green_obj_x != -1
+                            and green_obj_y != -1
                             and point_position(
                                 DANGER_ZONE_POINTS[1]["x1"],
                                 DANGER_ZONE_POINTS[1]["y1"],
@@ -633,23 +655,29 @@ def main():
                     ),
                 )
                 print(
-                    "2nd:",
+                    "2nd: 1",
                     bool(
                         (
-                            (
-                                red_obj_x is not None
-                                and red_obj_y is not None
-                                and point_position(
-                                    DANGER_ZONE_POINTS[0]["x1"],
-                                    DANGER_ZONE_POINTS[0]["y1"],
-                                    DANGER_ZONE_POINTS[0]["x2"],
-                                    DANGER_ZONE_POINTS[0]["y2"],
-                                    red_obj_x + OBS_REGION[0],
-                                    red_obj_y + OBS_REGION[1],
-                                )
-                                == "LEFT"
+                            red_obj_x is not None
+                            and red_obj_y is not None
+                            and point_position(
+                                DANGER_ZONE_POINTS[0]["x1"],
+                                DANGER_ZONE_POINTS[0]["y1"],
+                                DANGER_ZONE_POINTS[0]["x2"],
+                                DANGER_ZONE_POINTS[0]["y2"],
+                                red_obj_x + OBS_REGION[0],
+                                red_obj_y + OBS_REGION[1],
                             )
-                            or (
+                            == "LEFT"
+                        )
+                    ),
+                )
+
+                print(red_obj_x, red_obj_y)
+
+                print("2nd: 2",
+                    bool(
+                            (
                                 green_obj_x is not None
                                 and green_obj_y is not None
                                 and point_position(
@@ -663,8 +691,11 @@ def main():
                                 == "RIGHT"
                             )
                         )
-                    ),
-                )
+                    )
+                
+                print(green_obj_x, green_obj_y)
+
+
                 obstacle_wall_pivot = (None, None)
                 # PID controller
                 left_buf.append(left_area)
@@ -675,6 +706,8 @@ def main():
                 aSum = left_s + right_s
                 error = aDiff / (aSum + 1e-6)  # normalized between roughly [-1,1]
                 normalized_angle_offset = pid(error)
+
+                print(f"Wall following | Norm: {normalized_angle_offset} | Error: {error}")
 
             # --- Map normalized control to servo angle ---
             angle = int(
@@ -722,6 +755,13 @@ def main():
                 ):
                     intersection_detected = False
                     print("Intersection crossing ended.")
+                else:
+                    if (
+                    (orange_result.contours and orange_area > 80)
+                    or (blue_result.contours and blue_area > 80)
+                ):
+                        # keep latest time to avoid multiple increments
+                        intersection_crossing_start = int(time.time())
 
             # Stopping logic
             if (
