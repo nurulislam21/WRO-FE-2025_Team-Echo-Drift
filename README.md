@@ -54,7 +54,7 @@ Specializing in Mechanical Design with strong experience in Robotics and Embedde
 
 Skills span Robotics, Embedded Systems, and Mechanical Design, enabling a holistic approach to complex technical challenges. With a focus on Mechanical Design, the goal is to create solutions that seamlessly integrate hardware, software, and system reliability.
 <p align="center">
-  <img src="t-photos/noman.jpg" alt="Nurul Islam Noman" width="700" height="900"/>
+  <img src="t-photos/noman.jpg" alt="Nurul Islam Noman" width="500"/>
 </p>
 
 ### *Tanim SK – Programming & Software Architecture* 
@@ -65,8 +65,7 @@ Also proficient in working with Raspberry Pi and microcontrollers, with experien
 <p align="center">
   <img src="t-photos/Tanim.jpeg" 
      alt="Tanim SK" 
-     width="700" 
-     height="900"
+     width="500"      
      style="object-fit: cover;"/>
 </p>
 
@@ -77,7 +76,7 @@ Majedul Islam Naeem is a passionate Robotics and Embedded Systems innovator with
 
 Driven by curiosity and creativity, Naeem thrives in collaborative environments and is committed to pushing the boundaries of technology while inspiring others to innovate.
 <p align="center">
-  <img src="t-photos/Naeem.jpg" alt="Majedul Islam Naeem" width="700" height="900"/>
+  <img src="t-photos/Naeem.jpg" alt="Majedul Islam Naeem" width="500"/>
 </p>
 ---
 
