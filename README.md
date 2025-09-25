@@ -548,4 +548,48 @@ error = aDiff / (aSum + 1e-6)  # normalized between roughly [-1,1]
 normalized_angle_offset = pid(error)
 ```
 
+<br>
+
+
+For obstacle avoidance, we use a pivot point as the target.
+	•	For a red object, the pivot is the midpoint between the object’s x-coordinate and the right wall’s centroid x-coordinate.
+	•	For a green object, the pivot is the midpoint between the object’s x-coordinate and the left wall’s centroid x-coordinate.
+
+The pivot is calculated only when the objects enter the danger zone; otherwise, it is ignored.
+
+
+<img width="408" height="325" alt="image" src="https://github.com/user-attachments/assets/dd9c0363-e1f3-450a-bc4d-29f72356bce5" />
+
+
+
+```py
+r_wall_x, r_wall_y = get_overall_centroid(right_result.contours)
+
+if r_wall_x is None:
+    print("No wall detected!")
+    # set default wall position if none detected
+    r_wall_x = CAM_WIDTH
+else:
+    # transform to global coordinates
+    r_wall_x += RIGHT_REGION[0]
+
+# transform to global coordinates
+red_obj_x += OBS_REGION[0]
+red_obj_y += OBS_REGION[1]
+
+# compute how far is the bot from the object and walls middle point
+offset_x = (red_obj_x + ((r_wall_x - red_obj_x) // 2)) - (
+    CAM_WIDTH // 2
+)
+
+# show a circle dot on the middle of the object and wall
+obstacle_wall_pivot = (
+    red_obj_x + ((r_wall_x - red_obj_x) // 2),
+    red_obj_y,
+)
+
+obj_error = offset_x / (CAM_WIDTH // 2)  # normalized [-1, 1]
+```
+
+
 
