@@ -430,6 +430,8 @@ DANGER_ZONE_POINTS = [
 ]
 ```
 
+<br>
+
 
 We are using LAB colors for detecting a object based on a certain color range, the color ranges are assigned as numpy arrays in [main.py](https://github.com/nurulislam21/WRO-FE-2025_Team-Echo-Drift/blob/main/src/raspberrypi/main.py):
 
@@ -457,6 +459,8 @@ LOWER_MAGENTA = np.array([100, 81, 105])
 UPPER_MAGENTA = np.array([170, 121, 145])
 ```
 
+<br>
+
 Then we made a class called `ContourWorkers.py` in [contour_workers.py](https://github.com/nurulislam21/WRO-FE-2025_Team-Echo-Drift/blob/main/src/raspberrypi/contour_workers.py), this class is used to get contours based on the passed color ranges. ContourWorker starts 8 seperate thread for 8 regions, and processes them individually. Thus we are able to keep a decent FPS (around 25) while our bot is on the go. We are using `Queue` with size of 2 to make sure our frames are queued and passed to the thread and processed accordingly:
 
 ```py
@@ -468,6 +472,8 @@ self.frame_queue_blue = Queue(maxsize=2)
 self.frame_queue_green = Queue(maxsize=2)
 ...
 ```
+
+<br>
 
 After that, we were facing an issue for motion blur due to speed. We've resolved this issue by setting explicit `Exposure rate` and `Analogue gain` in our camera configuration:
 
@@ -482,6 +488,8 @@ picam2.set_controls(
     }
 )
 ```
+
+<br>
 
 After the program is executed, we start 8 threads, and inside while loop, we are collecting the contour result in each iteration:
 
@@ -500,9 +508,13 @@ After the program is executed, we start 8 threads, and inside while loop, we are
 ) = contour_workers.collect_results()
 ```
 
+<br>
+
 We are using PID steering, and for the sake of simplicity, we've used [python simple-pid](https://pypi.org/project/simple-pid/). We've made a tool [adjust_pid_values.py](https://github.com/nurulislam21/WRO-FE-2025_Team-Echo-Drift/blob/main/src/raspberrypi/adjust_pid_values.py) for adjusting the Kp, Ki, and Kd values.
 
 <img width="925" height="642" alt="image" src="https://github.com/user-attachments/assets/dc247885-04d4-4326-8de0-ae7abf3497f0" />
+
+<br>
 
 We are comparing the area of left region and right region, and normalizing the error to range `[-1, 1]`.  If the left area is greater than right area the bot tends to turn right and vice versa
 
