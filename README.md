@@ -63,7 +63,11 @@ A versatile programmer with expertise in Python, JavaScript, HTML, CSS, and C++,
 
 Also proficient in working with Raspberry Pi and microcontrollers, with experience in home automation, WebSocket programming, RF communication, and integrating TinyML for lightweight AI projects.
 <p align="center">
-  <img src="t-photos/Tanim.jpeg" alt="Tanim SK" width="700" height="900"/>
+  <img src="t-photos/Tanim.jpeg" 
+     alt="Tanim SK" 
+     width="700" 
+     height="900"
+     style="object-fit: cover;"/>
 </p>
 
 
