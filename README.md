@@ -407,18 +407,13 @@ The frame regions are assigned here:
 
 ```py
 # Region of Interest coordinates
-LEFT_REGION = (
-    [20, 220, 270, 280] if MODE == "NO_OBSTACLE" else [0, 220, 250, 280]
-)  # left
-RIGHT_REGION = (
-    [370, 220, 620, 280] if MODE == "NO_OBSTACLE" else [390, 220, 640, 280]
-)  # right
-LAP_REGION = [225, 295, 415, 350]  # lap detection
-OBS_REGION = [85, 140, 555, 320]  # obstacle detection
-REVERSE_REGION = [233, 300, 407, 320]  # reverse trigger area
-FRONT_WALL_REGION = [300, 195, 340, 215]  # front wall detection
-PARKING_LOT_REGION = [0, 185, CAM_WIDTH, 400]  # parking lot detection
-# DANGER_ZONE_POINTS = [175, OBS_REGION[1], 465, OBS_REGION[3]]  # area to check for obstacles
+LEFT_REGION = [20, 220, 270, 280]
+RIGHT_REGION = [370, 220, 620, 280]
+LAP_REGION = [225, 295, 415, 350]
+OBS_REGION = [85, 140, 555, 320]
+REVERSE_REGION = [233, 300, 407, 320]
+FRONT_WALL_REGION = [300, 195, 340, 215]
+PARKING_LOT_REGION = [0, 185, CAM_WIDTH, 400]
 DANGER_ZONE_POINTS = [
     {
         "x1": 302,
