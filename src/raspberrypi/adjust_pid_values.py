@@ -19,31 +19,47 @@ CAM_HEIGHT = 480
 MAX_SPEED = 110
 MIN_SPEED = 60
 
+MODE = "NO_OBSTACLE"
+
 # Region of Interest coordinates
-LEFT_REGION = [20, 220, 240, 280]  # left
-RIGHT_REGION = [400, 220, 620, 280]  # right
-LAP_REGION = [200, 300, 440, 350]  # lap detection
-OBS_REGION = [90, 175, 540, 280]  # obstacle detection
+LEFT_REGION = (
+    [20, 220, 270, 280] if MODE == "NO_OBSTACLE" else [0, 220, 250, 280]
+)  # left
+RIGHT_REGION = (
+    [370, 220, 620, 280] if MODE == "NO_OBSTACLE" else [390, 220, 640, 280]
+)  # right
+LAP_REGION = [225, 295, 415, 350]  # lap detection
+OBS_REGION = [85, 140, 555, 320]  # obstacle detection
+REVERSE_REGION = [233, 300, 407, 320]  # reverse trigger area
+FRONT_WALL_REGION = [300, 195, 340, 215]  # front wall detection
+PARKING_LOT_REGION = [0, 185, CAM_WIDTH, 400]  # parking lot detection
 
 # Color ranges
-LOWER_BLACK = np.array([0, 114, 116])
-UPPER_BLACK = np.array([58, 154, 156])
+LOWER_BLACK = np.array([0, 108, 90])
+UPPER_BLACK = np.array([89, 148, 163])
 
-LOWER_ORANGE = np.array([105, 125, 87])
-UPPER_ORANGE = np.array([185, 165, 127])
+LOWER_ORANGE = np.array([135, 125, 83])
+UPPER_ORANGE = np.array([195, 165, 123])
 
-LOWER_BLUE = np.array([92, 150, 166])
-UPPER_BLUE = np.array([152, 190, 206])
+LOWER_BLUE = np.array([93, 144, 164])
+UPPER_BLUE = np.array([153, 184, 204])
 
-# obstacle color ranges
-LOWER_RED = np.array([33, 137, 70])
-UPPER_RED = np.array([93, 177, 110])
+# obstacle color ranges HSV
+LOWER_RED = np.array([160, 100, 200])
+UPPER_RED = np.array([180, 255, 255])
 
-LOWER_GREEN = np.array([60, 88, 150])
-UPPER_GREEN = np.array([120, 128, 190])
+# HSV
+LOWER_GREEN = np.array([35, 100, 50])
+UPPER_GREEN = np.array([85, 255, 255])
+
+# parking color ranges
+LOWER_MAGENTA = np.array([100, 81, 105])
+UPPER_MAGENTA = np.array([170, 121, 145])
 
 contour_workers = ContourWorkers(
-    mode="NO_OBSTACLE",
+    mode="NO_OBSTACLE",    
+    has_parked_out=False,
+    # color ranges
     lower_blue=LOWER_BLUE,
     upper_blue=UPPER_BLUE,
     lower_black=LOWER_BLACK,
@@ -54,10 +70,16 @@ contour_workers = ContourWorkers(
     upper_red=UPPER_RED,
     lower_green=LOWER_GREEN,
     upper_green=UPPER_GREEN,
-    roi1=LEFT_REGION,
-    roi2=RIGHT_REGION,
-    roi3=LAP_REGION,
-    roi4=OBS_REGION,
+    upper_magenta=UPPER_MAGENTA,
+    lower_magenta=LOWER_MAGENTA,
+    # regions
+    left_region=LEFT_REGION,
+    right_region=RIGHT_REGION,
+    lap_region=LAP_REGION,
+    obs_region=OBS_REGION,
+    front_wall_region=FRONT_WALL_REGION,
+    reverse_region=REVERSE_REGION,
+    parking_lot_region=PARKING_LOT_REGION,
 )
 
 STRAIGHT_CONST = 95
