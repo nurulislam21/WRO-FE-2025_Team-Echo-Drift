@@ -414,7 +414,7 @@ python raspberrypi/main.py --debug
 
 We have divided the whole into 8 segments, each segment runs a seperate image processing thread.
 
-<img width="936" height="736" alt="image" src="https://github.com/user-attachments/assets/ffdb6ecb-f719-429e-8884-5655da6b346c" />
+<img width="500" height="736" alt="image" src="https://github.com/user-attachments/assets/ffdb6ecb-f719-429e-8884-5655da6b346c" />
 
 
 The frame regions are assigned here:
