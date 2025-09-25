@@ -48,36 +48,59 @@ A few months ago, we set ourselves a bigger goal—to represent Bangladesh in th
 
 ## Meet the Team  
 
-### *Nurul Islam Noman – Mechanical Design*
+<table>
+  <tr>
+    <!-- Text on the left -->
+    <td>
+### Nurul Islam Noman – Mechanical Design
 
 Specializing in Mechanical Design with strong experience in Robotics and Embedded Systems. Extensive work in research and development has built expertise where precision, innovation, and reliability are key.
 
 Skills span Robotics, Embedded Systems, and Mechanical Design, enabling a holistic approach to complex technical challenges. With a focus on Mechanical Design, the goal is to create solutions that seamlessly integrate hardware, software, and system reliability.
-<p align="center">
-  <img src="t-photos/noman.jpg" alt="Nurul Islam Noman" width="500"/>
-</p>
+    </td>
 
-### *Tanim SK – Programming & Software Architecture* 
+    <!-- Image on the right -->
+    <td>
+      <img src="t-photos/noman.jpg" alt="Nurul Islam Noman" width="300" style="object-fit: cover;"/>
+    </td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <!-- Text on the left -->
+    <td>
+### Tanim SK – Programming & Software Architecture
 
 A versatile programmer with expertise in Python, JavaScript, HTML, CSS, and C++, and over 5 years of experience in software development. Skilled in building web applications using frameworks like Django, Flask, and FastAPI for the backend, and ReactJS for the frontend, with PostgreSQL for databases and Redis for caching. Experienced in deploying web applications on AWS and similar platforms with CI/CD integration.
 
 Also proficient in working with Raspberry Pi and microcontrollers, with experience in home automation, WebSocket programming, RF communication, and integrating TinyML for lightweight AI projects.
-<p align="center">
-  <img src="t-photos/Tanim.jpeg" 
-     alt="Tanim SK" 
-     width="500"      
-     style="object-fit: cover;"/>
-</p>
+    </td>
 
+    <!-- Image on the right -->
+    <td>
+      <img src="t-photos/Tanim.jpeg" alt="Tanim SK" width="300" style="object-fit: cover;"/>
+    </td>
+  </tr>
+</table>
 
-### *Majedul Islam Naeem – Electronics & Circuit Design* 
+<table>
+  <tr>
+    <!-- Text on the left -->
+    <td>
+### Majedul Islam Naeem – Electronics & Circuit Design
 
 Majedul Islam Naeem is a passionate Robotics and Embedded Systems innovator with strong expertise in Electronics & Circuit Design. He excels at transforming ideas into practical, intelligent solutions, designing efficient circuits, and integrating electronics seamlessly with robotics projects. 
 
 Driven by curiosity and creativity, Naeem thrives in collaborative environments and is committed to pushing the boundaries of technology while inspiring others to innovate.
-<p align="center">
-  <img src="t-photos/Naeem.jpg" alt="Majedul Islam Naeem" width="500"/>
-</p>
+    </td>
+
+    <!-- Image on the right -->
+    <td>
+      <img src="t-photos/Naeem.jpg" alt="Majedul Islam Naeem" width="300" style="object-fit: cover;"/>
+    </td>
+  </tr>
+</table>
 ---
 
 ## Navigation Menu
