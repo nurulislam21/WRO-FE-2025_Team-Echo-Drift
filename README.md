@@ -552,8 +552,8 @@ normalized_angle_offset = pid(error)
 
 
 For obstacle avoidance, we use a pivot point as the target.
-	•	For a red object, the pivot is the midpoint between the object’s x-coordinate and the right wall’s centroid x-coordinate.
-	•	For a green object, the pivot is the midpoint between the object’s x-coordinate and the left wall’s centroid x-coordinate.
+- For a red object, the pivot is the midpoint between the object’s x-coordinate and the right wall’s centroid x-coordinate.
+- For a green object, the pivot is the midpoint between the object’s x-coordinate and the left wall’s centroid x-coordinate.
 
 The pivot is calculated only when the objects enter the danger zone; otherwise, it is ignored.
 
