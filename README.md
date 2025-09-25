@@ -54,7 +54,7 @@ Specializing in Mechanical Design with strong experience in Robotics and Embedde
 
 Skills span Robotics, Embedded Systems, and Mechanical Design, enabling a holistic approach to complex technical challenges. With a focus on Mechanical Design, the goal is to create solutions that seamlessly integrate hardware, software, and system reliability.
 <p align="center">
-  <img src="t-photos/Noman.jpg" alt="Nurul Islam Noman" width="700" height="900"/>
+  <img src="t-photos/noman.jpg" alt="Nurul Islam Noman" width="700" height="900"/>
 </p>
 
 ### *Tanim SK – Programming & Software Architecture* 
