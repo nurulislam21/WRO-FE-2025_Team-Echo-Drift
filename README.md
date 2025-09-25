@@ -492,6 +492,10 @@ self.frame_queue_green = Queue(maxsize=2)
 
 After that, we were facing an issue for motion blur due to speed. We've resolved this issue by setting explicit `Exposure rate` and `Analogue gain` in our camera configuration:
 
+<img width="560" alt="image" src="https://github.com/user-attachments/assets/d37004e0-7c14-49ed-90fa-8d76a48db845" />
+
+<br>
+
 ```py
 picam2.set_controls(
     {
