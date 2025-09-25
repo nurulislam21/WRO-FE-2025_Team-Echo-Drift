@@ -352,9 +352,9 @@ Our software is modular, optimized for **real-time autonomous control**.
 - **Vision Module:** (optional) AI with OpenCV  
 - **Main Loop:** Integrates all modules in real time  
 
-<p align="center">
+<!-- <p align="center">
   <img src="other/software_flowchart.png" alt="Software Flowchart" width="600"/>
-</p>
+</p> -->
 
 ---
 
@@ -401,8 +401,11 @@ We have divided the whole into 8 segments, each segment runs a seperate image pr
 
 <img width="936" height="736" alt="image" src="https://github.com/user-attachments/assets/ffdb6ecb-f719-429e-8884-5655da6b346c" />
 
+
 The frame regions are assigned here:
-```
+
+
+```py
 # Region of Interest coordinates
 LEFT_REGION = (
     [20, 220, 270, 280] if MODE == "NO_OBSTACLE" else [0, 220, 250, 280]
@@ -433,5 +436,94 @@ DANGER_ZONE_POINTS = [
 ```
 
 
+We are using LAB colors for detecting a object based on a certain color range, the color ranges are assigned as numpy arrays in [main.py](https://github.com/nurulislam21/WRO-FE-2025_Team-Echo-Drift/blob/main/src/raspberrypi/main.py):
+
+```py
+# Color ranges
+LOWER_BLACK = np.array([0, 108, 90])
+UPPER_BLACK = np.array([89, 148, 163])
+
+LOWER_ORANGE = np.array([135, 125, 83])
+UPPER_ORANGE = np.array([195, 165, 123])
+
+LOWER_BLUE = np.array([93, 144, 164])
+UPPER_BLUE = np.array([153, 184, 204])
+
+# obstacle color ranges HSV
+LOWER_RED = np.array([160, 100, 200])
+UPPER_RED = np.array([180, 255, 255])
+
+# HSV
+LOWER_GREEN = np.array([35, 100, 50])
+UPPER_GREEN = np.array([85, 255, 255])
+
+# parking color ranges
+LOWER_MAGENTA = np.array([100, 81, 105])
+UPPER_MAGENTA = np.array([170, 121, 145])
+```
+
+Then we made a class called `ContourWorkers.py` in [contour_workers.py](https://github.com/nurulislam21/WRO-FE-2025_Team-Echo-Drift/blob/main/src/raspberrypi/contour_workers.py), this class is used to get contours based on the passed color ranges. ContourWorker starts 8 seperate thread for 8 regions, and processes them individually. Thus we are able to keep a decent FPS (around 25) while our bot is on the go. We are using `Queue` with size of 2 to make sure our frames are queued and passed to the thread and processed accordingly:
+
+```py
+# queues
+self.frame_queue_left = Queue(maxsize=2)
+self.frame_queue_right = Queue(maxsize=2)
+self.frame_queue_orange = Queue(maxsize=2)
+self.frame_queue_blue = Queue(maxsize=2)
+self.frame_queue_green = Queue(maxsize=2)
+...
+```
+
+After that, we were facing an issue for motion blur due to speed. We've resolved this issue by setting explicit `Exposure rate` and `Analogue gain` in our camera configuration:
+
+```py
+picam2.set_controls(
+    {
+        "ExposureTime": 16000,
+        "AnalogueGain": 42.0,
+        "AeEnable": False,
+        "AwbEnable": False,
+        "FrameDurationLimits": (40000, 40000),
+    }
+)
+```
+
+After the program is executed, we start 8 threads, and inside while loop, we are collecting the contour result in each iteration:
+
+```py
+# Retrieve all results from queues (non-blocking)
+(
+    left_result,
+    right_result,
+    orange_result,
+    blue_result,
+    green_result,
+    red_result,
+    reverse_result,
+    front_wall_result,
+    parking_result,
+) = contour_workers.collect_results()
+```
+
+We are using PID steering, and for the sake of simplicity, we've used [python simple-pid](https://pypi.org/project/simple-pid/). We've made a tool [adjust_pid_values.py](https://github.com/nurulislam21/WRO-FE-2025_Team-Echo-Drift/blob/main/src/raspberrypi/adjust_pid_values.py) for adjusting the Kp, Ki, and Kd values.
+
+<img width="925" height="642" alt="image" src="https://github.com/user-attachments/assets/dc247885-04d4-4326-8de0-ae7abf3497f0" />
+
+We are comparing the area of left region and right region, and normalizing the error to range `[-1, 1]`.  If the left area is greater than right area the bot tends to turn right and vice versa
+
+
+<img width="430" height="87" alt="image" src="https://github.com/user-attachments/assets/dc494ae2-a1a2-488d-ab57-26dad2af9408" />
+
+
+```py
+left_buf.append(left_area)
+right_buf.append(right_area)
+left_s = sum(left_buf) / len(left_buf)
+right_s = sum(right_buf) / len(right_buf)
+aDiff = right_s - left_s
+aSum = left_s + right_s
+error = aDiff / (aSum + 1e-6)  # normalized between roughly [-1,1]
+normalized_angle_offset = pid(error)
+```
 
 
