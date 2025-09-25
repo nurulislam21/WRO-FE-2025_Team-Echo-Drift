@@ -152,21 +152,23 @@ The WRO Future Engineers 2025 competition is divided into **two progressive roun
 
 ---
 
-## 📊 Robot Specifications  
+## 📊 Robot Specifications 
 
 | Parameter | Value |
 |-----------|-------|
-| **Dimensions** | 280 mm (L) × 190 mm (W) × 160 mm (H) |
-| **Weight** | ~ 1.4 kg |
-| **Chassis** | Modular 3D-printed PLA with reinforced mounts |
-| **Motors** | N20  |
-| **Motor Driver** | TB6612FNG dual-channel |
-| **Steering** | MG995 Servo |
-| **Sensors** | HC-SR04 Ultrasonic × 2, IMU, Optional Camera |
-| **Controller** | Raspberry Pi 5 (8GB) |
-| **Battery** | 3S 11.1V Li-Po, 2200mAh |
-| **Special Feature** | Custom herringbone gear differential for drift |
+| *Dimensions* | 17 cm (L) × 11 cm (W) × 18 cm (H) |
+| *Weight* | ~ 0.7 kg |
+| *Chassis* | Modular 3D-printed PLA with reinforced mounts |
+| *Motors* | N20 with encoder  |
+| *Motor Driver* | TB6612FNG dual-channel |
+| *Steering* | MG995 Servo |
+| *Sensors* | HC-SR04 Ultrasonic × 2, IMU, Camera |
+| *Controller* | Raspberry Pi 5 (8GB) |
+| *Battery* | 3S 11.1V Li-Po, 2200mAh |
+| *Special Feature* | Custom herringbone gear differential for drift |
+
 ---
+
 
 ## 📸 Vehicle Photos  
 
@@ -184,7 +186,7 @@ The WRO Future Engineers 2025 competition is divided into **two progressive roun
 
 [![Test Run 1 – Track Navigation](https://img.youtube.com/vi/efOUVDhcxk8/0.jpg)](https://www.youtube.com/watch?v=efOUVDhcxk8)  
 [![Test Run 2 – Obstacle Avoidance](https://img.youtube.com/vi/GM8HPATsVBk/0.jpg)](https://www.youtube.com/watch?v=GM8HPATsVBk)  
-[![Test Run 3 – Precision Parking](https://img.youtube.com/vi/ZZZZZZZZ/0.jpg)](https://youtu.be/ZZZZZZZZ)  
+[![Test Run 3 – Precision Parking](https://img.youtube.com/vi/KPs8n2rFoqplYith/0.jpg)](https://youtu.be/XEHfCzGVoek?si=KPs8n2rFoqplYith)
  
 
 👉 *(Videos will be linked here once uploaded to YouTube)*  
@@ -201,15 +203,16 @@ The **Echo Drift Autonomous EV** is designed with a **layered and modular archit
 ---
 ## Layered Architecture Overview 
 
-| **Layer**                | **Key Components**                                                                                                                                                    | **Role & Engineering Considerations**                                                                                                                                                                                                                                                           |
+| *Layer*                | *Key Components*                                                                                                                                                    | *Role & Engineering Considerations*                                                                                                                                                                                                                                                           |
 | ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Hardware**             | - PLA + Aluminum Hybrid Chassis  <br> - 2× DC Geared Motors (12V, 300RPM, 1.2Nm)  <br> - High-Torque Servo (15kg·cm)  <br> - 65mm Rubberized Wheels                   | - Rigid but lightweight frame ensures stability and durability. <br> - Motor torque chosen with ~30% safety margin for acceleration under load. <br> - Servo provides precise steering with quick response. <br> - Wheel diameter selected for balance between speed and traction.             |
-| **Power**                | - 3S LiPo (11.1V, 2200mAh)  <br> - Power Distribution Board (12V, 5V, 3.3V outputs)  <br> - Fuse + XT60 Connectors                                                    | - LiPo selected for high discharge rate, lightweight, and compact size. <br> - Separate regulated lines prevent voltage drop issues. <br> - Fuse + XT60 provide short-circuit and overload safety.                                                                                              |
-| **Perception**           | - Camera (USB/PiCam)  <br> - 2× Ultrasonic Sensors (front-left & front-right)  <br> - IMU (MPU6050)  <br> - Wheel Encoders                                            | - Camera handles **lane detection and vision-based markers**. <br> - Ultrasonic ensures reliable short-range obstacle sensing. <br> - IMU improves orientation and stability on turns. <br> - Encoders provide real-time speed & distance for closed-loop control.                              |
-| **Control & Processing** | - Raspberry Pi 4 (Python + OpenCV)  <br> - Arduino Mega (C++)  <br> - UART Serial Link                                                                                | - Pi processes camera input & makes high-level decisions. <br> - Arduino handles **PWM signals, interrupts, and motor control** with real-time precision. <br> - UART ensures fast, low-latency communication between subsystems.                                                               |
-| **Decision**             | - OpenCV Line Detection  <br> - Sensor Fusion (Camera + Ultrasonic)  <br> - PID Steering Control  <br> - Encoder-based Speed Feedback  <br> - Emergency Stop Failsafe | - Lane tracking optimized with **real-time vision algorithms**. <br> - Sensor fusion improves obstacle avoidance accuracy. <br> - PID ensures smooth steering corrections. <br> - Encoders maintain consistent velocity. <br> - Safety protocol: robot halts when conflicting data is detected. |
-| **Actuation**            | - H-Bridge Motor Driver (e.g., BTS7960)  <br> - PWM Servo Driver                                                                                                      | - H-Bridge supplies bidirectional control for drive motors. <br> - Servo driver ensures precise angle control. <br> - Final output: **smooth differential drive with adaptive steering**.                                                                                                       |
+| *Hardware*             | - PLA + Aluminum Hybrid Chassis  <br> - 1× DC Geared Motors (12V, 600RPM, 1.2Nm)  <br> - High-Torque Servo (15kg·cm)  <br> - 65mm Rubberized Wheels                   | - Rigid but lightweight frame ensures stability and durability. <br> - Motor torque chosen with ~30% safety margin for acceleration under load. <br> - Servo provides precise steering with quick response. <br> - Wheel diameter selected for a balance between speed and traction.             |
+| *Power*                | - 3S LiPo (11.1V, 2200mAh)  <br> - Power Distribution Board (12V, 5V outputs)  <br> - XT60 Connectors                                                    | - LiPo selected for high discharge rate, lightweight, and compact size. <br> - Separate regulated lines prevent voltage drop issues. <br> - XT60 provides short-circuit and overload safety.                                                                                              |
+| *Perception*           | - Camera   <br> - 2× Ultrasonic Sensors (front)   <br> - Wheel                                             | - Camera handles *lane detection and vision-based markers*. <br> - Ultrasonic ensures reliable short-range obstacle sensing. <br> - IMU improves orientation and stability on turns. <br> - Encoders provide real-time speed & distance for closed-loop control.                              |
+| *Control & Processing* | - Raspberry Pi 5 (Python + OpenCV)  <br> - Arduino Nano (C++)  <br> - UART Serial Link                                                                                | - Pi processes camera input & makes high-level decisions. <br> - Arduino handles *PWM signals, interrupts, and motor control* with real-time precision. <br> - UART ensures fast, low-latency communication between subsystems.                                                               |
+| *Decision*             | - OpenCV Line Detection  <br> - Sensor Fusion (Camera + Ultrasonic)  <br> - PID Steering Control  <br> - Encoder-based Speed Feedback  <br> - Emergency Stop Failsafe | - Lane tracking optimized with *real-time vision algorithms*. <br> - Sensor fusion improves obstacle avoidance accuracy. <br> - PID ensures smooth steering corrections. <br> - Encoders maintain consistent velocity. <br> - Safety protocol: robot halts when conflicting data is detected. |
+| *Actuation*            | -  Motor Driver   <br> - PWM Servo Driver                                                                                                      | - H-Bridge supplies bidirectional control for drive motors. <br> - Servo driver ensures precise angle control. <br> - Final output: *smooth differential drive with adaptive steering*.                                                                                                       |
 ---
+
 ## Threads & Rates
 | Task         |       Rate | Notes                              |
 | ------------ | ---------: | ---------------------------------- |
@@ -218,9 +221,6 @@ The **Echo Drift Autonomous EV** is designed with a **layered and modular archit
 | Fusion       |      50 Hz | complementary/Kalman (optional)    |
 | Navigation   |   20–50 Hz | lane-keeping, color rule, parking  |
 | Control      | 100–200 Hz | PID for speed + steering           |
-| Actuator I/O | 100–200 Hz | PWM/UART                           |
-| Logger       |      10 Hz | CSV + HUD overlay                  |
-| Watchdog     |       5 Hz | trips SAFE\_STOP                   |
 
 ---
 
