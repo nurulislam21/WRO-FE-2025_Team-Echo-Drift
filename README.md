@@ -527,14 +527,14 @@ After the program is executed, we start 8 threads, and inside while loop, we are
 
 We are using PID steering, and for the sake of simplicity, we've used [python simple-pid](https://pypi.org/project/simple-pid/). We've made a tool [adjust_pid_values.py](https://github.com/nurulislam21/WRO-FE-2025_Team-Echo-Drift/blob/main/src/raspberrypi/adjust_pid_values.py) for adjusting the Kp, Ki, and Kd values.
 
-<img width="925" height="642" alt="image" src="https://github.com/user-attachments/assets/dc247885-04d4-4326-8de0-ae7abf3497f0" />
+<img width="450" alt="image" src="https://github.com/user-attachments/assets/dc247885-04d4-4326-8de0-ae7abf3497f0" />
 
 <br>
 
 We are comparing the area of left region and right region, and normalizing the error to range `[-1, 1]`.  If the left area is greater than right area the bot tends to turn right and vice versa
 
 
-<img width="430" height="87" alt="image" src="https://github.com/user-attachments/assets/dc494ae2-a1a2-488d-ab57-26dad2af9408" />
+<img width="500" height="87" alt="image" src="https://github.com/user-attachments/assets/dc494ae2-a1a2-488d-ab57-26dad2af9408" />
 
 
 ```py
@@ -558,7 +558,7 @@ For obstacle avoidance, we use a pivot point as the target.
 The pivot is calculated only when the objects enter the danger zone; otherwise, it is ignored.
 
 
-<img width="408" height="325" alt="image" src="https://github.com/user-attachments/assets/dd9c0363-e1f3-450a-bc4d-29f72356bce5" />
+<img width="500" alt="image" src="https://github.com/user-attachments/assets/dd9c0363-e1f3-450a-bc4d-29f72356bce5" />
 
 
 
