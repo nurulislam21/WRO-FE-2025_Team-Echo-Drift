@@ -384,3 +384,54 @@ cd bcm2835-1.71
 sudo make check
 sudo make install
 cd ..
+
+# clone our repository
+git clone https://github.com/nurulislam21/WRO-FE-2025_Team-Echo-Drift/
+cd WRO-FE-2025_Team-Echo-Drift/src
+# install the dependencies
+pip install -r requirements.txt
+# run the program
+python raspberrypi/main.py --debug
+
+# for starting the program on startup, register it as a service or a crontab
+
+```
+
+We have divided the whole into 8 segments, each segment runs a seperate image processing thread.
+
+<img width="936" height="736" alt="image" src="https://github.com/user-attachments/assets/ffdb6ecb-f719-429e-8884-5655da6b346c" />
+
+The frame regions are assigned here:
+```
+# Region of Interest coordinates
+LEFT_REGION = (
+    [20, 220, 270, 280] if MODE == "NO_OBSTACLE" else [0, 220, 250, 280]
+)  # left
+RIGHT_REGION = (
+    [370, 220, 620, 280] if MODE == "NO_OBSTACLE" else [390, 220, 640, 280]
+)  # right
+LAP_REGION = [225, 295, 415, 350]  # lap detection
+OBS_REGION = [85, 140, 555, 320]  # obstacle detection
+REVERSE_REGION = [233, 300, 407, 320]  # reverse trigger area
+FRONT_WALL_REGION = [300, 195, 340, 215]  # front wall detection
+PARKING_LOT_REGION = [0, 185, CAM_WIDTH, 400]  # parking lot detection
+# DANGER_ZONE_POINTS = [175, OBS_REGION[1], 465, OBS_REGION[3]]  # area to check for obstacles
+DANGER_ZONE_POINTS = [
+    {
+        "x1": 302,
+        "y1": OBS_REGION[1],
+        "x2": 205,
+        "y2": OBS_REGION[3],
+    },
+    {
+        "x1": 350,
+        "y1": OBS_REGION[1],
+        "x2": 435,
+        "y2": OBS_REGION[3],
+    },
+]
+```
+
+
+
+
