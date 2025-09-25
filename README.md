@@ -122,7 +122,7 @@ WRO **Future Engineers** challenges teams to design autonomous electric vehicles
 
 ---
 
-##  Competition Rounds 
+<h2>  Competition Rounds </h2>
 
 The WRO Future Engineers 2025 competition is divided into **two progressive rounds**. Each round adds new layers of complexity and pushes teams to demonstrate engineering excellence.  
 
