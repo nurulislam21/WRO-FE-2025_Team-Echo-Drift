@@ -15,8 +15,8 @@ class CameraController:
         self.picam2.configure(config)
 
         # Initial camera settings
-        self.exposure_time = 16000
-        self.analogue_gain = 42.0
+        self.exposure_time = 11000
+        self.analogue_gain = 16.0
         self.frame_duration = 40000
 
         # Set initial controls

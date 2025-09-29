@@ -42,8 +42,8 @@ def pick_color(event, x, y, flags, param):
 
         # Print LAB range
         print(f"\nClicked LAB: {clicked_pixel}")
-        print(f"LAB Lower: {lower_bound.tolist()}")
-        print(f"LAB Upper: {upper_bound.tolist()}")
+        print(f"LOWER = np.array({lower_bound.tolist()})")
+        print(f"UPPER = np.array({upper_bound.tolist()})")
 
         # Print HSV range
         print(f"Clicked HSV: {clicked_pixel_hsv}")
@@ -62,8 +62,8 @@ def main():
     config = picam2.create_preview_configuration(main={"format": "BGR888", "size": (640, 480)})
     picam2.configure(config)
     picam2.set_controls({
-        "ExposureTime": 16000,
-        "AnalogueGain": 42.0,
+        "ExposureTime": 11000,
+        "AnalogueGain": 16.0,
         "AeEnable": False,
         "AwbEnable": False,
         "FrameDurationLimits": (40000, 40000)

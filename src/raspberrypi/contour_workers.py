@@ -23,6 +23,8 @@ class ContourWorkers:
         upper_blue: np.ndarray,
         lower_black: np.ndarray,
         upper_black: np.ndarray,
+        lower_reverse_black: np.ndarray,
+        upper_reverse_black: np.ndarray,
         lower_orange: np.ndarray,
         upper_orange: np.ndarray,
         lower_red: np.ndarray,
@@ -57,6 +59,8 @@ class ContourWorkers:
         self.UPPER_GREEN = upper_green
         self.LOWER_MAGENTA = lower_magenta
         self.UPPER_MAGENTA = upper_magenta
+        self.UPPER_REVERSE_BLACK = upper_reverse_black
+        self.LOWER_REVERSE_BLACK = lower_reverse_black
 
         # regions of interest
         self.LEFT_REGION = left_region
@@ -373,8 +377,8 @@ class ContourWorkers:
         while not self.stop_processing.is_set():
             try:
                 frame = self.frame_queue_green.get(timeout=0.1)
-                contours = find_color_signal_box(
-                    frame, self.LOWER_GREEN, self.UPPER_GREEN, self.OBS_REGION, consider_area=3000
+                contours = find_contours(
+                    frame, self.LOWER_GREEN, self.UPPER_GREEN, self.OBS_REGION, consider_area=900, blur=3
                 )
                 area, _ = max_contour_area(contours)
                 result = ContourResult(area, contours, "green_pillar")
@@ -400,8 +404,8 @@ class ContourWorkers:
         while not self.stop_processing.is_set():
             try:
                 frame = self.frame_queue_red.get(timeout=0.1)
-                contours = find_color_signal_box(
-                    frame, self.LOWER_RED, self.UPPER_RED, self.OBS_REGION, consider_area=3000
+                contours = find_contours(
+                    frame, self.LOWER_RED, self.UPPER_RED, self.OBS_REGION, consider_area=900, blur=3
                 )
                 area, _ = max_contour_area(contours)
                 result = ContourResult(area, contours, "red_pillar")
@@ -462,7 +466,7 @@ class ContourWorkers:
                 # reverse region processing
                 frame = self.frame_queue_reverse.get(timeout=0.1)
                 contours = find_contours(
-                    frame, self.LOWER_BLACK, self.UPPER_BLACK, self.REVERSE_REGION
+                    frame, self.LOWER_REVERSE_BLACK, self.UPPER_REVERSE_BLACK, self.REVERSE_REGION
                 )
                 area, _ = max_contour_area(contours)
                 result = ContourResult(area, contours, "reverse_trigger")

@@ -73,9 +73,9 @@ def boxes_to_contours(boxes):
 def find_color_signal_box(frame, lower_color, upper_color, roi, consider_area=3000):
     x1, y1, x2, y2 = roi
     roi_frame = frame[y1:y2, x1:x2]
-    blurred = cv2.medianBlur(roi_frame, 7)  # Reduced from 15 to 7
+    blurred = cv2.medianBlur(roi_frame, 1)  # Reduced from 15 to 7
     hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
-    kernel = np.ones((11, 11), np.uint8)
+    kernel = np.ones((9, 9), np.uint8)
     mask = create_mask(hsv, lower_color, upper_color, kernel)
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     # Process largest contours first
@@ -92,7 +92,7 @@ def find_color_signal_box(frame, lower_color, upper_color, roi, consider_area=30
     
 
 
-def find_contours(frame, lower_color, upper_color, roi, direction=None, use_convex_hull=False, consider_area=None):
+def find_contours(frame, lower_color, upper_color, roi, direction=None, use_convex_hull=False, consider_area=None, blur=7):
     x1, y1, x2, y2 = roi
     roi_frame = frame[y1:y2, x1:x2]
     labImg = cv2.cvtColor(roi_frame, cv2.COLOR_RGB2Lab)
@@ -104,10 +104,10 @@ def find_contours(frame, lower_color, upper_color, roi, direction=None, use_conv
     # labImg = cv2.merge((l,a,b))
 
     # blur and mask
-    # img_blur = cv2.medianBlur(labImg, 7)
-    img_blur = cv2.bilateralFilter(labImg, d=7, sigmaColor=75, sigmaSpace=75)
+    img_blur = cv2.medianBlur(labImg, blur)
+    # img_blur = cv2.bilateralFilter(labImg, d=7, sigmaColor=75, sigmaSpace=75)
     mask = cv2.inRange(img_blur, lower_color, upper_color)
-    kernel = np.ones((7, 7), np.uint8)
+    kernel = np.ones((13, 13), np.uint8)
     mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
     mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -157,6 +157,7 @@ def display_roi(frame, rois, color):
 
 
 def display_debug_screen(
+    mode,
     CAM_WIDTH,
     CAM_HEIGHT,
     frame,
@@ -165,7 +166,7 @@ def display_debug_screen(
     LAP_REGION,
     OBS_REGION,
     FRONT_WALL_REGION,
-    show_front_wall,
+    # show_front_wall,
     front_wall_result,
     REVERSE_REGION,
     DANGER_ZONE_POINTS,
@@ -186,10 +187,10 @@ def display_debug_screen(
     parking_result,    
 ):
     debug_frame = frame.copy()
-    debug_frame = display_roi(debug_frame, [LEFT_REGION, RIGHT_REGION, LAP_REGION, OBS_REGION], (255, 0, 255))
+    debug_frame = display_roi(debug_frame, [LEFT_REGION, RIGHT_REGION, LAP_REGION, OBS_REGION, REVERSE_REGION], (255, 0, 255))
 
-    if show_front_wall:
-        debug_frame = display_roi(debug_frame, [REVERSE_REGION, FRONT_WALL_REGION], (0, 255, 255))
+    # if show_front_wall:
+    debug_frame = display_roi(debug_frame, [FRONT_WALL_REGION], (0, 255, 255))
         
     if parking_mode:
         debug_frame = display_roi(debug_frame, [parking_lot_region], (0, 255, 0))
@@ -212,8 +213,9 @@ def display_debug_screen(
     )  # blue line in the center
 
     # draw danger zone
-    cv2.line(debug_frame, (DANGER_ZONE_POINTS[0]["x1"], DANGER_ZONE_POINTS[0]["y1"]), (DANGER_ZONE_POINTS[0]["x2"], DANGER_ZONE_POINTS[0]["y2"]), (0, 0, 255), 2)
-    cv2.line(debug_frame, (DANGER_ZONE_POINTS[1]["x1"], DANGER_ZONE_POINTS[1]["y1"]), (DANGER_ZONE_POINTS[1]["x2"], DANGER_ZONE_POINTS[1]["y2"]), (0, 0, 255), 2)
+    if mode == "OBSTACLE":
+        cv2.line(debug_frame, (DANGER_ZONE_POINTS[0]["x1"], DANGER_ZONE_POINTS[0]["y1"]), (DANGER_ZONE_POINTS[0]["x2"], DANGER_ZONE_POINTS[0]["y2"]), (0, 0, 255), 2)
+        cv2.line(debug_frame, (DANGER_ZONE_POINTS[1]["x1"], DANGER_ZONE_POINTS[1]["y1"]), (DANGER_ZONE_POINTS[1]["x2"], DANGER_ZONE_POINTS[1]["y2"]), (0, 0, 255), 2)
 
     # Draw contours using the latest results
     if left_result.contours:
@@ -275,7 +277,7 @@ def display_debug_screen(
             2,
         )
     
-    if show_front_wall and front_wall_result.contours:
+    if front_wall_result.contours:
         cv2.drawContours(
             debug_frame[FRONT_WALL_REGION[1] : FRONT_WALL_REGION[3], FRONT_WALL_REGION[0] : FRONT_WALL_REGION[2]],
             front_wall_result.contours,

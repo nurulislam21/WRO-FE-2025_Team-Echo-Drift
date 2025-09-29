@@ -44,7 +44,7 @@ class Parking:
         # self.stop_tolerance = 5
 
         self.seen_parking_lot = "NOT_SEEN"
-        self.parking_lot_side = None
+        self.parking_lot_side = "left"
         self.last_seen_time = time.time()
         self.wait_after_seen = 0.6  # seconds
 
@@ -68,16 +68,18 @@ class Parking:
                 (self.parking_speed, 2100, 20),
                 (-self.parking_speed, 800, 95),                
                 (self.parking_speed, 3000, 170),
-                (-self.parking_speed, 2000, 95),
+                (self.parking_speed, 1000, 95),
+                # (-self.parking_speed, 2000, 95),
             ],
             "right": [
                 # speed, steps, angle
                 (-self.parking_speed, 600, 20),
-                (self.parking_speed, 900, 170),
-                (-self.parking_speed, 1000, 20),
-                (self.parking_speed, 1000, 150),
-                (self.parking_speed, 2500, 20),
-                (-self.parking_speed, 1000, 95),
+                (self.parking_speed, 2100, 170),
+                (-self.parking_speed, 800, 95),
+                (self.parking_speed, 3000, 20),
+                (self.parking_speed, 1000, 95),
+                # (self.parking_speed, 2500, 20),
+                # (-self.parking_speed, 1000, 95),
             ],
         }
 
