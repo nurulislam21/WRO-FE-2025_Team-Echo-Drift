@@ -42,47 +42,59 @@ root.title("Car Controller")
 lbl_status = tk.Label(root, text="Speed: 0 | Angle: 95", font=("Arial", 14))
 lbl_status.pack(pady=10)
 
-# Speed buttons
-def forward():
-    global speed
-    speed = 80
+# --- Joystick Canvas ---
+canvas_size = 200
+center = canvas_size // 2
+radius = 30  # joystick knob radius
+max_offset = 70  # max distance from center
 
-def backward():
-    global speed
-    speed = -80
+canvas = tk.Canvas(root, width=canvas_size, height=canvas_size, bg="lightgray")
+canvas.pack(pady=10)
 
-def stop():
-    global speed
-    speed = 0 
+# draw outer boundary + knob
+canvas.create_oval(center - max_offset, center - max_offset,
+                   center + max_offset, center + max_offset,
+                   outline="black", width=2)
+knob = canvas.create_oval(center - radius, center - radius,
+                          center + radius, center + radius,
+                          fill="blue")
 
-frame_speed = tk.Frame(root)
-frame_speed.pack(pady=5)
+# --- Joystick behavior ---
+def move_knob(event):
+    global speed, angle
+    dx = event.x - center
+    dy = event.y - center
 
-btn_forward = tk.Button(frame_speed, text="Forward", command=forward, width=10, height=2)
-btn_forward.grid(row=0, column=1, padx=5)
+    # limit knob inside max_offset circle
+    dist = (dx**2 + dy**2) ** 0.5
+    if dist > max_offset:
+        dx = dx * max_offset / dist
+        dy = dy * max_offset / dist
 
-btn_stop = tk.Button(frame_speed, text="■ Stop", command=stop, width=10, height=2, bg="red", fg="white")
-btn_stop.grid(row=1, column=1, padx=5)
+    # move knob
+    canvas.coords(knob,
+                  center + dx - radius, center + dy - radius,
+                  center + dx + radius, center + dy + radius)
 
-btn_backward = tk.Button(frame_speed, text="Backward", command=backward, width=10, height=2)
-btn_backward.grid(row=2, column=1, padx=5)
+    # map dx → angle (30–160)
+    angle = int(95 + (dx / max_offset) * 65)  # center=95
+    angle = max(30, min(160, angle))
 
-# Steering slider
-def update_angle(val):
-    global angle
-    angle = int(val)    
+    # map dy → speed (-80 to 80) (invert Y for natural feel)
+    speed = int(-(dy / max_offset) * 80)
+    speed = max(-80, min(80, speed))
 
-steering_slider = tk.Scale(
-    root,
-    from_=30,
-    to=160,
-    orient="horizontal",
-    length=300,
-    label="Steering Angle",
-    command=update_angle
-)
-steering_slider.set(95)  # default straight
-steering_slider.pack(pady=10)
+def reset_knob(event=None):
+    global speed, angle
+    # reset to center
+    canvas.coords(knob,
+                  center - radius, center - radius,
+                  center + radius, center + radius)
+    speed = 0
+    angle = 95
+
+canvas.bind("<B1-Motion>", move_knob)  # drag with mouse
+canvas.bind("<ButtonRelease-1>", reset_knob)  # release → reset to center
 
 # --- Send command to Arduino ---
 def send_command():
@@ -109,6 +121,7 @@ if camera:
 
 # Start sending commands in a separate thread
 Thread(target=send_command, daemon=True).start()
+
 # Run GUI
 try:
     root.mainloop()
