@@ -1,4 +1,4 @@
-from img_processing_functions import find_contours, max_contour_area, find_color_signal_box
+from img_processing_functions import find_contours, max_contour_area, detect_objects_yolo
 import threading
 from queue import Queue, Empty
 import cv2
@@ -76,8 +76,9 @@ class ContourWorkers:
         self.frame_queue_right = Queue(maxsize=2)
         self.frame_queue_orange = Queue(maxsize=2)
         self.frame_queue_blue = Queue(maxsize=2)
-        self.frame_queue_green = Queue(maxsize=2)
-        self.frame_queue_red = Queue(maxsize=2)
+        # self.frame_queue_green = Queue(maxsize=2)
+        # self.frame_queue_red = Queue(maxsize=2)
+        self.frame_queue_green_red = Queue(maxsize=2)
         self.frame_queue_reverse = Queue(maxsize=2)
         self.frame_queue_front_wall = Queue(maxsize=2)
         self.frame_queue_parking_lot = Queue(maxsize=2)
@@ -134,13 +135,18 @@ class ContourWorkers:
             pass
 
         if self.mode == "OBSTACLE":
-            try:
-                self.frame_queue_green.put_nowait(frame_copy)
-            except:
-                pass
+            # try:
+            #     self.frame_queue_green.put_nowait(frame_copy)
+            # except:
+            #     pass
+
+            # try:
+            #     self.frame_queue_red.put_nowait(frame_copy)
+            # except:
+            #     pass
 
             try:
-                self.frame_queue_red.put_nowait(frame_copy)
+                self.frame_queue_green_red.put_nowait(frame_copy)
             except:
                 pass
 
@@ -372,59 +378,48 @@ class ContourWorkers:
                 print(f"Blue processing error: {e}")
                 continue
 
-    def green_contour_worker(self):
-        """Worker thread for green marker detection"""
+    def green_red_object_worker(self):
+        """Worker thread for green and red object detection using YOLO"""
         while not self.stop_processing.is_set():
             try:
-                frame = self.frame_queue_green.get(timeout=0.1)
-                contours = find_contours(
-                    frame, self.LOWER_GREEN, self.UPPER_GREEN, self.OBS_REGION, consider_area=900, blur=3
-                )
-                area, _ = max_contour_area(contours)
-                result = ContourResult(area, contours, "green_pillar")
+                if self.mode == "OBSTACLE":
+                    frame = self.frame_queue_green_red.get(timeout=0.1)
+                    detections = detect_objects_yolo(frame)
+                    green_contours = detections["green"]
+                    red_contours = detections["red"]
 
-                try:
-                    self.result_queue_green.put_nowait(result)
-                except:
-                    try:
-                        self.result_queue_green.get_nowait()
-                        self.result_queue_green.put_nowait(result)
-                    except Empty:
-                        pass
-
-                self.frame_queue_green.task_done()
+                    if green_contours:
+                        green_area, _ = max_contour_area(green_contours)
+                        green_result = ContourResult(green_area, green_contours, "green_pillar")
+                        try:
+                            self.result_queue_green.put_nowait(green_result)
+                        except:
+                            try:
+                                self.result_queue_green.get_nowait()
+                                self.result_queue_green.put_nowait(green_result)
+                            except Empty:
+                                pass
+                    if red_contours:
+                        red_area, _ = max_contour_area(red_contours)
+                        red_result = ContourResult(red_area, red_contours, "red_pillar")
+                        try:
+                            self.result_queue_red.put_nowait(red_result)
+                        except:
+                            try:
+                                self.result_queue_red.get_nowait()
+                                self.result_queue_red.put_nowait(red_result)
+                            except Empty:
+                                pass
+                    self.frame_queue_green_red.task_done()
             except Empty:
                 continue
             except Exception as e:
-                print(f"Green processing error: {e}")
+                print(f"Green/Red processing error: {e}")
                 continue
 
-    def red_contour_worker(self):
-        """Worker thread for red marker detection"""
-        while not self.stop_processing.is_set():
-            try:
-                frame = self.frame_queue_red.get(timeout=0.1)
-                contours = find_contours(
-                    frame, self.LOWER_RED, self.UPPER_RED, self.OBS_REGION, consider_area=900, blur=3
-                )
-                area, _ = max_contour_area(contours)
-                result = ContourResult(area, contours, "red_pillar")
 
-                try:
-                    self.result_queue_red.put_nowait(result)
-                except:
-                    try:
-                        self.result_queue_red.get_nowait()
-                        self.result_queue_red.put_nowait(result)
-                    except Empty:
-                        pass
+                    
 
-                self.frame_queue_red.task_done()
-            except Empty:
-                continue
-            except Exception as e:
-                print(f"Red processing error: {e}")
-                continue
 
     def parking_lot_contour_worker(self):
         """Worker thread for parking lot marker detection"""

@@ -1,6 +1,9 @@
 import cv2
 import numpy as np
+from ultralytics import YOLO
 from collections import defaultdict
+
+model = YOLO("best2.pt")
 
 
 def replace_closest(polygon, new_point):
@@ -34,6 +37,39 @@ def check_overlap(region, contours):
             return True
 
     return False
+
+
+
+def detect_objects_yolo(frame, roi, conf_threshold=0.5):
+    detected_objs = {
+        "red": [],
+        "green": [],
+    }
+
+    x1, y1, x2, y2 = roi
+    roi_frame = frame[y1:y2, x1:x2]
+    results = model(roi_frame, conf=conf_threshold)
+    
+    for result in results:
+        for box in result.boxes:
+            x1, y1, x2, y2 = box.xyxy[0].numpy()  # already CPU
+            conf = float(box.conf[0].numpy())
+            cls = int(box.cls[0].numpy())
+            label = model.names[cls]
+
+            if label == "redbox":
+                detected_objs["red"].append((x1, y1, x2 - x1, y2 - y1))
+            
+            elif label == "greenbox":
+                detected_objs["green"].append((x1, y1, x2 - x1, y2 - y1))
+
+    # Convert boxes to contours
+    if len(detected_objs["red"]) > 0:
+        detected_objs["red"] = boxes_to_contours(detected_objs["red"])
+    if len(detected_objs["green"]) > 0:
+        detected_objs["green"] = boxes_to_contours(detected_objs["green"])
+    
+    return detected_objs
 
 
 def transform_danger_zone_xshift(points, steering_angle, sensitivity=2):

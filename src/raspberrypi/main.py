@@ -238,8 +238,7 @@ def main():
         contour_workers.right_contour_worker,
         contour_workers.orange_contour_worker,
         contour_workers.blue_contour_worker,
-        contour_workers.green_contour_worker,
-        contour_workers.red_contour_worker,
+        contour_workers.green_red_object_worker,
         contour_workers.reverse_n_front_wall_contour_worker,
         contour_workers.parking_lot_contour_worker,
     ]
