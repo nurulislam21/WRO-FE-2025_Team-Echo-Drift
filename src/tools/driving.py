@@ -106,6 +106,11 @@ def send_command():
         lbl_status.config(text=f"Speed: {speed} | Angle: {angle}")
         time.sleep(0.2)
 
+        # receive response
+        if arduino.in_waiting > 0:
+            response = arduino.readline().decode().strip()
+            print(f"Arduino response: {response}")
+
 # --- Camera loop (runs in a thread) ---
 def camera_loop():
     while camera:
