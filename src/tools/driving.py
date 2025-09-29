@@ -79,7 +79,7 @@ def update_angle(val):
 steering_slider = tk.Scale(
     root,
     from_=30,
-    to=120,
+    to=160,
     orient="horizontal",
     length=300,
     label="Steering Angle",
