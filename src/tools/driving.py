@@ -1,3 +1,4 @@
+import sys
 import serial
 from picamera2 import Picamera2
 import cv2
@@ -5,32 +6,34 @@ import time
 import keyboard
 
 # Setup Arduino serial
+camera = sys.argv[1] == "--camera" if len(sys.argv) > 1 else False
+if camera:
+    picam2 = Picamera2()
+    config = picam2.create_preview_configuration(
+        main={"format": "RGB888", "size": (640, 480)}
+    )
+    picam2.configure(config)
+    picam2.set_controls(
+        {
+            "ExposureTime": 11000,
+            "AnalogueGain": 16.0,
+            "AeEnable": False,
+            "AwbEnable": False,
+            "FrameDurationLimits": (40000, 40000),
+        }
+    )
+    picam2.start()
+
 arduino = serial.Serial(port="/dev/ttyUSB0", baudrate=115200, dsrdtr=True)
 time.sleep(2)
 arduino.write(b"0,-1,95\n")
-
-# Initialize PiCamera2
-picam2 = Picamera2()
-config = picam2.create_preview_configuration(
-    main={"format": "RGB888", "size": (640, 480)}
-)
-picam2.configure(config)
-picam2.set_controls(
-    {
-        "ExposureTime": 11000,
-        "AnalogueGain": 16.0,
-        "AeEnable": False,
-        "AwbEnable": False,
-        "FrameDurationLimits": (40000, 40000),
-    }
-)
-picam2.start()
 
 speed = 0
 angle = 95  # default straight
 
 while True:
-    frame = picam2.capture_array()
+    if camera:
+        frame = picam2.capture_array()
 
     # --- SPEED CONTROL ---
     if keyboard.is_pressed("w"):
@@ -51,11 +54,14 @@ while True:
     # Send to Arduino
     arduino.write(f"{speed},-1,{angle}\n".encode())
 
-    # Display camera
-    cv2.imshow("Frame", frame)
+    if camera:
+        # Display camera
+        cv2.imshow("Frame", frame)
 
-    if cv2.waitKey(1) & 0xFF == ord("q"):
-        break
+        if cv2.waitKey(1) & 0xFF == ord("q"):
+            break
 
-cv2.destroyAllWindows()
+if camera:
+    cv2.destroyAllWindows()
+    
 arduino.close()

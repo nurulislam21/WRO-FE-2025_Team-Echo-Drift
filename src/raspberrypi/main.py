@@ -24,7 +24,7 @@ import copy
 
 
 # debug flag parsing
-debug_flag = sys.argv[1] == "--debug" if len(sys.argv) > 1 else ""
+debug_flag = sys.argv[1] == "--debug" if len(sys.argv) > 1 else False
 if debug_flag:
     DEBUG = True
 else:
