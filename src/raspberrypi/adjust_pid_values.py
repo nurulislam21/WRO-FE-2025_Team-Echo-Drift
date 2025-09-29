@@ -357,8 +357,8 @@ def main():
     )
     picam2.configure(config)
     picam2.set_controls({
-        "ExposureTime": 16000,
-        "AnalogueGain": 42.0,
+        "ExposureTime": 11000,
+        "AnalogueGain": 16.0,
         "AeEnable": False,
         "AwbEnable": False,
         "FrameDurationLimits": (40000, 40000)

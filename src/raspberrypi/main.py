@@ -29,15 +29,15 @@ if debug_flag:
 else:
     DEBUG = False
 
-DEBUG = True
+# DEBUG = True
 print("DEBUG MODE" if DEBUG else "PRODUCTION")
 
 # Simulated camera settings
 MODE = "OBSTACLE"  # "NO_OBSTACLE" or "OBSTACLE"
 CAM_WIDTH = 640
 CAM_HEIGHT = 480
-MAX_SPEED = 60
-MIN_SPEED = 50
+MAX_SPEED = 60 if MODE == "OBSTACLE" else 100
+MIN_SPEED = 50 if MODE == "OBSTACLE" else 67
 
 # Intersections
 TOTAL_INTERSECTIONS = 12
@@ -50,14 +50,14 @@ RIGHT_REGION = (
     [370, 220, 620, 280] if MODE == "NO_OBSTACLE" else [390, 220, 640, 280]
 )  # right
 LAP_REGION = [225, 295, 415, 350]  # lap detection
-OBS_REGION = [85, 140, 555, 320]  # obstacle detection
+OBS_REGION = [85, 155, 555, 320]  # obstacle detection
 REVERSE_REGION = [233, 300, 407, 320]  # reverse trigger area
 FRONT_WALL_REGION = [300, 195, 340, 215]  # front wall detection
 PARKING_LOT_REGION = [0, 185, CAM_WIDTH, 400]  # parking lot detection
 # DANGER_ZONE_POINTS = [175, OBS_REGION[1], 465, OBS_REGION[3]]  # area to check for obstacles
 DANGER_ZONE_POINTS = [
     {
-        "x1": 302,
+        "x1": 290,
         "y1": OBS_REGION[1],
         "x2": 205,
         "y2": OBS_REGION[3],
@@ -78,37 +78,43 @@ OBSTACLE_DETECTOR_Y = OBS_REGION[3] - OBS_REGION[1]
 obstacle_wall_pivot = (None, None)
 
 # Color ranges
-LOWER_BLACK = np.array([0, 108, 90])
-UPPER_BLACK = np.array([89, 148, 163])
+LOWER_BLACK = np.array([5, 109, 120])
+UPPER_BLACK = np.array([85, 149, 160])
 
-LOWER_ORANGE = np.array([135, 125, 83])
-UPPER_ORANGE = np.array([195, 165, 123])
+LOWER_ORANGE = np.array([129, 110, 81])
+UPPER_ORANGE = np.array([198, 150, 121])
 
-LOWER_BLUE = np.array([93, 144, 164])
-UPPER_BLUE = np.array([153, 184, 204])
+LOWER_BLUE = np.array([87, 152, 160])
+UPPER_BLUE = np.array([155, 192, 200])
 
 # obstacle color ranges HSV
-LOWER_RED = np.array([160, 100, 200])
-UPPER_RED = np.array([180, 255, 255])
+LOWER_RED = np.array([41, 133, 62])
+UPPER_RED = np.array([125, 175, 123])
+
+# reverse_black
+LOWER_REVERSE_BLACK = np.array([5, 109, 120])
+UPPER_REVERSE_BLACK = np.array([70, 149, 160])
 
 # HSV
-LOWER_GREEN = np.array([18, 100, 100])
-UPPER_GREEN = np.array([48, 255, 255])
+LOWER_GREEN = np.array([85, 98, 151])
+UPPER_GREEN = np.array([130, 138, 191])
 
 # parking color ranges
-LOWER_MAGENTA = np.array([100, 81, 105])
-UPPER_MAGENTA = np.array([170, 121, 145])
+LOWER_MAGENTA = np.array([5, 109, 120])
+UPPER_MAGENTA = np.array([85, 149, 160])
 
 
 contour_workers = ContourWorkers(
     # mode="NO_OBSTACLE",
     mode=MODE,
     has_parked_out=False,
-    # color ranges
+    # color ranges    
     lower_blue=LOWER_BLUE,
     upper_blue=UPPER_BLUE,
     lower_black=LOWER_BLACK,
     upper_black=UPPER_BLACK,
+    lower_reverse_black=LOWER_REVERSE_BLACK,
+    upper_reverse_black=UPPER_REVERSE_BLACK,
     lower_orange=LOWER_ORANGE,
     upper_orange=UPPER_ORANGE,
     lower_red=LOWER_RED,
@@ -206,7 +212,7 @@ def main():
     # obstacle position
     red_obj_x, red_obj_y = None, None
     green_obj_x, green_obj_y = None, None
-    show_front_wall = False
+    # show_front_wall = False
 
     # Initialize PiCamera2
     picam2 = Picamera2()
@@ -216,8 +222,8 @@ def main():
     picam2.configure(config)
     picam2.set_controls(
         {
-            "ExposureTime": 16000,
-            "AnalogueGain": 42.0,
+            "ExposureTime": 11000,
+            "AnalogueGain": 16.0,
             "AeEnable": False,
             "AwbEnable": False,
             "FrameDurationLimits": (40000, 40000),
@@ -298,6 +304,7 @@ def main():
             # Debug view
             if DEBUG:
                 display_debug_screen(
+                    mode=MODE,
                     frame=frame,
                     CAM_WIDTH=CAM_WIDTH,
                     CAM_HEIGHT=CAM_HEIGHT,
@@ -314,7 +321,7 @@ def main():
                     OBS_REGION=OBS_REGION,
                     REVERSE_REGION=REVERSE_REGION,
                     FRONT_WALL_REGION=FRONT_WALL_REGION,
-                    show_front_wall=show_front_wall,
+                    # show_front_wall=show_front_wall,
                     DANGER_ZONE_POINTS=DANGER_ZONE_POINTS,
                     front_wall_result=front_wall_result,
                     angle=angle,
@@ -328,20 +335,20 @@ def main():
                 )
 
             if not startProcessing:
-                if cv2.waitKey(1) & 0xFF == ord("q"):
+                if DEBUG and cv2.waitKey(1) & 0xFF == ord("q"):
                     break
                 # Dont start moving until start signal received
                 continue
 
-            # --- PARKING LOGIC ---
-            # if contour_workers.mode == "OBSTACLE":
-            #     # process parking out first if not yet done
-            #     if not parking.has_parked_out:
-            #         parking.process_parking_out(
-            #             left_result=left_result, right_result=right_result
-            #         )
-            #         parking.has_parked_out = contour_workers.has_parked_out = True
-            #         continue
+            # --- PARKING OUT LOGIC ---
+            if contour_workers.mode == "OBSTACLE":
+                # process parking out first if not yet done
+                if not parking.has_parked_out:
+                    parking.process_parking_out(
+                        left_result=left_result, right_result=right_result
+                    )
+                    parking.has_parked_out = contour_workers.has_parked_out = True
+                    continue
 
             # --- Reversing logic ---
             if (
@@ -356,18 +363,18 @@ def main():
                     reverse_angle = STRAIGHT_CONST
                 arduino.write(f"{speed},-1,{reverse_angle}\n".encode())
                 print(f"Reversing... Speed: {speed}, Angle: {reverse_angle}")
-                if cv2.waitKey(1) & 0xFF == ord("q"):
+                if DEBUG and cv2.waitKey(1) & 0xFF == ord("q"):
                     break
                 print("continue")
                 continue
 
-            elif reverse_area > 1500:
+            elif reverse_area > 1000:
                 print("Reverse trigger detected!")
                 trigger_reverse = True
                 reverse_start_time = time.time()
                 speed = 0  # stop before reversing
                 arduino.write(f"{speed},-1,{reverse_angle}\n".encode())
-                if cv2.waitKey(1) & 0xFF == ord("q"):
+                if DEBUG and cv2.waitKey(1) & 0xFF == ord("q"):
                     break
 
                 print("continue")
@@ -381,14 +388,14 @@ def main():
             #             left_result=left_result,
             #             right_result=right_result,
             #         )
-            #     if cv2.waitKey(1) & 0xFF == ord("q"):
+            #     if DEBUG and cv2.waitKey(1) & 0xFF == ord("q"):
             #         break
 
             #     continue
 
             # if parking_walls_count == 2:
             #     obstacle_wall_pivot = parking_wall_pivot
-            #     if cv2.waitKey(1) & 0xFF == ord("q"):
+            #     if DEBUG and cv2.waitKey(1) & 0xFF == ord("q"):
             #         break
             #     continue
 
@@ -585,25 +592,25 @@ def main():
                         f"Norm: {normalized_angle_offset} | Ygain: {y_gain} | OBJ error: {obj_error}"
                     )
                 # print(f"Obj: {red_obj_x}, {red_obj_y} | Wall: {r_wall_x}, {r_wall_y}")
-            elif contour_workers.mode == "OBSTACLE":
+            if contour_workers.mode == "OBSTACLE":
                 if (
                     front_wall_area > 350
-                    and (red_area == 0 and green_area == 0)
-                    and (left_area > 800 and right_area > 800)
+                    # and (red_area == 0 and green_area == 0)
+                    # and (left_area > 800 and right_area > 800)
                 ):
-                    # if left_area - right_area > 1500:
-                    #     normalized_angle_offset = 1  # turn right hard
-                    #     print("left area too big")
-                    # elif right_area - left_area > 1500:
-                    #     normalized_angle_offset = -1  # turn left hard
-                    #     print("right area too big")
-                    # else:
-                    normalized_angle_offset = -1  # -1 -> turn left, 1 -> turn right
-                    print("only front wall")
+                    if left_area - right_area > 1500:
+                        normalized_angle_offset = 1  # turn right hard
+                        print("left area too big")
+                    elif right_area - left_area > 1500:
+                        normalized_angle_offset = -1  # turn left hard
+                        print("right area too big")
+                    else:
+                        normalized_angle_offset = -1 if parking.parking_lot_side == "left" else 1
+                        print("only front wall")
                     obstacle_wall_pivot = (None, None)
-                    show_front_wall = True
-                else:
-                    show_front_wall = False
+                #     show_front_wall = True
+                # else:
+                #     show_front_wall = False
                     # wall following logic
 
             if (
@@ -796,7 +803,7 @@ def main():
                 stopTime = int(time.time())
                 print("Preparing to stop...")
 
-            if cv2.waitKey(1) & 0xFF == ord("q"):
+            if DEBUG and cv2.waitKey(1) & 0xFF == ord("q"):
                 break
 
     except KeyboardInterrupt:

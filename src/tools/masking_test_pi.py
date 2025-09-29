@@ -2,18 +2,13 @@ import cv2
 import numpy as np
 from picamera2 import Picamera2
 
-# 1
-# LAB Lower: [119, 86, 166]
-# LAB Upper: [200, 126, 206]
-
-# 2 [191  97 203]
-# LAB Lower: [161, 77, 183]
-# LAB Upper: [221, 117, 223]
+# low [ 62 127 155]
+# high [101 126 169]
+# Clicked LAB: [151 119 180]
 
 
-
-LOWER = np.array([150, 80, 179])
-UPPER = np.array([215, 120, 219])
+LOWER = np.array([68, 104, 148])
+UPPER = np.array([138, 144, 188])
 
 
 def find_contours(frame, lower_color, upper_color, roi):
@@ -43,8 +38,8 @@ def main():
     config = picam2.create_preview_configuration(main={"format": "BGR888", "size": (640, 480)})
     picam2.configure(config)
     picam2.set_controls({
-        "ExposureTime": 16000,
-        "AnalogueGain": 42.0,
+        "ExposureTime": 11000,
+        "AnalogueGain": 16.0,
         "AeEnable": False,
         "AwbEnable": False,
         "FrameDurationLimits": (40000, 40000)
