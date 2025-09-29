@@ -1,13 +1,16 @@
 import sys
 import serial
-from picamera2 import Picamera2
 import cv2
 import time
 import keyboard
 
 # Setup Arduino serial
 camera = sys.argv[1] == "--camera" if len(sys.argv) > 1 else False
+
+print("Camera:", camera)
+
 if camera:
+    from picamera2 import Picamera2
     picam2 = Picamera2()
     config = picam2.create_preview_configuration(
         main={"format": "RGB888", "size": (640, 480)}
@@ -63,5 +66,5 @@ while True:
 
 if camera:
     cv2.destroyAllWindows()
-    
+
 arduino.close()
