@@ -33,7 +33,7 @@ if camera:
 
 # --- Control variables ---
 speed = 0
-angle = 95  # straight
+angle = 95  # default straight
 
 # --- Tkinter GUI ---
 root = tk.Tk()
@@ -64,31 +64,29 @@ frame_speed.pack(pady=5)
 btn_forward = tk.Button(frame_speed, text="Forward", command=forward, width=10, height=2)
 btn_forward.grid(row=0, column=1, padx=5)
 
-btn_left = tk.Button(frame_speed, text="◀ Left", command=lambda: set_angle(30), width=10, height=2)
-btn_left.grid(row=1, column=0, padx=5)
-
 btn_stop = tk.Button(frame_speed, text="■ Stop", command=stop, width=10, height=2, bg="red", fg="white")
 btn_stop.grid(row=1, column=1, padx=5)
-
-btn_right = tk.Button(frame_speed, text="Right ▶", command=lambda: set_angle(160), width=10, height=2)
-btn_right.grid(row=1, column=2, padx=5)
 
 btn_backward = tk.Button(frame_speed, text="Backward", command=backward, width=10, height=2)
 btn_backward.grid(row=2, column=1, padx=5)
 
-# Steering reset
-def set_angle(val):
+# Steering slider
+def update_angle(val):
     global angle
-    angle = val
+    angle = int(val)
     send_command()
 
-def reset_angle():
-    global angle
-    angle = 95
-    send_command()
-
-btn_reset = tk.Button(root, text="Reset Steering", command=reset_angle)
-btn_reset.pack(pady=5)
+steering_slider = tk.Scale(
+    root,
+    from_=30,
+    to=120,
+    orient="horizontal",
+    length=300,
+    label="Steering Angle",
+    command=update_angle
+)
+steering_slider.set(95)  # default straight
+steering_slider.pack(pady=10)
 
 # --- Send command to Arduino ---
 def send_command():
