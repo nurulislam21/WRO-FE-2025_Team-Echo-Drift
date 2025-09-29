@@ -2,15 +2,19 @@ import sys
 import serial
 import cv2
 import time
-import keyboard
+import tkinter as tk
+from threading import Thread
 
-# Setup Arduino serial
+# --- Arduino setup ---
+arduino = serial.Serial(port="/dev/ttyUSB0", baudrate=115200, dsrdtr=True)
+time.sleep(2)
+arduino.write(b"0,-1,95\n")
+
+# --- Camera setup ---
 camera = sys.argv[1] == "--camera" if len(sys.argv) > 1 else False
-
-print("Camera:", camera)
-
 if camera:
     from picamera2 import Picamera2
+
     picam2 = Picamera2()
     config = picam2.create_preview_configuration(
         main={"format": "RGB888", "size": (640, 480)}
@@ -27,47 +31,87 @@ if camera:
     )
     picam2.start()
 
-arduino = serial.Serial(port="/dev/ttyUSB0", baudrate=115200, dsrdtr=True)
-time.sleep(2)
-arduino.write(b"0,-1,95\n")
-
+# --- Control variables ---
 speed = 0
-angle = 95  # default straight
+angle = 95  # straight
 
-while True:
-    if camera:
+# --- Tkinter GUI ---
+root = tk.Tk()
+root.title("Car Controller")
+
+lbl_status = tk.Label(root, text="Speed: 0 | Angle: 95", font=("Arial", 14))
+lbl_status.pack(pady=10)
+
+# Speed buttons
+def forward():
+    global speed
+    speed = 80
+    send_command()
+
+def backward():
+    global speed
+    speed = -80
+    send_command()
+
+def stop():
+    global speed
+    speed = 0
+    send_command()
+
+frame_speed = tk.Frame(root)
+frame_speed.pack(pady=5)
+
+btn_forward = tk.Button(frame_speed, text="Forward", command=forward, width=10, height=2)
+btn_forward.grid(row=0, column=1, padx=5)
+
+btn_left = tk.Button(frame_speed, text="◀ Left", command=lambda: set_angle(30), width=10, height=2)
+btn_left.grid(row=1, column=0, padx=5)
+
+btn_stop = tk.Button(frame_speed, text="■ Stop", command=stop, width=10, height=2, bg="red", fg="white")
+btn_stop.grid(row=1, column=1, padx=5)
+
+btn_right = tk.Button(frame_speed, text="Right ▶", command=lambda: set_angle(160), width=10, height=2)
+btn_right.grid(row=1, column=2, padx=5)
+
+btn_backward = tk.Button(frame_speed, text="Backward", command=backward, width=10, height=2)
+btn_backward.grid(row=2, column=1, padx=5)
+
+# Steering reset
+def set_angle(val):
+    global angle
+    angle = val
+    send_command()
+
+def reset_angle():
+    global angle
+    angle = 95
+    send_command()
+
+btn_reset = tk.Button(root, text="Reset Steering", command=reset_angle)
+btn_reset.pack(pady=5)
+
+# --- Send command to Arduino ---
+def send_command():
+    global speed, angle
+    cmd = f"{speed},-1,{angle}\n"
+    arduino.write(cmd.encode())
+    lbl_status.config(text=f"Speed: {speed} | Angle: {angle}")
+
+# --- Camera loop (runs in a thread) ---
+def camera_loop():
+    while camera:
         frame = picam2.capture_array()
-
-    # --- SPEED CONTROL ---
-    if keyboard.is_pressed("w"):
-        speed = 80
-    elif keyboard.is_pressed("s"):
-        speed = -80
-    else:
-        speed = 0
-
-    # --- ANGLE CONTROL ---
-    if keyboard.is_pressed("a"):
-        angle = 30
-    elif keyboard.is_pressed("d"):
-        angle = 160
-    else:
-        angle = 95  # reset when no steering key pressed
-
-    # print status
-    print(f"Speed: {speed}, Angle: {angle}")
-
-    # Send to Arduino
-    arduino.write(f"{speed},-1,{angle}\n".encode())
-
-    if camera:
-        # Display camera
-        cv2.imshow("Frame", frame)
-
+        cv2.imshow("Camera", frame)
         if cv2.waitKey(1) & 0xFF == ord("q"):
             break
+    if camera:
+        cv2.destroyAllWindows()
 
 if camera:
-    cv2.destroyAllWindows()
+    Thread(target=camera_loop, daemon=True).start()
 
-arduino.close()
+# Run GUI
+try:
+    root.mainloop()
+finally:
+    arduino.close()
