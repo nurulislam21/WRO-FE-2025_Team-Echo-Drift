@@ -46,17 +46,14 @@ lbl_status.pack(pady=10)
 def forward():
     global speed
     speed = 80
-    send_command()
 
 def backward():
     global speed
     speed = -80
-    send_command()
 
 def stop():
     global speed
-    speed = 0
-    send_command()
+    speed = 0 
 
 frame_speed = tk.Frame(root)
 frame_speed.pack(pady=5)
@@ -73,8 +70,7 @@ btn_backward.grid(row=2, column=1, padx=5)
 # Steering slider
 def update_angle(val):
     global angle
-    angle = int(val)
-    send_command()
+    angle = int(val)    
 
 steering_slider = tk.Scale(
     root,
@@ -90,10 +86,13 @@ steering_slider.pack(pady=10)
 
 # --- Send command to Arduino ---
 def send_command():
-    global speed, angle
-    cmd = f"{speed},-1,{angle}\n"
-    arduino.write(cmd.encode())
-    lbl_status.config(text=f"Speed: {speed} | Angle: {angle}")
+    while True:
+        global speed, angle
+        cmd = f"{speed},-1,{angle}\n"
+        arduino.write(cmd.encode())
+        print(f"Sent command: {cmd.strip()}")
+        lbl_status.config(text=f"Speed: {speed} | Angle: {angle}")
+        time.sleep(0.2)
 
 # --- Camera loop (runs in a thread) ---
 def camera_loop():
@@ -108,6 +107,8 @@ def camera_loop():
 if camera:
     Thread(target=camera_loop, daemon=True).start()
 
+# Start sending commands in a separate thread
+Thread(target=send_command, daemon=True).start()
 # Run GUI
 try:
     root.mainloop()
