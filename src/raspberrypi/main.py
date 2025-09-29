@@ -19,6 +19,7 @@ from img_processing_functions import (
 from contour_workers import ContourWorkers
 from parking import Parking
 from simple_pid import PID
+import RPi.GPIO as GPIO
 import copy
 
 
@@ -199,11 +200,23 @@ parking = Parking(
 parking.has_parked_out = False
 
 
+# thread for buzzer
+def buzzer_beep():
+    GPIO.output(4, GPIO.HIGH)
+    time.sleep(0.3)
+    GPIO.output(4, GPIO.LOW)
+    time.sleep(0.1)
+
 # Threading variables - separate queues for each detection task
 def main():
     global stopFlag, stopTime, speed, trigger_reverse, reverse_angle, last_reverse_end_time
     global current_intersections, intersection_detected, intersection_crossing_start
     global startProcessing, obstacle_wall_pivot, reverse_start_time
+
+    # setup buzzer
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(4, GPIO.OUT)
+    buzzer_beep()
 
     # parking_walls = []
     # parking_walls_count = 0
@@ -765,7 +778,9 @@ def main():
                 ):
                     intersection_detected = True
                     intersection_crossing_start = int(time.time())
-                    current_intersections += 1
+                    current_intersections += 1                    
+                    threading.Thread(target=buzzer_beep, daemon=True).start()
+
                     print(
                         f"Intersection detected! Count: {current_intersections}/{TOTAL_INTERSECTIONS}"
                     )
