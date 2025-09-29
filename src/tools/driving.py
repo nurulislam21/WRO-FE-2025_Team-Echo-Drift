@@ -54,6 +54,9 @@ while True:
     else:
         angle = 95  # reset when no steering key pressed
 
+    # print status
+    print(f"Speed: {speed}, Angle: {angle}")
+
     # Send to Arduino
     arduino.write(f"{speed},-1,{angle}\n".encode())
 
