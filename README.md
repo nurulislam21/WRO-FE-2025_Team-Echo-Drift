@@ -329,31 +329,6 @@ The **differential gear** is the core of our vehicle’s drift performance:
 
 > **Key Advantage:** Efficient power transmission with minimal slippage during drift maneuvers.
 
-### Why a Differential Gear?
-- Improves stability in high-speed drift  
-- Reduces tire wear & drivetrain stress  
-- Ensures smooth handling for navigation  
-
-[![Video: Why Differential Gear](https://img.youtube.com/vi/F40ZBDAG8-o/hqdefault.jpg)](https://www.youtube.com/watch?v=F40ZBDAG8-o)
-
----
-
-## Differential Gear Conversion
-
-We began with a ready-made RC differential:  
-
-**Model:** Differential with Bearing 284010-2252  
-**Application:** WLtoys 284010 / 284161 / K989 / 284131 (1/28 RC Car)  
-
-The stock gear lacked torque efficiency for drifting.  
-✅ Solution: Converted it by designing a **3D-printed herringbone outer gear** in SolidWorks.  
-
-<p align="center">
-  <img src="other/Saa7894b3510d4cbb8e30c03ba71673cb7.jpg_960x960q75.jpg" alt="Ready-made Differential Gear" width="400"/>
-  <img src="other/IMG_20250826_220431800_HDR_1.jpg" alt="Converted Differential with Herringbone Gear" width="400"/>
-</p>
-
-<p align="center"><em>Left: Ready-made RC Differential → Right: Converted with 3D-Printed Herringbone Outer Gear</em></p>
 
 ---
 
