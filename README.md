@@ -313,22 +313,6 @@ The hardware design balances **mechanical precision** with **reliable electronic
 | **Wheels & Tires**           | Low-grip drift tires                                           | Controlled sliding |
 | **Other**                    | Wiring, fuses, connectors                                      | Reliability |
 
----
-
-## Differential Gear Mechanism
-
-The **differential gear** is the core of our vehicle’s drift performance:
-- **Herringbone Outer Gear:** Reduces axial thrust, improves torque distribution  
-- **3D-Printed Precision:** Designed in SolidWorks, printed with high-resolution filament  
-- **Smooth Drift Control:** Balances wheel speed during cornering  
-- **Customizable:** Adjustable gear ratios for drift tuning  
-
-<p align="center">
-  <img src="other/dfaf80437e9cb2198109392ebfdeb3cd.jpg" alt="3D Differential Assembly" width="500"/>
-</p>
-
-> **Key Advantage:** Efficient power transmission with minimal slippage during drift maneuvers.
-
 
 ---
 
