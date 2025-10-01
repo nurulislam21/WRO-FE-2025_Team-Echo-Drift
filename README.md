@@ -52,7 +52,7 @@ A few months ago, we set ourselves a bigger goal—to represent Bangladesh in th
 <table>
   <tr>
     <td>
-<h2> Nurul Islam Noman – Mechanical Design </h2>
+<h2> Nurul Islam Noman – Mechanical Engineering </h2>
 
 Specializing in Mechanical Design with strong experience in Robotics and Embedded Systems. Extensive work in research and development has built expertise where precision, innovation, and reliability are key.
 
