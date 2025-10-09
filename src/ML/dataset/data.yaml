@@ -1,0 +1,14 @@
+names:
+- greenbox
+- redbox
+- xparking
+nc: 3
+roboflow:
+  license: CC BY 4.0
+  project: wro-detection-47xs2-rrvwj
+  url: https://universe.roboflow.com/tanimsk/wro-detection-47xs2-rrvwj/dataset/1
+  version: 1
+  workspace: tanimsk
+test: ../test/images
+train: ../train/images
+val: ../valid/images
