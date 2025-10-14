@@ -22,6 +22,8 @@ from simple_pid import PID
 import copy
 import RPIO.GPIO as GPIO
 
+CUSTOM_CAMERA_SETTINGS = False
+
 # debug flag parsing
 debug_flag = sys.argv[1] == "--debug" if len(sys.argv) > 1 else ""
 if debug_flag:
@@ -236,15 +238,16 @@ def main():
         main={"format": "RGB888", "size": (640, 480)}
     )
     picam2.configure(config)
-    picam2.set_controls(
-        {
-            "ExposureTime": 11000,
-            "AnalogueGain": 16.0,
-            "AeEnable": False,
-            "AwbEnable": False,
-            "FrameDurationLimits": (40000, 40000),
-        }
-    )
+    if CUSTOM_CAMERA_SETTINGS:
+        picam2.set_controls(
+            {
+                "ExposureTime": 11000,
+                "AnalogueGain": 16.0,
+                "AeEnable": False,
+                "AwbEnable": False,
+                "FrameDurationLimits": (40000, 40000),
+            }
+        )
     picam2.start()
 
     # Start all processing threads
