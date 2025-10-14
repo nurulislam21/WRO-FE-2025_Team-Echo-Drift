@@ -37,7 +37,7 @@ MODE = "OBSTACLE"  # "NO_OBSTACLE" or "OBSTACLE"
 CAM_WIDTH = 640
 CAM_HEIGHT = 480
 MAX_SPEED = 60 if MODE == "OBSTACLE" else 100
-MIN_SPEED = 50 if MODE == "OBSTACLE" else 67
+MIN_SPEED = 48 if MODE == "OBSTACLE" else 67
 BUZZER_PIN = 4
 
 def red_color_best_fit_func(x):
