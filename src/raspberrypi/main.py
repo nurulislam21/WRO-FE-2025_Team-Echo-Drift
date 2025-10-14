@@ -355,13 +355,14 @@ def main():
 
             # --- PARKING OUT LOGIC ---
             if contour_workers.mode == "OBSTACLE":
-                # process parking out first if not yet done
-                if not parking.has_parked_out:
-                    parking.process_parking_out(
-                        left_result=left_result, right_result=right_result
-                    )
-                    parking.has_parked_out = contour_workers.has_parked_out = True
-                    continue
+                ...
+            #    # process parking out first if not yet done
+            #    if not parking.has_parked_out:
+            #        parking.process_parking_out(
+            #            left_result=left_result, right_result=right_result
+            #        )
+            #        parking.has_parked_out = contour_workers.has_parked_out = True
+            #        continue
 
             # --- Reversing logic ---
             if (
