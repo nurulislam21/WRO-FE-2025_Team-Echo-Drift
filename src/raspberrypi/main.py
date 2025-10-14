@@ -22,7 +22,7 @@ from simple_pid import PID
 import copy
 import RPi.GPIO as GPIO
 
-CUSTOM_CAMERA_SETTINGS = False
+CUSTOM_CAMERA_SETTINGS = True
 
 # debug flag parsing
 debug_flag = sys.argv[1] == "--debug" if len(sys.argv) > 1 else ""
@@ -43,7 +43,7 @@ MIN_SPEED = 48 if MODE == "OBSTACLE" else 67
 BUZZER_PIN = 4
 
 def red_color_best_fit_func(x):
-    return 0.0003 * (x ** 2) - 0.09 * x + 7.5
+    return (0.0349 * x ** 2) + (-11.1812 * x) + 1031.8457
 
 def green_color_best_fit_func(x):
     return 0.0003 * (x ** 2) - 0.09 * x + 7.5
@@ -241,8 +241,8 @@ def main():
     if CUSTOM_CAMERA_SETTINGS:
         picam2.set_controls(
             {
-                "ExposureTime": 11000,
-                "AnalogueGain": 16.0,
+                "ExposureTime": 5000,
+                "AnalogueGain": 12.5,
                 "AeEnable": False,
                 "AwbEnable": False,
                 "FrameDurationLimits": (40000, 40000),
