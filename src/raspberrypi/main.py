@@ -127,12 +127,18 @@ contour_workers = ContourWorkers(
     upper_reverse_black=UPPER_REVERSE_BLACK,
     lower_orange=LOWER_ORANGE,
     upper_orange=UPPER_ORANGE,
-    lower_red=LOWER_RED,
-    upper_red=UPPER_RED,
-    lower_green=LOWER_GREEN,
-    upper_green=UPPER_GREEN,
-    upper_magenta=UPPER_MAGENTA,
-    lower_magenta=LOWER_MAGENTA,
+
+    # best fit functions
+    red_color_fit_func=red_color_best_fit_func,
+    green_color_fit_func=green_color_best_fit_func,
+    magenta_color_fit_func=magenta_color_best_fit_func,
+
+    # lower_red=LOWER_RED,
+    # upper_red=UPPER_RED,
+    # lower_green=LOWER_GREEN,
+    # upper_green=UPPER_GREEN,
+    # upper_magenta=UPPER_MAGENTA,
+    # lower_magenta=LOWER_MAGENTA,
     # regions
     left_region=LEFT_REGION,
     right_region=RIGHT_REGION,
