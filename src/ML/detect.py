@@ -1,21 +1,54 @@
 import cv2
 import numpy as np
+import time
 
+# --- Choose camera ---
+USE_CAMERA = "picam"   # "picam" or "webcam"
+CAM_INDEX = 0           # for USB webcam
 
 # --- Define fitted curve equation ---
 def fitted_b(a):
-    return  (-0.0309 * a ** 2) + (12.8072 * a) + -1148.4739
+    return (0.0227 * a ** 2) + (-6.9823 * a) + 670.6103
 
+# --- Initialize camera ---
+cap = None
+picam2 = None
 
-# --- Video Capture ---
-cap = cv2.VideoCapture(0)  # webcam
+if USE_CAMERA.lower() == "picam":
+    from picamera2 import Picamera2
+    print("[INFO] Using PiCamera2")
+    picam2 = Picamera2()
+    config = picam2.create_preview_configuration(main={"size": (640, 480)})
+    picam2.configure(config)
+    picam2.start()
+    time.sleep(1)
 
+elif USE_CAMERA.lower() == "webcam":
+    print("[INFO] Using Webcam")
+    cap = cv2.VideoCapture(CAM_INDEX)
+    if not cap.isOpened():
+        print("❌ Cannot open webcam")
+        exit()
+
+else:
+    print("❌ Invalid USE_CAMERA value. Choose 'picam' or 'webcam'.")
+    exit()
+
+# --- Parameters ---
 threshold = 10  # distance tolerance in 'b' axis, tune this for your lighting conditions
 
+print("[INFO] Press 'q' to quit.\n")
+
+# --- Main loop ---
 while True:
-    ret, frame = cap.read()
-    if not ret:
-        break
+    if USE_CAMERA.lower() == "picam":
+        frame = picam2.capture_array()
+        frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+    else:
+        ret, frame = cap.read()
+        if not ret:
+            print("❌ Failed to capture frame.")
+            break
 
     # Convert frame to Lab color space
     lab = cv2.cvtColor(frame, cv2.COLOR_BGR2Lab)
@@ -51,5 +84,11 @@ while True:
     if cv2.waitKey(1) & 0xFF == ord("q"):
         break
 
-cap.release()
+# --- Cleanup ---
+if picam2:
+    picam2.stop()
+if cap:
+    cap.release()
+
 cv2.destroyAllWindows()
+print("[INFO] Stopped successfully.")
