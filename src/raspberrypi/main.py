@@ -20,6 +20,7 @@ from contour_workers import ContourWorkers
 from parking import Parking
 from simple_pid import PID
 import copy
+import RPi.GPIO as GPIO
 
 
 # debug flag parsing
@@ -29,6 +30,7 @@ if debug_flag:
 else:
     DEBUG = False
 
+BUZZER_PIN = 4
 # DEBUG = True
 print("DEBUG MODE" if DEBUG else "PRODUCTION")
 
@@ -41,6 +43,7 @@ MIN_SPEED = 50 if MODE == "OBSTACLE" else 67
 
 # Intersections
 TOTAL_INTERSECTIONS = 12
+
 
 # Region of Interest coordinates
 LEFT_REGION = (
@@ -87,17 +90,18 @@ UPPER_ORANGE = np.array([198, 150, 121])
 LOWER_BLUE = np.array([87, 152, 160])
 UPPER_BLUE = np.array([155, 192, 200])
 
+
 # obstacle color ranges HSV
-LOWER_RED = np.array([41, 133, 62])
-UPPER_RED = np.array([125, 175, 123])
+LOWER_RED = np.array([40, 154, 50])
+UPPER_RED = np.array([91, 194, 96])
 
 # reverse_black
 LOWER_REVERSE_BLACK = np.array([5, 109, 120])
 UPPER_REVERSE_BLACK = np.array([70, 149, 160])
 
 # HSV
-LOWER_GREEN = np.array([85, 98, 151])
-UPPER_GREEN = np.array([130, 138, 191])
+LOWER_GREEN = np.array([71, 111, 150])
+UPPER_GREEN = np.array([120, 151, 173])
 
 # parking color ranges
 LOWER_MAGENTA = np.array([5, 109, 120])
@@ -108,7 +112,7 @@ contour_workers = ContourWorkers(
     # mode="NO_OBSTACLE",
     mode=MODE,
     has_parked_out=False,
-    # color ranges    
+    # color ranges
     lower_blue=LOWER_BLUE,
     upper_blue=UPPER_BLUE,
     lower_black=LOWER_BLACK,
@@ -222,8 +226,8 @@ def main():
     picam2.configure(config)
     picam2.set_controls(
         {
-            "ExposureTime": 11000,
-            "AnalogueGain": 16.0,
+            "ExposureTime": 5100,
+            "AnalogueGain": 13.0,
             "AeEnable": False,
             "AwbEnable": False,
             "FrameDurationLimits": (40000, 40000),
@@ -252,6 +256,15 @@ def main():
     print(f"Started {len(threads)} processing threads")
 
     time.sleep(2)  # Allow camera to warm up
+
+    # RPIO setup
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(BUZZER_PIN, GPIO.OUT)
+
+    # buzz to indicate ready
+    GPIO.output(BUZZER_PIN, GPIO.HIGH)
+    time.sleep(0.3)
+    GPIO.output(BUZZER_PIN, GPIO.LOW)
 
     # State variables
     # lTurn = rTurn = lDetected = False
@@ -767,6 +780,17 @@ def main():
                     intersection_detected = True
                     intersection_crossing_start = int(time.time())
                     current_intersections += 1
+
+                    # start a thread to buzz for 0.3s
+                    threading.Thread(
+                        target=lambda: (
+                            GPIO.output(BUZZER_PIN, GPIO.HIGH),
+                            time.sleep(0.3),
+                            GPIO.output(BUZZER_PIN, GPIO.LOW),
+                        ),
+                        daemon=True,
+                    ).start()
+
                     print(
                         f"Intersection detected! Count: {current_intersections}/{TOTAL_INTERSECTIONS}"
                     )
