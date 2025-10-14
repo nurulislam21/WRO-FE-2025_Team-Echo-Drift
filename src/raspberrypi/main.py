@@ -39,6 +39,15 @@ CAM_HEIGHT = 480
 MAX_SPEED = 60 if MODE == "OBSTACLE" else 100
 MIN_SPEED = 50 if MODE == "OBSTACLE" else 67
 
+def red_color_best_fit_func(x):
+    return 0.0003 * (x ** 2) - 0.09 * x + 7.5
+
+def green_color_best_fit_func(x):
+    return 0.0003 * (x ** 2) - 0.09 * x + 7.5
+
+def magenta_color_best_fit_func(x):
+    return 0.0003 * (x ** 2) - 0.09 * x + 7.5
+
 # Intersections
 TOTAL_INTERSECTIONS = 12
 
