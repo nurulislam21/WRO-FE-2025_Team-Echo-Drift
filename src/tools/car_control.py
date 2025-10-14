@@ -19,16 +19,7 @@ if camera:
     config = picam2.create_preview_configuration(
         main={"format": "RGB888", "size": (640, 480)}
     )
-    picam2.configure(config)
-    picam2.set_controls(
-        {
-            "ExposureTime": 11000,
-            "AnalogueGain": 16.0,
-            "AeEnable": False,
-            "AwbEnable": False,
-            "FrameDurationLimits": (40000, 40000),
-        }
-    )
+    picam2.configure(config)    
     picam2.start()
 
 # --- Control variables ---
