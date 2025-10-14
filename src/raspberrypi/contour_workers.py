@@ -27,12 +27,18 @@ class ContourWorkers:
         upper_reverse_black: np.ndarray,
         lower_orange: np.ndarray,
         upper_orange: np.ndarray,
-        lower_red: np.ndarray,
-        upper_red: np.ndarray,
-        lower_green: np.ndarray,
-        upper_green: np.ndarray,
-        upper_magenta: np.ndarray,
-        lower_magenta: np.ndarray,
+
+        # best fit functions
+        red_color_best_fit_func,
+        green_color_best_fit_func,
+        magenta_color_best_fit_func,
+
+        # lower_red: np.ndarray,
+        # upper_red: np.ndarray,
+        # lower_green: np.ndarray,
+        # upper_green: np.ndarray,
+        # upper_magenta: np.ndarray,
+        # lower_magenta: np.ndarray,
         # regions of interest
         left_region: list,
         right_region: list,
