@@ -29,9 +29,9 @@ class ContourWorkers:
         upper_orange: np.ndarray,
 
         # best fit functions
-        red_color_best_fit_func: callable,
-        green_color_best_fit_func: callable,
-        magenta_color_best_fit_func: callable,
+        red_color_fit_func: callable,
+        green_color_fit_func: callable,
+        magenta_color_fit_func: callable,
 
         # lower_red: np.ndarray,
         # upper_red: np.ndarray,
@@ -61,9 +61,9 @@ class ContourWorkers:
         self.UPPER_ORANGE = upper_orange
         
         # best fit functions
-        self.red_color_best_fit_func = red_color_best_fit_func
-        self.green_color_best_fit_func = green_color_best_fit_func
-        self.magenta_color_best_fit_func = magenta_color_best_fit_func
+        self.red_color_best_fit_func = red_color_fit_func
+        self.green_color_best_fit_func = green_color_fit_func
+        self.magenta_color_best_fit_func = magenta_color_fit_func
 
         self.UPPER_REVERSE_BLACK = upper_reverse_black
         self.LOWER_REVERSE_BLACK = lower_reverse_black
