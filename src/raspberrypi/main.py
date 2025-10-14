@@ -20,7 +20,7 @@ from contour_workers import ContourWorkers
 from parking import Parking
 from simple_pid import PID
 import copy
-
+import RPIO.GPIO as GPIO
 
 # debug flag parsing
 debug_flag = sys.argv[1] == "--debug" if len(sys.argv) > 1 else ""
@@ -38,6 +38,7 @@ CAM_WIDTH = 640
 CAM_HEIGHT = 480
 MAX_SPEED = 60 if MODE == "OBSTACLE" else 100
 MIN_SPEED = 50 if MODE == "OBSTACLE" else 67
+BUZZER_PIN = 4
 
 def red_color_best_fit_func(x):
     return 0.0003 * (x ** 2) - 0.09 * x + 7.5
@@ -261,6 +262,15 @@ def main():
     print(f"Started {len(threads)} processing threads")
 
     time.sleep(2)  # Allow camera to warm up
+
+    # RPIO setup
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(BUZZER_PIN, GPIO.OUT)
+
+    # buzz to indicate ready
+    GPIO.output(BUZZER_PIN, GPIO.HIGH)
+    time.sleep(0.3)
+    GPIO.output(BUZZER_PIN, GPIO.LOW)
 
     # State variables
     # lTurn = rTurn = lDetected = False
@@ -779,6 +789,16 @@ def main():
                     print(
                         f"Intersection detected! Count: {current_intersections}/{TOTAL_INTERSECTIONS}"
                     )
+
+                    # start a thread to buzz for 0.3s
+                    threading.Thread(
+                        target=lambda: (
+                            GPIO.output(BUZZER_PIN, GPIO.HIGH),
+                            time.sleep(0.3),
+                            GPIO.output(BUZZER_PIN, GPIO.LOW),
+                        ),
+                        daemon=True,
+                    ).start()
             else:
                 if (
                     int(time.time()) - intersection_crossing_start
