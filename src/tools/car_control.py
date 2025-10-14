@@ -71,6 +71,3 @@ if camera:
     cv2.destroyAllWindows()
 
 arduino.close()
-
-
-make a GUI with tkinter instead of keyboard
