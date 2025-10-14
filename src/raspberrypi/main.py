@@ -20,7 +20,7 @@ from contour_workers import ContourWorkers
 from parking import Parking
 from simple_pid import PID
 import copy
-import RPIO.GPIO as GPIO
+import RPi.GPIO as GPIO
 
 CUSTOM_CAMERA_SETTINGS = False
 
