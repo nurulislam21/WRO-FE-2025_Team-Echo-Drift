@@ -39,7 +39,9 @@ if USE_CAMERA.lower() == "webcam":
 elif USE_CAMERA.lower() == "picam":
     print("[INFO] Using PiCamera2")
     picam2 = Picamera2()
-    config = picam2.create_preview_configuration(main={"size": (640, 480)})
+    config = picam2.create_preview_configuration(main={"size": (1280, 720)})
+    #config = picam2.create_preview_configuration(main={"size": (1920, 1080)})
+    #config = picam2.create_preview_configuration(main={"size": (640, 480)})
     picam2.configure(config)
     picam2.start()
     time.sleep(1)  # small delay to warm up camera
