@@ -2,44 +2,70 @@ import cv2
 import numpy as np
 import csv
 import time
+from picamera2 import Picamera2
 
 # --- Settings ---
+USE_CAMERA = "picam"  # "webcam" or "picam"
 OUTPUT_CSV = "lab_dataset.csv"
-CAM_INDEX = 0  # change if multiple cameras
+CAM_INDEX = 0  # for webcam
 WINDOW_NAME = "LAB Collector"
 
 # --- Create CSV and header if not exists ---
-with open(OUTPUT_CSV, mode="a", newline="") as f:
+with open(OUTPUT_CSV, mode="w", newline="") as f:
     writer = csv.writer(f)
     writer.writerow(["timestamp", "L", "a", "b", "label"])
 
 # --- Mouse callback for clicks ---
 clicked_points = []
 
+
 def click_event(event, x, y, flags, param):
     global clicked_points
     if event == cv2.EVENT_LBUTTONDOWN:
         clicked_points.append((x, y))
 
-# --- Start camera ---
-cap = cv2.VideoCapture(CAM_INDEX)
-if not cap.isOpened():
-    print("❌ Cannot open camera")
+
+# --- Camera initialization ---
+cap = None
+picam2 = None
+
+if USE_CAMERA.lower() == "webcam":
+    print("[INFO] Using USB/Webcam")
+    cap = cv2.VideoCapture(CAM_INDEX)
+    if not cap.isOpened():
+        print("❌ Cannot open webcam")
+        exit()
+
+elif USE_CAMERA.lower() == "picam":
+    print("[INFO] Using PiCamera2")
+    picam2 = Picamera2()
+    config = picam2.create_preview_configuration(main={"size": (640, 480)})
+    picam2.configure(config)
+    picam2.start()
+    time.sleep(1)  # small delay to warm up camera
+
+else:
+    print("❌ Invalid camera type. Choose 'webcam' or 'picam'.")
     exit()
 
 cv2.namedWindow(WINDOW_NAME)
 cv2.setMouseCallback(WINDOW_NAME, click_event)
 
 print("\n[INFO] Click on objects to record LAB values.")
-print("[INFO] Press 'q' to quit, 'c' to clear clicks.\n")
+print("[INFO] Press 'q' to quit, 'c' to clear clicks, 's' to save LAB values.\n")
 
 while True:
-    ret, frame = cap.read()
-    frame_copy = frame.copy()
+    if USE_CAMERA.lower() == "webcam":
+        ret, frame = cap.read()
+        if not ret:
+            print("❌ Failed to capture frame from webcam")
+            break
+    else:
+        frame = picam2.capture_array()
+        # PiCamera2 gives RGB by default; convert to BGR for OpenCV consistency
+        frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
 
-    if not ret:
-        print("❌ Failed to capture frame")
-        break
+    frame_copy = frame.copy()
 
     # Draw markers
     for (x, y) in clicked_points:
@@ -67,8 +93,9 @@ while True:
         rows = []
 
         for (x, y) in clicked_points:
-            # region = lab[y-2:y+3, x-2:x+3].reshape(-1, 3)
-            # L, a, b = np.mean(region, axis=0)
+            if y >= lab.shape[0] or x >= lab.shape[1]:
+                print(f"[WARN] Point ({x}, {y}) out of bounds, skipped.")
+                continue
             L, a, b = lab[y, x]
             rows.append([time.time(), float(L), float(a), float(b), label])
             print(f"Saved LAB=({L},{a},{b}) label={label}")
@@ -81,6 +108,11 @@ while True:
         print(f"[INFO] {len(rows)} samples saved.\n")
         clicked_points = []
 
-cap.release()
+# --- Cleanup ---
+if USE_CAMERA.lower() == "webcam" and cap:
+    cap.release()
+elif picam2:
+    picam2.stop()
+
 cv2.destroyAllWindows()
 print(f"[INFO] Data collection finished. Saved to {OUTPUT_CSV}")
