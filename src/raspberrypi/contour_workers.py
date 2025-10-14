@@ -29,9 +29,9 @@ class ContourWorkers:
         upper_orange: np.ndarray,
 
         # best fit functions
-        red_color_best_fit_func,
-        green_color_best_fit_func,
-        magenta_color_best_fit_func,
+        red_color_best_fit_func: callable,
+        green_color_best_fit_func: callable,
+        magenta_color_best_fit_func: callable,
 
         # lower_red: np.ndarray,
         # upper_red: np.ndarray,
@@ -59,12 +59,12 @@ class ContourWorkers:
         self.UPPER_BLACK = upper_black
         self.LOWER_ORANGE = lower_orange
         self.UPPER_ORANGE = upper_orange
-        self.LOWER_RED = lower_red
-        self.UPPER_RED = upper_red
-        self.LOWER_GREEN = lower_green
-        self.UPPER_GREEN = upper_green
-        self.LOWER_MAGENTA = lower_magenta
-        self.UPPER_MAGENTA = upper_magenta
+        
+        # best fit functions
+        self.red_color_best_fit_func = red_color_best_fit_func
+        self.green_color_best_fit_func = green_color_best_fit_func
+        self.magenta_color_best_fit_func = magenta_color_best_fit_func
+
         self.UPPER_REVERSE_BLACK = upper_reverse_black
         self.LOWER_REVERSE_BLACK = lower_reverse_black
 
@@ -384,7 +384,13 @@ class ContourWorkers:
             try:
                 frame = self.frame_queue_green.get(timeout=0.1)
                 contours = find_contours(
-                    frame, self.LOWER_GREEN, self.UPPER_GREEN, self.OBS_REGION, consider_area=900, blur=3
+                    # frame, self.LOWER_GREEN, self.UPPER_GREEN, self.OBS_REGION, consider_area=900, blur=3
+                    frame=frame,
+                    roi=self.OBS_REGION,
+                    consider_area=900,
+                    blur=3,
+                    best_fit_func=self.green_color_best_fit_func,
+                    best_fit_threshold=10,
                 )
                 area, _ = max_contour_area(contours)
                 result = ContourResult(area, contours, "green_pillar")
@@ -411,7 +417,13 @@ class ContourWorkers:
             try:
                 frame = self.frame_queue_red.get(timeout=0.1)
                 contours = find_contours(
-                    frame, self.LOWER_RED, self.UPPER_RED, self.OBS_REGION, consider_area=900, blur=3
+                    # frame, self.LOWER_RED, self.UPPER_RED, self.OBS_REGION, consider_area=900, blur=3
+                    frame=frame,
+                    roi=self.OBS_REGION,
+                    consider_area=900,
+                    blur=3,
+                    best_fit_func=self.red_color_best_fit_func,
+                    best_fit_threshold=10,
                 )
                 area, _ = max_contour_area(contours)
                 result = ContourResult(area, contours, "red_pillar")
@@ -438,12 +450,18 @@ class ContourWorkers:
             try:
                 frame = self.frame_queue_parking_lot.get(timeout=0.1)
                 contours = find_contours(
-                    frame,
-                    self.LOWER_MAGENTA,
-                    self.UPPER_MAGENTA,
-                    self.PARKING_LOT_REGION,
-                    use_convex_hull=True,
+                    # frame,
+                    # self.LOWER_MAGENTA,
+                    # self.UPPER_MAGENTA,
+                    # self.PARKING_LOT_REGION,
+                    # use_convex_hull=True,
+                    # consider_area=1000,
+                    frame=frame,
+                    roi=self.PARKING_LOT_REGION,
                     consider_area=1000,
+                    blur=3,
+                    best_fit_func=self.magenta_color_best_fit_func,
+                    best_fit_threshold=10,
                 )
                 area, _ = max_contour_area(contours)
                 result = ContourResult(area, contours, "magenta_parking_lot")

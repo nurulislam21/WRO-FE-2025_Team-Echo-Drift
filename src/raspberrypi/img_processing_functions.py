@@ -92,7 +92,7 @@ def find_color_signal_box(frame, lower_color, upper_color, roi, consider_area=30
     
 
 
-def find_contours(frame, lower_color, upper_color, roi, direction=None, use_convex_hull=False, consider_area=None, blur=7):
+def find_contours(frame, lower_color=None, upper_color=None, roi=None, direction=None, use_convex_hull=False, consider_area=None, blur=7, best_fit_func=None, best_fit_threshold=10):
     x1, y1, x2, y2 = roi
     roi_frame = frame[y1:y2, x1:x2]
     labImg = cv2.cvtColor(roi_frame, cv2.COLOR_RGB2Lab)
@@ -105,12 +105,25 @@ def find_contours(frame, lower_color, upper_color, roi, direction=None, use_conv
 
     # blur and mask
     img_blur = cv2.medianBlur(labImg, blur)
-    # img_blur = cv2.bilateralFilter(labImg, d=7, sigmaColor=75, sigmaSpace=75)
-    mask = cv2.inRange(img_blur, lower_color, upper_color)
-    kernel = np.ones((13, 13), np.uint8)
-    mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
-    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
-    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    if best_fit_func is not None:
+        L, a, b = cv2.split(img_blur)
+        a = a.astype(np.float32)
+        b = b.astype(np.float32)
+        b_pred = best_fit_func(a)
+        # compute difference
+        diff = np.abs(b - b_pred)
+        # threshold
+        mask = (diff < best_fit_threshold).astype(np.uint8) * 255
+        mask = cv2.medianBlur(mask, 5)
+        contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    else:
+        # img_blur = cv2.bilateralFilter(labImg, d=7, sigmaColor=75, sigmaSpace=75)
+        mask = cv2.inRange(img_blur, lower_color, upper_color)
+        kernel = np.ones((13, 13), np.uint8)
+        mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
+        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
+        contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     if consider_area is not None:
         contours = [cnt for cnt in contours if cv2.contourArea(cnt) >= consider_area]
