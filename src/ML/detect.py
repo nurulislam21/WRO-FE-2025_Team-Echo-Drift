@@ -8,7 +8,7 @@ CAM_INDEX = 0           # for USB webcam
 
 # --- Define fitted curve equation ---
 def fitted_b(a):
-    return (0.0227 * a ** 2) + (-6.9823 * a) + 670.6103
+    return (-0.0070 * a ** 2) + (3.0256 * a) + -164.0170
 
 # --- Initialize camera ---
 cap = None
@@ -18,7 +18,7 @@ if USE_CAMERA.lower() == "picam":
     from picamera2 import Picamera2
     print("[INFO] Using PiCamera2")
     picam2 = Picamera2()
-    config = picam2.create_preview_configuration(main={"size": (640, 480)})
+    config = picam2.create_preview_configuration(main={"size": (1280, 720)})
     picam2.configure(config)
     picam2.start()
     time.sleep(1)
@@ -35,7 +35,7 @@ else:
     exit()
 
 # --- Parameters ---
-threshold = 10  # distance tolerance in 'b' axis, tune this for your lighting conditions
+threshold = 5  # distance tolerance in 'b' axis, tune this for your lighting conditions
 
 print("[INFO] Press 'q' to quit.\n")
 
