@@ -2,10 +2,9 @@ import cv2
 import numpy as np
 import csv
 import time
-from picamera2 import Picamera2
 
 # --- Settings ---
-USE_CAMERA = "picam"  # "webcam" or "picam"
+USE_CAMERA = "webcam"  # "webcam" or "picam"
 OUTPUT_CSV = "lab_dataset.csv"
 CAM_INDEX = 0  # for webcam
 WINDOW_NAME = "LAB Collector"
@@ -37,6 +36,7 @@ if USE_CAMERA.lower() == "webcam":
         exit()
 
 elif USE_CAMERA.lower() == "picam":
+    from picamera2 import Picamera2
     print("[INFO] Using PiCamera2")
     picam2 = Picamera2()
     config = picam2.create_preview_configuration(main={"size": (1280, 720)})
