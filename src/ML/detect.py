@@ -3,7 +3,7 @@ import numpy as np
 import time
 
 # --- Choose camera ---
-USE_CAMERA = "webcam"   # "picam" or "webcam"
+USE_CAMERA = "picam"   # "picam" or "webcam"
 CAM_INDEX = 0           # for USB webcam
 
 # --- Define fitted curve equation ---
@@ -21,7 +21,10 @@ if USE_CAMERA.lower() == "picam":
     from picamera2 import Picamera2
     print("[INFO] Using PiCamera2")
     picam2 = Picamera2()
-    config = picam2.create_preview_configuration(main={"size": (1280, 720)})
+    #config = picam2.create_preview_configuration(main={"size": (1280, 720)})
+    #config = picam2.create_preview_configuration(main={"size": (640, 480)})
+    config = picam2.create_preview_configuration(main={"size": (800, 600)})
+    #config = picam2.create_preview_configuration(main={"size": (960, 720)})
     picam2.configure(config)
     picam2.start()
     time.sleep(1)
@@ -29,6 +32,8 @@ if USE_CAMERA.lower() == "picam":
 elif USE_CAMERA.lower() == "webcam":
     print("[INFO] Using Webcam")
     cap = cv2.VideoCapture(CAM_INDEX)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 960)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
     if not cap.isOpened():
         print("❌ Cannot open webcam")
         exit()
@@ -39,11 +44,16 @@ else:
 
 # --- Parameters ---
 threshold = 5  # distance tolerance in 'b' axis, tune this for your lighting conditions
-
 print("[INFO] Press 'q' to quit.\n")
+
+# --- FPS calculation setup ---
+prev_time = time.time()
+fps = 0.0
 
 # --- Main loop ---
 while True:
+    start_time = time.time()
+
     if USE_CAMERA.lower() == "picam":
         frame = picam2.capture_array()
         frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
@@ -79,6 +89,15 @@ while True:
     # Draw contours
     result = frame.copy()
     cv2.drawContours(result, contours, -1, (0, 255, 0), 2)
+
+    # --- FPS calculation ---
+    curr_time = time.time()
+    fps = 1.0 / (curr_time - prev_time)
+    prev_time = curr_time
+
+    # --- Display FPS on frame ---
+    cv2.putText(result, f"FPS: {fps:.2f}", (10, 30),
+                cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
 
     # Display results
     cv2.imshow("Mask", mask)
