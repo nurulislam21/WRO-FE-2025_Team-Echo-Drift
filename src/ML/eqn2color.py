@@ -3,7 +3,7 @@ import numpy as np
 
 # --- Your fitted function (OpenCV Lab units) ---
 def fitted_b(a):    
-    return (-0.0070 * a ** 2) + (3.0256 * a) + -164.0170
+    return (-0.0541 * a ** 2) + (19.5786 * a) + -1611.0335
     
 
 def make_and_show_lab_image(width=1024, height=300, L_value=128):

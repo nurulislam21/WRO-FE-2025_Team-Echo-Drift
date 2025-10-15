@@ -9,8 +9,8 @@ CAM_INDEX = 0           # for USB webcam
 # --- Define fitted curve equation ---
 def fitted_b(a):
     a = np.asarray(a, dtype=np.float32)
-    b = (-0.0070 * a ** 2) + (3.0256 * a) - 164.0170
-    b[(a < 160) | (a > 224)] = np.inf
+    b = (-0.0541 * a ** 2) + (19.5786 * a) + -1611.0335
+    b[(a < 160) | (a > 190)] = np.inf
     return b
 
 # --- Initialize camera ---
@@ -22,10 +22,19 @@ if USE_CAMERA.lower() == "picam":
     print("[INFO] Using PiCamera2")
     picam2 = Picamera2()
     #config = picam2.create_preview_configuration(main={"size": (1280, 720)})
-    #config = picam2.create_preview_configuration(main={"size": (640, 480)})
+    # config = picam2.create_preview_configuration(main={"size": (640, 480)})
     config = picam2.create_preview_configuration(main={"size": (800, 600)})
     #config = picam2.create_preview_configuration(main={"size": (960, 720)})
     picam2.configure(config)
+    picam2.set_controls(
+            {
+                "ExposureTime": 5000,
+                "AnalogueGain": 12.5,
+                "AeEnable": False,
+                "AwbEnable": False,
+                "FrameDurationLimits": (40000, 40000),
+            }
+        )
     picam2.start()
     time.sleep(1)
 
