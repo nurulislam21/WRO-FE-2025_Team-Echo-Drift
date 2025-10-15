@@ -29,6 +29,7 @@ if debug_flag:
     DEBUG = True
 else:
     DEBUG = False
+DEBUG = True
 
 BUZZER_PIN = 4
 # DEBUG = True
@@ -38,6 +39,8 @@ print("DEBUG MODE" if DEBUG else "PRODUCTION")
 MODE = "OBSTACLE"  # "NO_OBSTACLE" or "OBSTACLE"
 CAM_WIDTH = 640
 CAM_HEIGHT = 480
+# CAM_WIDTH = 800
+# CAM_HEIGHT = 600
 MAX_SPEED = 60 if MODE == "OBSTACLE" else 100
 MIN_SPEED = 50 if MODE == "OBSTACLE" else 67
 
@@ -81,8 +84,8 @@ OBSTACLE_DETECTOR_Y = OBS_REGION[3] - OBS_REGION[1]
 obstacle_wall_pivot = (None, None)
 
 # Color ranges
-LOWER_BLACK = np.array([5, 109, 120])
-UPPER_BLACK = np.array([85, 149, 160])
+LOWER_BLACK = np.array([0, 112, 111])
+UPPER_BLACK = np.array([35, 152, 151])
 
 LOWER_ORANGE = np.array([129, 110, 81])
 UPPER_ORANGE = np.array([198, 150, 121])
@@ -92,20 +95,20 @@ UPPER_BLUE = np.array([155, 192, 200])
 
 
 # obstacle color ranges HSV
-LOWER_RED = np.array([40, 154, 50])
-UPPER_RED = np.array([91, 194, 96])
+LOWER_RED = np.array([39, 154, 47])
+UPPER_RED = np.array([99, 194, 87])
 
 # reverse_black
-LOWER_REVERSE_BLACK = np.array([5, 109, 120])
-UPPER_REVERSE_BLACK = np.array([70, 149, 160])
+LOWER_REVERSE_BLACK = np.array([0, 112, 111])
+UPPER_REVERSE_BLACK = np.array([35, 152, 151])
 
 # HSV
-LOWER_GREEN = np.array([71, 111, 150])
-UPPER_GREEN = np.array([120, 151, 173])
+LOWER_GREEN = np.array([46, 103, 146])
+UPPER_GREEN = np.array([90, 138, 180])
 
 # parking color ranges
-LOWER_MAGENTA = np.array([5, 109, 120])
-UPPER_MAGENTA = np.array([85, 149, 160])
+LOWER_MAGENTA = np.array([100, 151, 55])
+UPPER_MAGENTA = np.array([160, 191, 95])
 
 
 contour_workers = ContourWorkers(
@@ -137,7 +140,7 @@ contour_workers = ContourWorkers(
     parking_lot_region=PARKING_LOT_REGION,
 )
 
-contour_workers.parking_mode = False
+contour_workers.parking_mode = True
 
 STRAIGHT_CONST = 95
 turnThresh = 150
@@ -221,16 +224,20 @@ def main():
     # Initialize PiCamera2
     picam2 = Picamera2()
     config = picam2.create_preview_configuration(
-        main={"format": "RGB888", "size": (640, 480)}
+        main={"format": "RGB888", "size": (
+            CAM_WIDTH, CAM_HEIGHT
+        )}
     )
     picam2.configure(config)
     picam2.set_controls(
         {
-            "ExposureTime": 5100,
-            "AnalogueGain": 13.0,
+            "ExposureTime": 4250,
+            "AnalogueGain": 11,
             "AeEnable": False,
             "AwbEnable": False,
             "FrameDurationLimits": (40000, 40000),
+            "ColourGains": (0.9, 1.3),
+            "Contrast": 1.6,
         }
     )
     picam2.start()

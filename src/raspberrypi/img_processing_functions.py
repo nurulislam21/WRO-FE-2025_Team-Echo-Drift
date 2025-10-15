@@ -210,7 +210,7 @@ def display_debug_screen(
         (CAM_WIDTH // 2, CAM_HEIGHT),
         (255, 0, 0),
         1,
-    )  # blue line in the center
+    )  # blue line in the center    
 
     # draw danger zone
     if mode == "OBSTACLE":

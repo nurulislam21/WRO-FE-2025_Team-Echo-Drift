@@ -246,8 +246,8 @@ class ContourWorkers:
                         self.UPPER_MAGENTA,
                         self.LEFT_REGION,
                         direction="left",
-                        use_convex_hull=True,
-                        consider_area=1000,
+                        use_convex_hull=False,
+                        consider_area=9000,
                     )
                     magenta_area, _ = max_contour_area(contours)
 

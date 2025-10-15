@@ -5,9 +5,11 @@ from picamera2 import Picamera2
 # low [ 62 127 155]
 # high [101 126 169]
 # Clicked LAB: [151 119 180]
+# [104 130 147]
 
-LOWER = np.array([40, 154, 50])
-UPPER = np.array([91, 194, 96])
+LOWER = np.array([100, 151, 55])
+UPPER = np.array([160, 191, 95])
+
 
 
 def find_contours(frame, lower_color, upper_color, roi):
@@ -37,11 +39,13 @@ def main():
     config = picam2.create_preview_configuration(main={"format": "BGR888", "size": (640, 480)})
     picam2.configure(config)
     picam2.set_controls({
-        "ExposureTime": 5200,
-        "AnalogueGain": 13.0,
+        "ExposureTime": 4250,
+        "AnalogueGain": 11,
         "AeEnable": False,
         "AwbEnable": False,
-        "FrameDurationLimits": (40000, 40000)
+        "FrameDurationLimits": (40000, 40000),
+        "ColourGains": (0.9, 1.3),
+        "Contrast": 1.6,
     })
     picam2.start()
 

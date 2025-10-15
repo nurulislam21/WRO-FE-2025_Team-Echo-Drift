@@ -6,7 +6,7 @@ USE_CAMERA = "picam"  # "webcam" or "picam"
 CAM_INDEX = 0          # USB webcam index
 OUTPUT_FILE = f"recorded_{int(time.time())}.mp4"  # output filename
 FPS = 30               # target FPS
-RESOLUTION = (1280, 720)  # width x height
+RESOLUTION = (800, 600)  # width x height
 
 # --- Initialize camera ---
 cap = None
@@ -30,6 +30,17 @@ elif USE_CAMERA.lower() == "picam":
     picam2 = Picamera2()
     config = picam2.create_preview_configuration(main={"size": RESOLUTION, "format": "RGB888"})
     picam2.configure(config)
+    picam2.set_controls(
+        {
+            "ExposureTime": 4250,
+            "AnalogueGain": 11,
+            "AeEnable": False,
+            "AwbEnable": False,
+            "FrameDurationLimits": (40000, 40000),
+            "ColourGains": (0.9, 1.3),
+            "Contrast": 1.6,
+        }
+    )
     picam2.start()
     time.sleep(1)
 else:
@@ -50,7 +61,7 @@ while True:
             break
     else:
         frame = picam2.capture_array()
-        frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+        # frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BG)
 
     # Write frame to output
     out.write(frame)
