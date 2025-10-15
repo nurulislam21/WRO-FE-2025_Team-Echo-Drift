@@ -41,9 +41,20 @@ elif USE_CAMERA.lower() == "picam":
     picam2 = Picamera2()
     #config = picam2.create_preview_configuration(main={"size": (1280, 720)})
     #config = picam2.create_preview_configuration(main={"size": (640, 480)})
-    config = picam2.create_preview_configuration(main={"size": (800, 600)})
+    config = picam2.create_preview_configuration(main={"size": (800, 600)})    
     #config = picam2.create_preview_configuration(main={"size": (960, 720)})
     picam2.configure(config)
+    picam2.set_controls(
+            {
+                "ExposureTime": 4250,
+                "AnalogueGain": 11,
+                "AeEnable": False,
+                "AwbEnable": False,
+                "FrameDurationLimits": (40000, 40000),
+                "ColourGains": (0.9, 1.3, None),
+                "Contrast": 1.5,
+            }
+        )
     picam2.start()
     time.sleep(1)  # small delay to warm up camera
 
