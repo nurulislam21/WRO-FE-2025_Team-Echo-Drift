@@ -3,12 +3,15 @@ import numpy as np
 import time
 
 # --- Choose camera ---
-USE_CAMERA = "picam"   # "picam" or "webcam"
+USE_CAMERA = "webcam"   # "picam" or "webcam"
 CAM_INDEX = 0           # for USB webcam
 
 # --- Define fitted curve equation ---
 def fitted_b(a):
-    return (-0.0070 * a ** 2) + (3.0256 * a) + -164.0170
+    a = np.asarray(a, dtype=np.float32)
+    b = (-0.0070 * a ** 2) + (3.0256 * a) - 164.0170
+    b[(a < 160) | (a > 224)] = np.inf
+    return b
 
 # --- Initialize camera ---
 cap = None
