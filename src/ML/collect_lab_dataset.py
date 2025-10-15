@@ -4,7 +4,7 @@ import csv
 import time
 
 # --- Settings ---
-USE_CAMERA = "webcam"  # "webcam" or "picam"
+USE_CAMERA = "picam"  # "webcam" or "picam"
 OUTPUT_CSV = "lab_dataset.csv"
 CAM_INDEX = 0  # for webcam
 WINDOW_NAME = "LAB Collector"
@@ -39,9 +39,10 @@ elif USE_CAMERA.lower() == "picam":
     from picamera2 import Picamera2
     print("[INFO] Using PiCamera2")
     picam2 = Picamera2()
-    config = picam2.create_preview_configuration(main={"size": (1280, 720)})
-    #config = picam2.create_preview_configuration(main={"size": (1920, 1080)})
+    #config = picam2.create_preview_configuration(main={"size": (1280, 720)})
     #config = picam2.create_preview_configuration(main={"size": (640, 480)})
+    config = picam2.create_preview_configuration(main={"size": (800, 600)})
+    #config = picam2.create_preview_configuration(main={"size": (960, 720)})
     picam2.configure(config)
     picam2.start()
     time.sleep(1)  # small delay to warm up camera
