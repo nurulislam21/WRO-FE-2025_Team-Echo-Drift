@@ -51,8 +51,8 @@ elif USE_CAMERA.lower() == "picam":
                 "AeEnable": False,
                 "AwbEnable": False,
                 "FrameDurationLimits": (40000, 40000),
-                "ColourGains": (0.9, 1.3, None),
-                "Contrast": 1.5,
+                "ColourGains": (0.9, 1.3),
+                "Contrast": 1.6,
             }
         )
     picam2.start()

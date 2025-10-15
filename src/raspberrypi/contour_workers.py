@@ -423,7 +423,7 @@ class ContourWorkers:
                     consider_area=900,
                     blur=3,
                     best_fit_func=self.red_color_best_fit_func,
-                    best_fit_threshold=10,
+                    best_fit_threshold=11,
                 )
                 area, _ = max_contour_area(contours)
                 result = ContourResult(area, contours, "red_pillar")

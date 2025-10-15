@@ -42,13 +42,16 @@ MAX_SPEED = 60 if MODE == "OBSTACLE" else 100
 MIN_SPEED = 48 if MODE == "OBSTACLE" else 67
 BUZZER_PIN = 4
 
-def red_color_best_fit_func(x):
-    return (0.0349 * x ** 2) + (-11.1812 * x) + 1031.8457
+def red_color_best_fit_func(a):
+    a = np.asarray(a, dtype=np.float32)
+    b = (-0.0318 * a ** 2) + (13.3736 * a) + -1249.1609
+    b[(a < 180) | (a > 222)] = np.inf
+    return b
 
-def green_color_best_fit_func(x):
+def green_color_best_fit_func(a):
     return 0.0003 * (x ** 2) - 0.09 * x + 7.5
 
-def magenta_color_best_fit_func(x):
+def magenta_color_best_fit_func(a):
     return 0.0003 * (x ** 2) - 0.09 * x + 7.5
 
 # Intersections
@@ -241,11 +244,13 @@ def main():
     if CUSTOM_CAMERA_SETTINGS:
         picam2.set_controls(
             {
-                "ExposureTime": 5000,
-                "AnalogueGain": 12.5,
+                "ExposureTime": 4250,
+                "AnalogueGain": 11,
                 "AeEnable": False,
                 "AwbEnable": False,
                 "FrameDurationLimits": (40000, 40000),
+                "ColourGains": (0.9, 1.3),
+                "Contrast": 1.6,
             }
         )
     picam2.start()

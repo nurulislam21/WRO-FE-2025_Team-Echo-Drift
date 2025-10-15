@@ -7,10 +7,18 @@ USE_CAMERA = "picam"   # "picam" or "webcam"
 CAM_INDEX = 0           # for USB webcam
 
 # --- Define fitted curve equation ---
+# red
+# threshold = 11
+# def fitted_b(a):
+#     a = np.asarray(a, dtype=np.float32)
+#     b = (-0.0318 * a ** 2) + (13.3736 * a) + -1249.1609
+#     b[(a < 180) | (a > 222)] = np.inf
+#     return b
+threshold = 8  # distance tolerance in 'b' axis, tune this for your lighting conditions
 def fitted_b(a):
     a = np.asarray(a, dtype=np.float32)
-    b = (-0.0541 * a ** 2) + (19.5786 * a) + -1611.0335
-    b[(a < 160) | (a > 190)] = np.inf
+    b = (0.0336 * a ** 2) + (-7.5430 * a) + 539.9822
+    # b[(a < 0) | (a > 100)] = np.inf
     return b
 
 # --- Initialize camera ---
@@ -28,11 +36,13 @@ if USE_CAMERA.lower() == "picam":
     picam2.configure(config)
     picam2.set_controls(
             {
-                "ExposureTime": 5000,
-                "AnalogueGain": 12.5,
+                "ExposureTime": 4250,
+                "AnalogueGain": 11,
                 "AeEnable": False,
                 "AwbEnable": False,
                 "FrameDurationLimits": (40000, 40000),
+                "ColourGains": (0.9, 1.3),
+                "Contrast": 1.6,
             }
         )
     picam2.start()
@@ -52,7 +62,7 @@ else:
     exit()
 
 # --- Parameters ---
-threshold = 5  # distance tolerance in 'b' axis, tune this for your lighting conditions
+
 print("[INFO] Press 'q' to quit.\n")
 
 # --- FPS calculation setup ---
