@@ -3,10 +3,10 @@ import numpy as np
 
 # --- Your fitted function (OpenCV Lab units) ---
 def fitted_b(a):    
-    return (-0.0541 * a ** 2) + (19.5786 * a) + -1611.0335
+    return (0.0336 * a ** 2) + (-7.5430 * a) + 539.9822
     
 
-def make_and_show_lab_image(width=1024, height=300, L_value=128):
+def make_and_show_lab_image(width=1524, height=300, L_value=128):
     """
     Generate an OpenCV Lab image (constant L) where b = fitted_b(a),
     with horizontal 'a' value labels drawn below.
@@ -50,4 +50,4 @@ def make_and_show_lab_image(width=1024, height=300, L_value=128):
     cv2.destroyAllWindows()
 
 if __name__ == "__main__":
-    make_and_show_lab_image(width=1024, height=300, L_value=128)
+    make_and_show_lab_image(width=1524, height=300, L_value=128)
