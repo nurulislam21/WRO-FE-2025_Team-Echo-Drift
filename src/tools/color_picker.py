@@ -67,9 +67,9 @@ def main():
             "AeEnable": False,
             "AwbEnable": False,
             "FrameDurationLimits": (40000, 40000),
-            "ColourGains": (0.8, 1.2),
+            "ColourGains": (0.9, 1.1),
             "Contrast": 1.1,
-            "Saturation": 3.5,
+            "Saturation": 1.2,
     })
     picam2.start()
 

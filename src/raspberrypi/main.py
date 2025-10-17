@@ -36,7 +36,7 @@ BUZZER_PIN = 4
 print("DEBUG MODE" if DEBUG else "PRODUCTION")
 
 # Simulated camera settings
-MODE = "NO_OBSTACLE"  # "NO_OBSTACLE" or "OBSTACLE"
+MODE = "OBSTACLE"  # "NO_OBSTACLE" or "OBSTACLE"
 CAM_WIDTH = 640
 CAM_HEIGHT = 480
 # CAM_WIDTH = 800
@@ -56,7 +56,7 @@ RIGHT_REGION = (
     [370, 220, 620, 280] if MODE == "NO_OBSTACLE" else [390, 220, 640, 280]
 )  # right
 LAP_REGION = [225, 295, 415, 350]  # lap detection
-OBS_REGION = [85, 155, 555, 320]  # obstacle detection
+OBS_REGION = [85, 180, 555, 335]  # obstacle detection
 REVERSE_REGION = [233, 300, 407, 320]  # reverse trigger area
 FRONT_WALL_REGION = [300, 195, 340, 215]  # front wall detection
 PARKING_LOT_REGION = [0, 185, CAM_WIDTH, 400]  # parking lot detection
@@ -84,8 +84,8 @@ OBSTACLE_DETECTOR_Y = OBS_REGION[3] - OBS_REGION[1]
 obstacle_wall_pivot = (None, None)
 
 # Color ranges
-LOWER_BLACK = np.array([41, 94, 144])
-UPPER_BLACK = np.array([101, 134, 184])
+LOWER_BLACK = np.array([18, 93, 132])
+UPPER_BLACK = np.array([78, 133, 172])
 
 LOWER_ORANGE = np.array([129, 110, 81])
 UPPER_ORANGE = np.array([198, 150, 121])
@@ -94,16 +94,16 @@ LOWER_BLUE = np.array([87, 152, 160])
 UPPER_BLUE = np.array([155, 192, 200])
 
 # obstacle color ranges LAB
-LOWER_RED = np.array([69, 165, 13])
-UPPER_RED = np.array([140, 215, 53])
+LOWER_RED = np.array([55, 138, 58])
+UPPER_RED = np.array([115, 178, 98])
 
 # reverse_black
-LOWER_REVERSE_BLACK = np.array([0, 112, 111])
-UPPER_REVERSE_BLACK = np.array([35, 152, 151])
+LOWER_REVERSE_BLACK = np.array([0, 95, 138])
+UPPER_REVERSE_BLACK = np.array([88, 135, 178])
 
 # LAB
-LOWER_GREEN = np.array([167, 45, 184])
-UPPER_GREEN = np.array([227, 85, 224])
+LOWER_GREEN = np.array([70, 79, 151])
+UPPER_GREEN = np.array([136, 119, 191])
 
 # parking color ranges
 LOWER_MAGENTA = np.array([87, 123, 48])
@@ -235,9 +235,9 @@ def main():
             "AeEnable": False,
             "AwbEnable": False,
             "FrameDurationLimits": (40000, 40000),
-            "ColourGains": (0.8, 1.2),
+            "ColourGains": (0.9, 1.1),
             "Contrast": 1.1,
-            "Saturation": 3.5,
+            "Saturation": 1.2,
         }
     )
     picam2.start()
