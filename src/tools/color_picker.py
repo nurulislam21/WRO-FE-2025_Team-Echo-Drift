@@ -62,13 +62,14 @@ def main():
     config = picam2.create_preview_configuration(main={"format": "BGR888", "size": (640, 480)})
     picam2.configure(config)
     picam2.set_controls({
-            "ExposureTime": 4250,
-            "AnalogueGain": 11,
+            "ExposureTime": 6000,
+            "AnalogueGain": 9.4,
             "AeEnable": False,
             "AwbEnable": False,
             "FrameDurationLimits": (40000, 40000),
-            "ColourGains": (0.9, 1.3),
-            "Contrast": 1.6,
+            "ColourGains": (0.8, 1.2),
+            "Contrast": 1.1,
+            "Saturation": 3.5,
     })
     picam2.start()
 
