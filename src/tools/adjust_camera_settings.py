@@ -19,7 +19,7 @@ class CameraController:
         self.frame_duration = 40000
 
         # Color-related settings
-        self.saturation = 3.5        # Range: 0.0 to 32.0 (1.0 is default)
+        self.saturation = 1.2        # Range: 0.0 to 32.0 (1.0 is default)
         self.contrast = 1.1          # Range: 0.0 to 32.0 (1.0 is default)
         self.brightness = 0.0        # Range: -1.0 to 1.0 (0.0 is default)
         self.sharpness = 1.0         # Range: 0.0 to 16.0 (1.0 is default)

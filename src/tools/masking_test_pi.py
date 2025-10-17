@@ -7,8 +7,9 @@ from picamera2 import Picamera2
 # Clicked LAB: [151 119 180]
 # [104 130 147]
 
-LOWER = np.array([69, 165, 13])
-UPPER = np.array([140, 215, 53])
+LOWER = np.array([30, 95, 138])
+UPPER = np.array([88, 135, 178])
+
 
 
 def find_contours(frame, lower_color, upper_color, roi):
@@ -43,9 +44,9 @@ def main():
             "AeEnable": False,
             "AwbEnable": False,
             "FrameDurationLimits": (40000, 40000),
-            "ColourGains": (0.8, 1.2),
+            "ColourGains": (0.9, 1.1),
             "Contrast": 1.1,
-            "Saturation": 3.5,
+            "Saturation": 1.2,
     })
     picam2.start()
 
