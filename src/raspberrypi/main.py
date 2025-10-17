@@ -166,6 +166,7 @@ speed = 0
 trigger_reverse = False
 reverse_start_time = 0
 reverse_duration = 0.6  # seconds
+stop_timer = 2.4
 reverse_angle = STRAIGHT_CONST
 reverse_pause_time = (
     1.3  # seconds to wait after reversing, will not initiate reverse during this period
@@ -362,14 +363,13 @@ def main():
 
             # --- PARKING OUT LOGIC ---
             if contour_workers.mode == "OBSTACLE":
-                ...
-            #    # process parking out first if not yet done
-            #    if not parking.has_parked_out:
-            #        parking.process_parking_out(
-            #            left_result=left_result, right_result=right_result
-            #        )
-            #        parking.has_parked_out = contour_workers.has_parked_out = True
-            #        continue
+            # process parking out first if not yet done
+               if not parking.has_parked_out:
+                   parking.process_parking_out(
+                       left_result=left_result, right_result=right_result
+                   )
+                   parking.has_parked_out = contour_workers.has_parked_out = True
+                   continue
 
             # --- Reversing logic ---
             if (
@@ -384,6 +384,11 @@ def main():
                     reverse_angle = STRAIGHT_CONST
                 arduino.write(f"{speed},-1,{reverse_angle}\n".encode())
                 print(f"Reversing... Speed: {speed}, Angle: {reverse_angle}")
+
+                # stop timer reset
+                if stopFlag:
+                    stopTime = int(time.time())
+
                 if DEBUG and cv2.waitKey(1) & 0xFF == ord("q"):
                     break
                 print("continue")
@@ -821,7 +826,7 @@ def main():
                 # contour_workers.mode == "NO_OBSTACLE"
                 # and
                 stopFlag
-                and (int(time.time()) - stopTime) > 1.7
+                and (int(time.time()) - stopTime) > stop_timer
             ):
                 print("Lap completed!")
                 arduino.write(f"-5,-1,{angle}\n".encode())
