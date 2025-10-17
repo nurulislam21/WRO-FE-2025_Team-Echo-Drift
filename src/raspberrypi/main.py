@@ -36,7 +36,7 @@ BUZZER_PIN = 4
 print("DEBUG MODE" if DEBUG else "PRODUCTION")
 
 # Simulated camera settings
-MODE = "OBSTACLE"  # "NO_OBSTACLE" or "OBSTACLE"
+MODE = "NO_OBSTACLE"  # "NO_OBSTACLE" or "OBSTACLE"
 CAM_WIDTH = 640
 CAM_HEIGHT = 480
 # CAM_WIDTH = 800
@@ -84,8 +84,8 @@ OBSTACLE_DETECTOR_Y = OBS_REGION[3] - OBS_REGION[1]
 obstacle_wall_pivot = (None, None)
 
 # Color ranges
-LOWER_BLACK = np.array([0, 112, 111])
-UPPER_BLACK = np.array([35, 152, 151])
+LOWER_BLACK = np.array([41, 94, 144])
+UPPER_BLACK = np.array([101, 134, 184])
 
 LOWER_ORANGE = np.array([129, 110, 81])
 UPPER_ORANGE = np.array([198, 150, 121])
@@ -93,22 +93,21 @@ UPPER_ORANGE = np.array([198, 150, 121])
 LOWER_BLUE = np.array([87, 152, 160])
 UPPER_BLUE = np.array([155, 192, 200])
 
-
-# obstacle color ranges HSV
-LOWER_RED = np.array([39, 154, 47])
-UPPER_RED = np.array([99, 194, 87])
+# obstacle color ranges LAB
+LOWER_RED = np.array([69, 165, 13])
+UPPER_RED = np.array([140, 215, 53])
 
 # reverse_black
 LOWER_REVERSE_BLACK = np.array([0, 112, 111])
 UPPER_REVERSE_BLACK = np.array([35, 152, 151])
 
-# HSV
-LOWER_GREEN = np.array([46, 103, 146])
-UPPER_GREEN = np.array([90, 138, 180])
+# LAB
+LOWER_GREEN = np.array([167, 45, 184])
+UPPER_GREEN = np.array([227, 85, 224])
 
 # parking color ranges
-LOWER_MAGENTA = np.array([100, 151, 55])
-UPPER_MAGENTA = np.array([160, 191, 95])
+LOWER_MAGENTA = np.array([87, 123, 48])
+UPPER_MAGENTA = np.array([147, 163, 88])
 
 
 contour_workers = ContourWorkers(
@@ -140,7 +139,7 @@ contour_workers = ContourWorkers(
     parking_lot_region=PARKING_LOT_REGION,
 )
 
-contour_workers.parking_mode = True
+contour_workers.parking_mode = False
 
 STRAIGHT_CONST = 95
 turnThresh = 150
@@ -231,13 +230,14 @@ def main():
     picam2.configure(config)
     picam2.set_controls(
         {
-            "ExposureTime": 4250,
-            "AnalogueGain": 11,
+            "ExposureTime": 6000,
+            "AnalogueGain": 9.4,
             "AeEnable": False,
             "AwbEnable": False,
             "FrameDurationLimits": (40000, 40000),
-            "ColourGains": (0.9, 1.3),
-            "Contrast": 1.6,
+            "ColourGains": (0.8, 1.2),
+            "Contrast": 1.1,
+            "Saturation": 3.5,
         }
     )
     picam2.start()

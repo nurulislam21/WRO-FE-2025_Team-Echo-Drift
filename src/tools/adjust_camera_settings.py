@@ -14,17 +14,17 @@ class CameraController:
         self.picam2.configure(config)
 
         # Initial camera settings
-        self.exposure_time = 4250
-        self.analogue_gain = 11.0
+        self.exposure_time = 6000
+        self.analogue_gain = 9.4
         self.frame_duration = 40000
-        
+
         # Color-related settings
-        self.saturation = 1.0        # Range: 0.0 to 32.0 (1.0 is default)
-        self.contrast = 1.5          # Range: 0.0 to 32.0 (1.0 is default)
+        self.saturation = 3.5        # Range: 0.0 to 32.0 (1.0 is default)
+        self.contrast = 1.1          # Range: 0.0 to 32.0 (1.0 is default)
         self.brightness = 0.0        # Range: -1.0 to 1.0 (0.0 is default)
         self.sharpness = 1.0         # Range: 0.0 to 16.0 (1.0 is default)
         self.red_gain = .9          # Red color gain (0.0 to 32.0)
-        self.blue_gain = 1.3         # Blue color gain (0.0 to 32.0)
+        self.blue_gain = 1.1         # Blue color gain (0.0 to 32.0)
         self.colour_temp = 3200      # Color temperature (100 to 100000 Kelvin)
         self.awb_mode = 0            # AWB mode (0=off, 1=auto, 2=tungsten, etc.)
         self.awb_enable = False      # Auto white balance enable
@@ -68,7 +68,7 @@ class CameraController:
             200,
             self.on_frame_duration_change,
         )
-        
+
         # Color controls
         cv2.createTrackbar(
             "Saturation (x0.1)",
@@ -77,7 +77,7 @@ class CameraController:
             320,
             self.on_saturation_change,
         )
-        
+
         cv2.createTrackbar(
             "Contrast (x0.1)",
             "Camera Controls",
@@ -85,7 +85,7 @@ class CameraController:
             320,
             self.on_contrast_change,
         )
-        
+
         cv2.createTrackbar(
             "Brightness (x100)",
             "Camera Controls",
@@ -93,7 +93,7 @@ class CameraController:
             200,
             self.on_brightness_change,
         )
-        
+
         cv2.createTrackbar(
             "Sharpness (x0.1)",
             "Camera Controls",
@@ -101,7 +101,7 @@ class CameraController:
             160,
             self.on_sharpness_change,
         )
-        
+
         # White balance controls
         cv2.createTrackbar(
             "AWB Enable (0=Off, 1=On)",
@@ -110,7 +110,7 @@ class CameraController:
             1,
             self.on_awb_enable_change,
         )
-        
+
         cv2.createTrackbar(
             "AWB Mode",
             "Camera Controls",
@@ -118,7 +118,7 @@ class CameraController:
             7,
             self.on_awb_mode_change,
         )
-        
+
         cv2.createTrackbar(
             "Color Temp (x100K)",
             "Camera Controls",
@@ -126,7 +126,7 @@ class CameraController:
             1000,
             self.on_colour_temp_change,
         )
-        
+
         cv2.createTrackbar(
             "Red Gain (x0.1)",
             "Camera Controls",
@@ -134,7 +134,7 @@ class CameraController:
             320,
             self.on_red_gain_change,
         )
-        
+
         cv2.createTrackbar(
             "Blue Gain (x0.1)",
             "Camera Controls",
@@ -153,71 +153,71 @@ class CameraController:
         font = cv2.FONT_HERSHEY_SIMPLEX
         y_pos = 20
         line_height = 25
-        
+
         # Title
-        cv2.putText(info_img, "Camera Control Panel - Color Tuning", (10, y_pos), 
+        cv2.putText(info_img, "Camera Control Panel - Color Tuning", (10, y_pos),
                     font, 0.6, (255, 255, 255), 2)
         y_pos += line_height + 10
 
         # Exposure settings
-        cv2.putText(info_img, "EXPOSURE SETTINGS:", (10, y_pos), 
+        cv2.putText(info_img, "EXPOSURE SETTINGS:", (10, y_pos),
                     font, 0.5, (0, 255, 0), 2)
         y_pos += line_height
-        cv2.putText(info_img, f"  Exposure: {self.exposure_time}µs", (10, y_pos), 
+        cv2.putText(info_img, f"  Exposure: {self.exposure_time}µs", (10, y_pos),
                     font, 0.4, (255, 255, 255), 1)
         y_pos += line_height - 5
-        cv2.putText(info_img, f"  Gain: {self.analogue_gain:.1f}", (10, y_pos), 
+        cv2.putText(info_img, f"  Gain: {self.analogue_gain:.1f}", (10, y_pos),
                     font, 0.4, (255, 255, 255), 1)
         y_pos += line_height - 5
-        cv2.putText(info_img, f"  Frame Duration: {self.frame_duration}µs", (10, y_pos), 
+        cv2.putText(info_img, f"  Frame Duration: {self.frame_duration}µs", (10, y_pos),
                     font, 0.4, (255, 255, 255), 1)
         y_pos += line_height + 5
 
         # Color settings
-        cv2.putText(info_img, "COLOR SETTINGS:", (10, y_pos), 
+        cv2.putText(info_img, "COLOR SETTINGS:", (10, y_pos),
                     font, 0.5, (255, 200, 0), 2)
         y_pos += line_height
-        cv2.putText(info_img, f"  Saturation: {self.saturation:.1f}", (10, y_pos), 
+        cv2.putText(info_img, f"  Saturation: {self.saturation:.1f}", (10, y_pos),
                     font, 0.4, (255, 255, 255), 1)
         y_pos += line_height - 5
-        cv2.putText(info_img, f"  Contrast: {self.contrast:.1f}", (10, y_pos), 
+        cv2.putText(info_img, f"  Contrast: {self.contrast:.1f}", (10, y_pos),
                     font, 0.4, (255, 255, 255), 1)
         y_pos += line_height - 5
-        cv2.putText(info_img, f"  Brightness: {self.brightness:.2f}", (10, y_pos), 
+        cv2.putText(info_img, f"  Brightness: {self.brightness:.2f}", (10, y_pos),
                     font, 0.4, (255, 255, 255), 1)
         y_pos += line_height - 5
-        cv2.putText(info_img, f"  Sharpness: {self.sharpness:.1f}", (10, y_pos), 
+        cv2.putText(info_img, f"  Sharpness: {self.sharpness:.1f}", (10, y_pos),
                     font, 0.4, (255, 255, 255), 1)
         y_pos += line_height + 5
 
         # White balance settings
-        cv2.putText(info_img, "WHITE BALANCE:", (10, y_pos), 
+        cv2.putText(info_img, "WHITE BALANCE:", (10, y_pos),
                     font, 0.5, (0, 200, 255), 2)
         y_pos += line_height
-        
+
         awb_status = "ON" if self.awb_enable else "OFF"
-        awb_modes = ["Manual", "Auto", "Tungsten", "Fluorescent", "Indoor", 
+        awb_modes = ["Manual", "Auto", "Tungsten", "Fluorescent", "Indoor",
                      "Daylight", "Cloudy", "Custom"]
         awb_mode_name = awb_modes[self.awb_mode] if self.awb_mode < len(awb_modes) else f"Mode {self.awb_mode}"
-        
-        cv2.putText(info_img, f"  AWB: {awb_status} | Mode: {awb_mode_name}", (10, y_pos), 
+
+        cv2.putText(info_img, f"  AWB: {awb_status} | Mode: {awb_mode_name}", (10, y_pos),
                     font, 0.4, (255, 255, 255), 1)
         y_pos += line_height - 5
-        cv2.putText(info_img, f"  Color Temp: {self.colour_temp}K", (10, y_pos), 
+        cv2.putText(info_img, f"  Color Temp: {self.colour_temp}K", (10, y_pos),
                     font, 0.4, (255, 255, 255), 1)
         y_pos += line_height - 5
-        cv2.putText(info_img, f"  Red Gain: {self.red_gain:.1f}", (10, y_pos), 
+        cv2.putText(info_img, f"  Red Gain: {self.red_gain:.1f}", (10, y_pos),
                     font, 0.4, (255, 255, 255), 1)
         y_pos += line_height - 5
-        cv2.putText(info_img, f"  Blue Gain: {self.blue_gain:.1f}", (10, y_pos), 
+        cv2.putText(info_img, f"  Blue Gain: {self.blue_gain:.1f}", (10, y_pos),
                     font, 0.4, (255, 255, 255), 1)
         y_pos += line_height + 10
 
         # Tips section
-        cv2.putText(info_img, "QUICK GUIDE:", (10, y_pos), 
+        cv2.putText(info_img, "QUICK GUIDE:", (10, y_pos),
                     font, 0.5, (0, 255, 255), 2)
         y_pos += line_height
-        
+
         tips = [
             "Saturation: 0=grayscale, 1=normal, >1=vibrant",
             "Contrast: 0=flat, 1=normal, >1=high contrast",
@@ -228,14 +228,14 @@ class CameraController:
             "Manual WB: Disable AWB, adjust R/B gains",
             "Red/Blue Gains: Higher=more of that color",
         ]
-        
+
         for tip in tips:
-            cv2.putText(info_img, f"  {tip}", (10, y_pos), 
+            cv2.putText(info_img, f"  {tip}", (10, y_pos),
                         font, 0.35, (200, 200, 200), 1)
             y_pos += line_height - 7
 
         y_pos += 10
-        cv2.putText(info_img, "CONTROLS: S=Save | R=Reset | Q/ESC=Quit", 
+        cv2.putText(info_img, "CONTROLS: S=Save | R=Reset | Q/ESC=Quit",
                     (10, y_pos), font, 0.4, (0, 0, 255), 1)
 
         info_img = cv2.cvtColor(info_img, cv2.COLOR_BGR2RGB)
@@ -256,47 +256,47 @@ class CameraController:
         self.frame_duration = val * 1000
         self.update_camera_controls()
         self.update_info_display()
-    
+
     def on_saturation_change(self, val):
         self.saturation = val / 10.0
         self.update_camera_controls()
         self.update_info_display()
-    
+
     def on_contrast_change(self, val):
         self.contrast = val / 10.0
         self.update_camera_controls()
         self.update_info_display()
-    
+
     def on_brightness_change(self, val):
         self.brightness = (val / 100.0) - 1.0
         self.update_camera_controls()
         self.update_info_display()
-    
+
     def on_sharpness_change(self, val):
         self.sharpness = val / 10.0
         self.update_camera_controls()
         self.update_info_display()
-    
+
     def on_awb_enable_change(self, val):
         self.awb_enable = bool(val)
         self.update_camera_controls()
         self.update_info_display()
-    
+
     def on_awb_mode_change(self, val):
         self.awb_mode = val
         self.update_camera_controls()
         self.update_info_display()
-    
+
     def on_colour_temp_change(self, val):
         self.colour_temp = val * 100
         self.update_camera_controls()
         self.update_info_display()
-    
+
     def on_red_gain_change(self, val):
         self.red_gain = val / 10.0
         self.update_camera_controls()
         self.update_info_display()
-    
+
     def on_blue_gain_change(self, val):
         self.blue_gain = val / 10.0
         self.update_camera_controls()
@@ -315,7 +315,7 @@ class CameraController:
                 "Brightness": self.brightness,
                 "Sharpness": self.sharpness,
             }
-            
+
             # Add white balance controls
             if self.awb_enable:
                 controls["AwbEnable"] = True
@@ -323,7 +323,7 @@ class CameraController:
             else:
                 controls["AwbEnable"] = False
                 controls["ColourGains"] = (self.red_gain, self.blue_gain)
-            
+
             self.picam2.set_controls(controls)
         except Exception as e:
             print(f"Error setting camera controls: {e}")
@@ -369,24 +369,24 @@ class CameraController:
         cv2.addWeighted(overlay, 0.7, frame, 0.3, 0, frame)
 
         y = 28
-        cv2.putText(frame, f"Exp: {self.exposure_time}us | Gain: {self.analogue_gain:.1f}", 
+        cv2.putText(frame, f"Exp: {self.exposure_time}us | Gain: {self.analogue_gain:.1f}",
                     (15, y), font, 0.45, (0, 255, 0), 1)
         y += 22
-        cv2.putText(frame, f"Sat: {self.saturation:.1f} | Cont: {self.contrast:.1f} | Bright: {self.brightness:.2f}", 
+        cv2.putText(frame, f"Sat: {self.saturation:.1f} | Cont: {self.contrast:.1f} | Bright: {self.brightness:.2f}",
                     (15, y), font, 0.45, (255, 200, 0), 1)
         y += 22
-        cv2.putText(frame, f"Sharpness: {self.sharpness:.1f}", 
+        cv2.putText(frame, f"Sharpness: {self.sharpness:.1f}",
                     (15, y), font, 0.45, (255, 200, 0), 1)
         y += 22
-        
+
         awb_status = "ON" if self.awb_enable else "OFF"
-        cv2.putText(frame, f"AWB: {awb_status} | Mode: {self.awb_mode} | Temp: {self.colour_temp}K", 
+        cv2.putText(frame, f"AWB: {awb_status} | Mode: {self.awb_mode} | Temp: {self.colour_temp}K",
                     (15, y), font, 0.45, (0, 200, 255), 1)
         y += 22
-        cv2.putText(frame, f"Color Gains - Red: {self.red_gain:.1f} | Blue: {self.blue_gain:.1f}", 
+        cv2.putText(frame, f"Color Gains - Red: {self.red_gain:.1f} | Blue: {self.blue_gain:.1f}",
                     (15, y), font, 0.45, (0, 200, 255), 1)
         y += 22
-        cv2.putText(frame, "S=Save | R=Reset | Q/ESC=Quit", 
+        cv2.putText(frame, "S=Save | R=Reset | Q/ESC=Quit",
                     (15, y), font, 0.4, (255, 255, 255), 1)
 
     def reset_to_defaults(self):
@@ -405,28 +405,28 @@ class CameraController:
         self.blue_gain = 2.0
 
         # Update all trackbars
-        cv2.setTrackbarPos("Exposure Time (x1000µs)", "Camera Controls", 
+        cv2.setTrackbarPos("Exposure Time (x1000µs)", "Camera Controls",
                           self.exposure_time // 1000)
-        cv2.setTrackbarPos("Analogue Gain (x0.1)", "Camera Controls", 
+        cv2.setTrackbarPos("Analogue Gain (x0.1)", "Camera Controls",
                           int(self.analogue_gain * 10))
-        cv2.setTrackbarPos("Frame Duration (x1000µs)", "Camera Controls", 
+        cv2.setTrackbarPos("Frame Duration (x1000µs)", "Camera Controls",
                           self.frame_duration // 1000)
-        cv2.setTrackbarPos("Saturation (x0.1)", "Camera Controls", 
+        cv2.setTrackbarPos("Saturation (x0.1)", "Camera Controls",
                           int(self.saturation * 10))
-        cv2.setTrackbarPos("Contrast (x0.1)", "Camera Controls", 
+        cv2.setTrackbarPos("Contrast (x0.1)", "Camera Controls",
                           int(self.contrast * 10))
-        cv2.setTrackbarPos("Brightness (x100)", "Camera Controls", 
+        cv2.setTrackbarPos("Brightness (x100)", "Camera Controls",
                           int((self.brightness + 1.0) * 100))
-        cv2.setTrackbarPos("Sharpness (x0.1)", "Camera Controls", 
+        cv2.setTrackbarPos("Sharpness (x0.1)", "Camera Controls",
                           int(self.sharpness * 10))
-        cv2.setTrackbarPos("AWB Enable (0=Off, 1=On)", "Camera Controls", 
+        cv2.setTrackbarPos("AWB Enable (0=Off, 1=On)", "Camera Controls",
                           int(self.awb_enable))
         cv2.setTrackbarPos("AWB Mode", "Camera Controls", self.awb_mode)
-        cv2.setTrackbarPos("Color Temp (x100K)", "Camera Controls", 
+        cv2.setTrackbarPos("Color Temp (x100K)", "Camera Controls",
                           self.colour_temp // 100)
-        cv2.setTrackbarPos("Red Gain (x0.1)", "Camera Controls", 
+        cv2.setTrackbarPos("Red Gain (x0.1)", "Camera Controls",
                           int(self.red_gain * 10))
-        cv2.setTrackbarPos("Blue Gain (x0.1)", "Camera Controls", 
+        cv2.setTrackbarPos("Blue Gain (x0.1)", "Camera Controls",
                           int(self.blue_gain * 10))
 
         self.update_camera_controls()
