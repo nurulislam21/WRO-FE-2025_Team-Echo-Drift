@@ -406,7 +406,7 @@ def process_video_turbo(model_path, video_path, conf_threshold=0.25,
 
 if __name__ == "__main__":
     # ==================== CONFIGURATION ====================
-    MODEL_PATH = "best_saved_model/best_int8.tflite"
+    MODEL_PATH = "best_int8.tflite"
     # MODEL_PATH = "best_saved_model/best_float16.tflite"
     # MODEL_PATH = "best_saved_model/best_integer_quant.tflite"
     VIDEO_PATH = "video.mp4"
@@ -414,7 +414,7 @@ if __name__ == "__main__":
     CLASS_NAMES = ["class_0", "class_1", "class_2"]
     
     # ROI (Region of Interest) - set to None to disable
-    ROI = (200, 70, 700, 250)  # (x1, y1, x2, y2) or None
+    ROI = (200, 220, 700, 450)  # (x1, y1, x2, y2) or None
     
     # ==================== SPEED TUNING ====================
     # Priority 1: Confidence (higher = faster, fewer false positives)

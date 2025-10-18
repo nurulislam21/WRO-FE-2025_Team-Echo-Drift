@@ -13,12 +13,19 @@ model.to(device)
 model.fuse()  # fuse Conv+BN layers for faster inference
 
 # Video setup
-video_path = "video2.mp4"
+video_path = "video.mp4"
 cap = cv2.VideoCapture(video_path)
 
 # Get video properties
 fps = cap.get(cv2.CAP_PROP_FPS)
 width, height = int(cap.get(3)), int(cap.get(4))
+print(f"Original Video FPS: {fps:.2f}, Resolution: {width}x{height}")
+
+# change resolution for faster processing if needed
+width, height = 640, 360
+cap.set(3, width)
+cap.set(4, height)
+
 print(f"Video FPS: {fps:.2f}, Resolution: {width}x{height}")
 
 # ROI (Region of Interest)
@@ -29,7 +36,7 @@ roi_x1, roi_y1, roi_x2, roi_y2 = 0, 0, width, height  # Full frame
 resize_scale = 0.7  # 70% of ROI size, tweak for speed vs accuracy
 
 prev_time = time.time()
-frame_skip = 0  # process every frame (increase for faster playback)
+frame_skip = 2  # process every frame (increase for faster playback)
 
 while cap.isOpened():
     ret, frame = cap.read()
@@ -54,7 +61,7 @@ while cap.isOpened():
         verbose=False,
         conf=0.5,
         iou=0.5,
-        imgsz=480,  # smaller imgsz = faster
+        imgsz=640,  # smaller imgsz = faster
         device=device
     )
 
