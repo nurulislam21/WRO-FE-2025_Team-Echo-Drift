@@ -30,18 +30,17 @@ elif USE_CAMERA.lower() == "picam":
     picam2 = Picamera2()
     config = picam2.create_preview_configuration(main={"size": RESOLUTION, "format": "RGB888"})
     picam2.configure(config)
-    picam2.set_controls(
-        {
-            "ExposureTime": 6000,
-            "AnalogueGain": 9.4,
-            "AeEnable": False,
-            "AwbEnable": False,
-            "FrameDurationLimits": (40000, 40000),
-            "ColourGains": (0.8, 1.2),
-            "Contrast": 1.1,
-            "Saturation": 3.5,
-        }
-    )
+    # load camera settings from file
+    try:
+        with open("camera_settings.json", "r") as f:
+            import json
+            settings = json.load(f)
+            picam2.set_controls(settings)
+            print("Loaded camera settings from file.")
+    except FileNotFoundError:
+        # Default settings if no file found
+        print("No camera settings file found. Using default settings.")        
+
     picam2.start()
     time.sleep(1)
 else:

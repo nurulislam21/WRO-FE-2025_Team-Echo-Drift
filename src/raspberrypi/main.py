@@ -229,18 +229,18 @@ def main():
         )}
     )
     picam2.configure(config)
-    picam2.set_controls(
-        {
-            "ExposureTime": 6000,
-            "AnalogueGain": 9.4,
-            "AeEnable": False,
-            "AwbEnable": False,
-            "FrameDurationLimits": (40000, 40000),
-            "ColourGains": (0.9, 1.1),
-            "Contrast": 1.1,
-            "Saturation": 1.2,
-        }
-    )
+    # load camera settings from file
+    try:
+        with open("camera_settings.json", "r") as f:
+            import json
+            settings = json.load(f)
+            picam2.set_controls(settings)
+            print("Loaded camera settings from file.")
+    except FileNotFoundError:
+        # Default settings if no file found
+        print("No camera settings file found. Using default settings.")
+        return
+    
     picam2.start()
 
     # Start all processing threads
