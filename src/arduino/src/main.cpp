@@ -210,11 +210,8 @@ void loop()
     {
       while (true)
       {
-        
       }
-      
     }
-    
   }
 
   // Timeout logic: no data received recently
