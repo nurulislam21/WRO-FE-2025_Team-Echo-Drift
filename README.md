@@ -34,11 +34,13 @@
 ---
 ## About the Team  
 
-We are a team of three young innovators, coming from different corners of Bangladesh. At first, each of us participated individually in many competitions across the country. Through those journeys, we eventually met one another, shared our dreams, and realised that together we could achieve something even greater. That was the beginning of our team.
+We are a team of three young innovators from different corners of Bangladesh, united by our shared passion for robotics and technology. At first, each of us participated individually in various competitions across the country. Through those journeys, we eventually met one another, shared our dreams, and realized that together, we could achieve something even greater. That was the beginning of our team.
 
-From the very start, we have built a strong bond based on trust, hard work, and a shared passion for robotics. Step by step, we worked side by side and successfully won several national robotics competitions, which made us more confident about our vision.
+From the very start, we have built a strong bond based on trust, hard work, and shared ambition. Step by step, we worked side by side and successfully won several national robotics competitions, which strengthened our confidence and belief in our vision.
 
-A few months ago, we set ourselves a bigger goal—to represent Bangladesh in the World Robot Olympiad. Since then, we have been working with full dedication and determination. Our dream is simple but powerful: to raise the flag of Bangladesh high on the international stage and prove that with passion, teamwork, and belief, anything is possible.
+Recently, our journey reached a new milestone — we achieved the Silver Medal in the Future Engineers category at the World Robot Olympiad Bangladesh 2025 National Round, earning the honor to represent Bangladesh at the World Robot Olympiad 2025 International Finals.
+
+Since then, we have been working with full dedication and determination to make our country proud on the global stage. Our dream is simple but powerful: to raise the flag of Bangladesh high at the international level and prove that with passion, teamwork, and belief, anything is possible.
  
 <p align="center">
   <img src="t-photos/WROGP.png" alt="Team Echo Drift" width="700"/>
@@ -118,8 +120,6 @@ WRO **Future Engineers** challenges teams to design autonomous electric vehicles
 - Optimize performance for efficiency and reliability  
 
 >  **For 2025, the challenge emphasizes real-world autonomous driving concepts aligned with SDG 11 — Sustainable Cities and Communities.**
-
-
 ---
 
 <h2>  Competition Rounds </h2>
@@ -186,10 +186,9 @@ The WRO Future Engineers 2025 competition is divided into **two progressive roun
 
 [![Test Run 1 – Track Navigation](https://img.youtube.com/vi/efOUVDhcxk8/0.jpg)](https://www.youtube.com/watch?v=efOUVDhcxk8)  
 [![Test Run 2 – Obstacle Avoidance](https://img.youtube.com/vi/GM8HPATsVBk/0.jpg)](https://www.youtube.com/watch?v=GM8HPATsVBk)  
-[![Test Run 3 – Precision Parking](https://img.youtube.com/vi/KPs8n2rFoqplYith/0.jpg)](https://youtu.be/XEHfCzGVoek?si=KPs8n2rFoqplYith)
  
 
-👉 *(Videos will be linked here once uploaded to YouTube)*  
+
 
 ---
 
