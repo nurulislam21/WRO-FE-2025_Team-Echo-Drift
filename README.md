@@ -1,5 +1,5 @@
 # Team Echo Drift — WRO Future Engineers 2025
-<img src="https://github.com/majednaeem/WRO/blob/main/Assets/wro2.gif" alt="About Me GIF" width="1021" height="300">
+<img src="https://github.com/majednaeem/WRO/blob/main/Assets/github%20cover.gif" alt="About Me GIF" width="1021" height="300">
 
 
 ![WRO Future Engineers](https://img.shields.io/badge/WRO-Future_Engineers-orange?style=for-the-badge)
@@ -10,7 +10,7 @@
 ---
 
 
-Welcome to the official GitHub repository of **Team Echo Drift**. This repository documents the journey of **Team Echo Drift** at the **WRO Bangladesh National 2025 – Future Engineers category**.Here you’ll find the **complete documentation of our robot** — an innovation imagined, designed, and brought to life by three passionate students pushing the limits of creativity and engineering.  
+**Welcome** to the official GitHub repository of **Team Echo Drift**. This repository documents the journey of **Team Echo Drift** at the **World Robot Olympiad 2025 – Future Engineers category**.Here you’ll find the **complete documentation of our robot** — an innovation imagined, designed, and brought to life by three passionate students pushing the limits of creativity and engineering.  
 
 # Table of Contents  
 
