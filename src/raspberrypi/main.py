@@ -36,13 +36,13 @@ BUZZER_PIN = 4
 print("DEBUG MODE" if DEBUG else "PRODUCTION")
 
 # Simulated camera settings
-MODE = "OBSTACLE"  # "NO_OBSTACLE" or "OBSTACLE"
+MODE = "NO_OBSTACLE"  # "NO_OBSTACLE" or "OBSTACLE"
 CAM_WIDTH = 640
 CAM_HEIGHT = 480
 # CAM_WIDTH = 800
 # CAM_HEIGHT = 600
-MAX_SPEED = 60 if MODE == "OBSTACLE" else 100
-MIN_SPEED = 50 if MODE == "OBSTACLE" else 67
+MAX_SPEED = 60 if MODE == "OBSTACLE" else 67
+MIN_SPEED = 50 if MODE == "OBSTACLE" else 50
 
 # Intersections
 TOTAL_INTERSECTIONS = 12
@@ -50,10 +50,10 @@ TOTAL_INTERSECTIONS = 12
 
 # Region of Interest coordinates
 LEFT_REGION = (
-    [20, 220, 270, 280] if MODE == "NO_OBSTACLE" else [0, 220, 250, 280]
+    [20, 95, 270, 170] if MODE == "NO_OBSTACLE" else [0, 220, 250, 280]
 )  # left
 RIGHT_REGION = (
-    [370, 220, 620, 280] if MODE == "NO_OBSTACLE" else [390, 220, 640, 280]
+    [370, 95, 620, 170] if MODE == "NO_OBSTACLE" else [390, 220, 640, 280]
 )  # right
 LAP_REGION = [225, 295, 415, 350]  # lap detection
 OBS_REGION = [85, 180, 555, 335]  # obstacle detection
@@ -84,14 +84,14 @@ OBSTACLE_DETECTOR_Y = OBS_REGION[3] - OBS_REGION[1]
 obstacle_wall_pivot = (None, None)
 
 # Color ranges
-LOWER_BLACK = np.array([18, 93, 132])
-UPPER_BLACK = np.array([78, 133, 172])
+LOWER_BLACK = np.array([9, 97, 115])
+UPPER_BLACK = np.array([69, 137, 155])
 
-LOWER_ORANGE = np.array([129, 110, 81])
-UPPER_ORANGE = np.array([198, 150, 121])
+LOWER_ORANGE = np.array([59, 110, 72])
+UPPER_ORANGE = np.array([119, 150, 112])
 
-LOWER_BLUE = np.array([87, 152, 160])
-UPPER_BLUE = np.array([155, 192, 200])
+LOWER_BLUE = np.array([30, 123, 141])
+UPPER_BLUE = np.array([90, 163, 181])
 
 # obstacle color ranges LAB
 LOWER_RED = np.array([55, 138, 58])
@@ -240,7 +240,7 @@ def main():
         # Default settings if no file found
         print("No camera settings file found. Using default settings.")
         return
-    
+
     picam2.start()
 
     # Start all processing threads
