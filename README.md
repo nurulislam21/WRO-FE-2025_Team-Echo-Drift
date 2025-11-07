@@ -38,7 +38,7 @@ We’re three young innovators from across Bangladesh, brought together by our l
 
 Together, we’ve built trust, worked hard, and won multiple national robotics competitions. Our biggest achievement so far? Winning Silver at the World Robot Olympiad Bangladesh 2025, earning the chance to represent our country on the global stage.
 
-Now, we’re giving it our all to lift Bangladesh’s flag high at the World Robot Olympiad 2025 International Finals. With passion, teamwork, and belief—anything is possible!
+Now, we’re giving it our all to lift Bangladesh’s flag high at the World Robot Olympiad 2025 International Finals. With passion, teamwork, and belief - anything is possible!
  
 <p align="center">
   <img src="t-photos/WROGP.png" alt="Team Echo Drift" width="700"/>
@@ -117,7 +117,7 @@ WRO **Future Engineers** challenges teams to design autonomous electric vehicles
 - Handle lane following, obstacle avoidance, parking, and overtaking  
 - Optimize performance for efficiency and reliability
 
-> ![highlight](https://img.shields.io/badge/For%202025%20the%20challenge%20emphasizes%20real-world%20autonomous%20driving%20concepts%20aligned%20with%20SDG%2011%20%E2%80%94%20Sustainable%20Cities%20and%20Communities.-f5f578?style=flat)
+> ![part1](https://img.shields.io/badge/For%202025-555555?style=flat) ![part2](https://img.shields.io/badge/the%20challenge%20emphasizes%20real--world%20autonomous%20driving%20concepts%20aligned%20with%20SDG%2011%20%E2%80%94%20Sustainable%20Cities%20and%20Communities.-f5f578?style=flat)
 ---
 
 
