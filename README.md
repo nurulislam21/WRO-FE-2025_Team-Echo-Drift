@@ -285,7 +285,7 @@ The hardware design balances **mechanical precision** with **reliable electronic
 - **Steering:** Parallel steering system with MG90S servo for steering control  
 <img src="v-photos/steering.jpg" alt="Steering" width="500" style="display:inline-block; vertical-align: top;"/>
 
-- **Differential Gear:** Custom 3D-printed with **herringbone outer gear**
+- **Differential Gear:** WL Toys differential gear with bearing
 <img src="v-photos/gearbox.jpg" alt="Steering" width="500" style="display:inline-block; vertical-align: top;"/>
   
 - **Chassis:** Fully 3D-printed (SolidWorks STL); lightweight yet strong
