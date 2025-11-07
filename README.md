@@ -34,13 +34,11 @@
 ---
 ## About the Team  
 
-We are a team of three young innovators from different corners of Bangladesh, united by our shared passion for robotics and technology. At first, each of us participated individually in various competitions across the country. Through those journeys, we eventually met one another, shared our dreams, and realized that together, we could achieve something even greater. That was the beginning of our team.
+We’re three young innovators from across Bangladesh, brought together by our love for robotics and tech. We first met as solo competitors—sharing ideas, dreams, and soon a vision. That’s how our team was born.
 
-From the very start, we have built a strong bond based on trust, hard work, and shared ambition. Step by step, we worked side by side and successfully won several national robotics competitions, which strengthened our confidence and belief in our vision.
+Together, we’ve built trust, worked hard, and won multiple national robotics competitions. Our biggest achievement so far? Winning Silver at the World Robot Olympiad Bangladesh 2025, earning the chance to represent our country on the global stage.
 
-Recently, our journey reached a new milestone — we achieved the Silver Medal in the Future Engineers category at the World Robot Olympiad Bangladesh 2025 National Round, earning the honor to represent Bangladesh at the World Robot Olympiad 2025 International Finals.
-
-Since then, we have been working with full dedication and determination to make our country proud on the global stage. Our dream is simple but powerful: to raise the flag of Bangladesh high at the international level and prove that with passion, teamwork, and belief, anything is possible.
+Now, we’re giving it our all to lift Bangladesh’s flag high at the World Robot Olympiad 2025 International Finals. With passion, teamwork, and belief—anything is possible!
  
 <p align="center">
   <img src="t-photos/WROGP.png" alt="Team Echo Drift" width="700"/>
@@ -119,7 +117,7 @@ WRO **Future Engineers** challenges teams to design autonomous electric vehicles
 - Handle lane following, obstacle avoidance, parking, and overtaking  
 - Optimize performance for efficiency and reliability  
 
->  **For 2025, the challenge emphasizes real-world autonomous driving concepts aligned with SDG 11 — Sustainable Cities and Communities.**
+> <span style="color: yellow;">**For 2025, the challenge emphasizes real-world autonomous driving concepts aligned with SDG 11 — Sustainable Cities and Communities.**</span>
 ---
 
 <h2>  Competition Rounds </h2>
