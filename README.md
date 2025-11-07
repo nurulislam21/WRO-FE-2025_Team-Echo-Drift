@@ -233,22 +233,22 @@ Our robot is designed with a balanced mix of mechanical, electrical, and electro
 |-----------|-------|-----|-------|
 | **Arduino Nano** | <img src="Assets/Arduino.jpeg" width="120"> | x1 | Microcontroller for low-level control |
 | **Raspberry Pi 5** | <img src="Assets/Pi 5.jpeg" width="120"> | x1 | Main controller for vision & navigation |
-| **TB6612FNG Motor Driver** | <img src="Assets/Motor Driver.jpeg" width="120"> | x1 | Controls 2 DC motors |
+| **TB6612FNG Motor Driver** | <img src="Assets/Motor Driver.jpeg" width="120"> | x1 | Controls DC motors |
 | **N20 DC Gear Motors (12V)** | <img src="Assets/n20.jpg" width="120"> | x2 | Linked to rear axle |
 | **MG90s Servo** | <img src="Assets/servo.jpg" width="120"> | x1 | Ackermann steering |
-| **HC-SR04 Ultrasonic Sensor** | <img src="Assets/Ultrasonic Sensor.jpeg" width="120"> | x3 | Obstacle detection (front + side) |
+| **HC-SR04 Ultrasonic Sensor** | <img src="Assets/Ultrasonic Sensor.jpeg" width="120"> | x2 | Obstacle detection (front + side) |
 | **IMU MPU6050 Gyroscope** | <img src="images/mpu6050.jpg" width="120"> | x1 | Orientation & stability |
 | **OV5647 Camera Module for Raspberry Pi** | <img src="Assets/Camera.jpg" width="120"> | x1 | Lane & obstacle detection |
 | **Li-Po Battery (3S, 11.1V, 2200mAh)** | <img src="Assets/lipo.jpeg" width="120"> | x1 | Main power source |
-| **XL4015 Step-down Converter** | <img src="Assets/buck.jpeg" width="120"> | x2 | Voltage regulation (5V & 3.3V) |
-| **Prototype PCB Board** | <img src="images/pcb-proto.jpg" width="120"> | x2 | Custom wiring layout |
+| **XL4015 Step-down Converter** | <img src="Assets/buck.jpeg" width="120"> | x1 | Voltage regulation |
+| **Prototype PCB Board** | <img src="images/pcb-proto.jpg" width="120"> | x1 | Custom wiring layout |
 | **Wheels with Rubber Tires** | <img src="images/wheel.jpg" width="120"> | x4 | High grip on track |
 | **3D Printed Chassis Parts** | <img src="images/chassis.jpg" width="120"> | - | Lightweight & modular |
 | **XT60 Connector** | <img src="Assets/xt60.jpeg" width="120"> | x1 |  Main power control |
 | **Start Button** | <img src="Assets/Push-Button.jpg" width="120"> | x1 | Competition start |
 | **Heat Shrink Tubes** | <img src="Assets/heat shrink.jpeg" width="120"> | Pack | Wire insulation |
 | **Screws & Standoffs** | <img src="Assets/screw.jpeg" width="120"> | - | Mounting hardware |
-| **Buzzer** | <img src="Assets/Buzzer.jpeg" width="120"> | x1 | Debugging power |
+| **Buzzer** | <img src="Assets/Buzzer.jpeg" width="120"> | x1 |Line Status Check |
 | **LED Indicators** | <img src="Assets/Led.png" width="120"> | x2 | Status display |
 
 
@@ -277,7 +277,7 @@ Torque Required = Wheel Radius × Force (Load + Friction)
 
 | Drive Motors (N20 with Encoders) | Steering Servo Assembly |
 |----------------------------------|--------------------------|
-| [N20 Motors] <img src="https://github.com/majednaeem/WRO/blob/main/Assets/n20.jpg"> | [Steering Servo] <img src="https://github.com/majednaeem/WRO/blob/main/Assets/n20.jpg"> |
+|<img src="Assets/n20.jpg" width="300"> |<img src="Assets/servo.jpg" width="300"> |
 
 
 ## Hardware Design & Gear System
@@ -291,21 +291,6 @@ The hardware design balances **mechanical precision** with **reliable electronic
 - **Steering:** Ackermann system with MG995 servo for precise control  
 
 <p align="left"> <img src="v-photos/IMG_20250618_162815.jpg" alt="Vehicle Side View" width="500" style="display:inline-block; vertical-align: top; margin-right:10px;"/> <img src="v-photos/Screenshot 2025-03-10 004102.png" alt="SolidWorks Design" width="500" style="display:inline-block; vertical-align: top;"/> </p>
-
-| Component                    | Model / Specification                                          | Purpose |
-| ---------------------------- | -------------------------------------------------------------- | ------- |
-| **Main Controller**          | Raspberry Pi 5 (8 GB)                                          | High-level navigation & vision |
-| **Motor Controller**         | TB6612FNG                                                      | Motor control & braking |
-| **Drive Motors**             | N20 Motor, 12 V                                                | Propulsion & torque |
-| **Steering Servo**           | MG995                                                          | Steering control |
-| **Differential Gear System** | 3D-printed + **herringbone outer gear**                        | Torque distribution |
-| **Sensors**                  | Ultrasonic HC-SR04                                             | Obstacle detection |
-| **Battery**                  | 3S LiPo, 11.1 V 2200 mAh                                       | Power |
-| **Chassis**                  | 3D-printed STL (SolidWorks)                                    | Lightweight & modular |
-| **Gear System**              | Spur gears (15T : 45T)                                         | Torque amplification |
-| **Wheels & Tires**           | Low-grip drift tires                                           | Controlled sliding |
-| **Other**                    | Wiring, fuses, connectors                                      | Reliability |
-
 
 ---
 
