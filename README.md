@@ -34,7 +34,7 @@
 ---
 ## About the Team  
 
-We’re three young innovators from across Bangladesh, brought together by our love for robotics and tech. We first met as solo competitors—sharing ideas, dreams, and soon a vision. That’s how our team was born.
+We’re three young innovators from across Bangladesh, brought together by our love for robotics and tech. We first met as solo competitors sharing ideas, dreams, and soon a vision. That’s how our team was born.
 
 Together, we’ve built trust, worked hard, and won multiple national robotics competitions. Our biggest achievement so far? Winning Silver at the World Robot Olympiad Bangladesh 2025, earning the chance to represent our country on the global stage.
 
@@ -115,12 +115,14 @@ WRO **Future Engineers** challenges teams to design autonomous electric vehicles
 
 - Navigate complex tracks  
 - Handle lane following, obstacle avoidance, parking, and overtaking  
-- Optimize performance for efficiency and reliability  
+- Optimize performance for efficiency and reliability
 
-> <span style="color: yellow;">**For 2025, the challenge emphasizes real-world autonomous driving concepts aligned with SDG 11 — Sustainable Cities and Communities.**</span>
+> ![highlight](https://img.shields.io/badge/For%202025%20the%20challenge%20emphasizes%20real-world%20autonomous%20driving%20concepts%20aligned%20with%20SDG%2011%20%E2%80%94%20Sustainable%20Cities%20and%20Communities.-f5f578?style=flat)
 ---
 
-<h2>  Competition Rounds </h2>
+
+
+<h2> Competition Rounds </h2>
 
 The WRO Future Engineers 2025 competition is divided into **two progressive rounds**. Each round adds new layers of complexity and pushes teams to demonstrate engineering excellence.  
 
