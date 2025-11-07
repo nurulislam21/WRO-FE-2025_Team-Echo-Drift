@@ -145,7 +145,7 @@ The WRO Future Engineers 2025 competition is divided into **two progressive roun
   
 - 🚗 Precise track navigation  
 - ⚡ Real-time obstacle avoidance  
-- 🎯 Controlled drift maneuvers  
+- 🎯 Controlled drift manoeuvres  
 - 🔒 Safe & reliable performance  
 
 🛠️ 3D-printed chassis | 🔌 Smart sensors & drivers | 🧠 Vision & PID control
@@ -231,31 +231,28 @@ Our robot is designed with a balanced mix of mechanical, electrical, and electro
 
 | Component | Image | Qty | Notes |
 |-----------|-------|-----|-------|
-| **Arduino Nano A000005** | <img src="images/arduino-nano.jpg" width="120"> | x1 | Microcontroller for low-level control |
-| **Raspberry Pi 5** | <img src="images/rpi5.jpg" width="120"> | x1 | Main controller for vision & navigation |
-| **TB6612FNG Motor Driver** | <img src="images/tb6612fng.jpg" width="120"> | x1 | Controls 2 DC motors |
-| **L298N Motor Driver (Backup)** | <img src="images/l298n.jpg" width="120"> | x1 | Legacy driver for testing |
-| **DC Gear Motors (12V)** | <img src="images/dc-motor.jpg" width="120"> | x2 | Linked to rear axle |
-| **MG995 Servo** | <img src="images/mg995.jpg" width="120"> | x1 | Ackermann steering |
-| **HC-SR04 Ultrasonic Sensor** | <img src="images/hcsr04.jpg" width="120"> | x3 | Obstacle detection (front + side) |
+| **Arduino Nano** | <img src="Assets/Arduino.jpeg" width="120"> | x1 | Microcontroller for low-level control |
+| **Raspberry Pi 5** | <img src="Assets/Pi 5.jpeg" width="120"> | x1 | Main controller for vision & navigation |
+| **TB6612FNG Motor Driver** | <img src="Assets/Motor Driver.jpeg" width="120"> | x1 | Controls 2 DC motors |
+| **N20 DC Gear Motors (12V)** | <img src="Assets/n20.jpg" width="120"> | x2 | Linked to rear axle |
+| **MG90s Servo** | <img src="Assets/servo.jpg" width="120"> | x1 | Ackermann steering |
+| **HC-SR04 Ultrasonic Sensor** | <img src="Assets/Ultrasonic Sensor.jpeg" width="120"> | x3 | Obstacle detection (front + side) |
 | **IMU MPU6050 Gyroscope** | <img src="images/mpu6050.jpg" width="120"> | x1 | Orientation & stability |
-| **Camera Module (CSI/USB)** | <img src="images/camera.jpg" width="120"> | x1 | Lane & obstacle detection |
+| **OV5647 Camera Module for Raspberry Pi** | <img src="images/camera.jpg" width="120"> | x1 | Lane & obstacle detection |
 | **Neo-6M GPS Module** | <img src="images/gps.jpg" width="120"> | x1 | Outdoor navigation (optional) |
 | **Li-Po Battery (3S, 11.1V, 2200mAh)** | <img src="images/lipo.jpg" width="120"> | x1 | Main power source |
 | **LM2596 Step-down Converter** | <img src="images/lm2596.jpg" width="120"> | x2 | Voltage regulation (5V & 3.3V) |
 | **Prototype PCB Board** | <img src="images/pcb-proto.jpg" width="120"> | x2 | Custom wiring layout |
-| **Breadboard (Mini)** | <img src="images/breadboard.jpg" width="120"> | x1 | Quick prototyping |
 | **Wheels with Rubber Tires** | <img src="images/wheel.jpg" width="120"> | x4 | High grip on track |
 | **3D Printed Chassis Parts** | <img src="images/chassis.jpg" width="120"> | - | Lightweight & modular |
-| **Power Switch** | <img src="images/switch.jpg" width="120"> | x1 | Main power control |
+| **XT60 Connector** | <img src="Assets/xt60.jpeg" width="120"> | x1 |  Main power control |
 | **Start Button** | <img src="images/button.jpg" width="120"> | x1 | Competition start |
 | **Emergency Stop (E-Stop) Switch** | <img src="images/estop.jpg" width="120"> | x1 | Safety cutoff |
 | **Jumper Wires (Male-Female)** | <img src="images/jumpers.jpg" width="120"> | 40+ | Connections |
 | **Heat Shrink Tubes** | <img src="images/heatshrink.jpg" width="120"> | Pack | Wire insulation |
 | **Screws & Standoffs** | <img src="images/screws.jpg" width="120"> | - | Mounting hardware |
-| **Cooling Fan (5V)** | <img src="images/fan.jpg" width="120"> | x1 | Keeps Pi cool |
-| **USB Power Bank (Backup)** | <img src="images/powerbank.jpg" width="120"> | x1 | Debugging power |
-| **LED Indicators (Red/Green)** | <img src="images/led.jpg" width="120"> | x2 | Status display |
+| **Buzzer** | <img src="images/powerbank.jpg" width="120"> | x1 | Debugging power |
+| **LED Indicators ** | <img src="Assets/Led.png" width="120"> | x2 | Status display |
 
 
 ## Mobility Management
