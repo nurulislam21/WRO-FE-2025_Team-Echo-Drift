@@ -114,7 +114,7 @@ Driven by curiosity and creativity, Naeem thrives in collaborative environments 
 WRO **Future Engineers** challenges teams to design autonomous electric vehicles (EVs) that can:  
 
 - Navigate complex tracks  
-- Handle lane following, obstacle avoidance, parking, and overtaking  
+- Handle lane following, obstacle avoidance, and overtaking  
 - Optimize performance for efficiency and reliability
 
 > ![part1](https://img.shields.io/badge/For%202025-555555?style=flat) ![part2](https://img.shields.io/badge/the%20challenge%20emphasizes%20real--world%20autonomous%20driving%20concepts%20aligned%20with%20SDG%2011%20%E2%80%94%20Sustainable%20Cities%20and%20Communities.-f5f578?style=flat)
@@ -160,7 +160,7 @@ The WRO Future Engineers 2025 competition is divided into **two progressive roun
 | *Chassis* | Modular 3D-printed PLA with reinforced mounts |
 | *Motors* | N20 with encoder  |
 | *Motor Driver* | TB6612FNG dual-channel |
-| *Steering* | MG995 Servo |
+| *Steering* | MG90S Servo |
 | *Sensors* | HC-SR04 Ultrasonic × 2, IMU, Camera |
 | *Controller* | Raspberry Pi 5 (8GB) |
 | *Battery* | 3S 11.1V Li-Po, 2200mAh |
@@ -183,11 +183,7 @@ The WRO Future Engineers 2025 competition is divided into **two progressive roun
 
 ## 🎥 Videos of Our Robot  
 
-[![Test Run 1 – Track Navigation](https://img.youtube.com/vi/efOUVDhcxk8/0.jpg)](https://www.youtube.com/watch?v=efOUVDhcxk8)  
-[![Test Run 2 – Obstacle Avoidance](https://img.youtube.com/vi/GM8HPATsVBk/0.jpg)](https://www.youtube.com/watch?v=GM8HPATsVBk)  
- 
-
-
+[![Test Run 1 – Track Navigation](https://img.youtube.com/vi/hIYXWFPvM-o/0.jpg)](https://www.youtube.com/watch?v=hIYXWFPvM-o) 
 
 ---
 
@@ -284,12 +280,18 @@ Torque Required = Wheel Radius × Force (Load + Friction)
 The hardware design balances **mechanical precision** with **reliable electronics**.
 
 **Key features:**
-- **Chassis:** Fully 3D-printed (SolidWorks STL); lightweight yet strong  
-- **Drive System:** N20/BLDC motors + TB6612FNG driver for smooth torque/drift  
-- **Differential Gear:** Custom 3D-printed with **herringbone outer gear**  
-- **Steering:** Ackermann system with MG995 servo for precise control  
+- **Drive System:** N20/BLDC motors + TB6612FNG driver for smooth torque/drift
 
-<p align="left"> <img src="v-photos/IMG_20250618_162815.jpg" alt="Vehicle Side View" width="500" style="display:inline-block; vertical-align: top; margin-right:10px;"/> <img src="v-photos/Screenshot 2025-03-10 004102.png" alt="SolidWorks Design" width="500" style="display:inline-block; vertical-align: top;"/> </p>
+- **Steering:** Parallel steering system with MG90S servo for steering control  
+<img src="v-photos/steering.jpg" alt="Steering" width="500" style="display:inline-block; vertical-align: top;"/>
+
+- **Differential Gear:** Custom 3D-printed with **herringbone outer gear**
+<img src="v-photos/gearbox.jpg" alt="Steering" width="500" style="display:inline-block; vertical-align: top;"/>
+  
+- **Chassis:** Fully 3D-printed (SolidWorks STL); lightweight yet strong
+<img src="v-photos/cad_design_isometric_view.jpeg" alt="SolidWorks Design" width="500" style="display:inline-block; vertical-align: top;"/> 
+<img src="v-photos/isometric_view.jpg" alt="Vehicle Side View" width="500" style="display:inline-block; vertical-align: top;"/> 
+
 
 ---
 
