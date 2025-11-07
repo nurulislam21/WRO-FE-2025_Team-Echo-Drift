@@ -258,7 +258,7 @@ Mobility management defines how the robot moves, steers, and maintains stability
 - **Reason:** Higher speed compared to 300 RPM version. Encoders provide feedback for closed-loop control (speed & distance). Torque margin (~30% extra) ensures reliable acceleration.
 
 #### Steering Servo
-- **Type:** High-torque Servo (~15 kg·cm)  
+- **Type:** High-torque Servo (~1.8 kg·cm)  
 - **Reason:** Quick, precise steering even under load.
 
 #### Engineering Principle
@@ -266,7 +266,7 @@ Torque Required = Wheel Radius × Force (Load + Friction)
 
 -Our calculation showed motor Required torque ≈ **0.9 Nm**  
 - Selected N20 motors rated ≈ **1.2 Nm** → safe margin  
-- Speed doubles from ~1.0 m/s (300 RPM) to ~2.0 m/s (600 RPM) on 65 mm wheels.
+- Speed doubles from ~1.0 m/s (300 RPM) to ~2.0 m/s (600 RPM) on 45 mm wheels.
 
 📂 Encoders connected to Arduino for speed control and stability.
 
@@ -280,7 +280,7 @@ Torque Required = Wheel Radius × Force (Load + Friction)
 The hardware design balances **mechanical precision** with **reliable electronics**.
 
 **Key features:**
-- **Drive System:** N20/BLDC motors + TB6612FNG driver for smooth torque/drift
+- **Drive System:** N20 encoder motor + TB6612FNG driver for smooth torque
 
 - **Steering:** Parallel steering system with MG90S servo for steering control  
 <img src="v-photos/steering.jpg" alt="Steering" width="500" style="display:inline-block; vertical-align: top;"/>
@@ -289,7 +289,7 @@ The hardware design balances **mechanical precision** with **reliable electronic
 <img src="v-photos/gearbox.jpg" alt="Steering" width="500" style="display:inline-block; vertical-align: top;"/>
   
 - **Chassis:** Fully 3D-printed (SolidWorks STL); lightweight yet strong
-<img src="v-photos/cad_design_isometric_view.jpeg" alt="SolidWorks Design" width="500" style="display:inline-block; vertical-align: top;"/> 
+<img alt="SolidWorks Design" width="500" style="display:inline-block; vertical-align: top;" src="https://github.com/user-attachments/assets/2654091d-9e7f-4d39-88c8-5cd7c34ee622" />
 <img src="v-photos/isometric_view.jpg" alt="Vehicle Side View" width="500" style="display:inline-block; vertical-align: top;"/> 
 
 
@@ -301,8 +301,8 @@ Our software is modular, optimized for **real-time autonomous control**.
 
 - **Sensor Module:** Collects & processes sensor data  
 - **Control Module:** PID motor & steering control  
-- **Navigation Module:** Path planning, drift logic, obstacle avoidance  
-- **Vision Module:** (optional) AI with OpenCV  
+- **Navigation Module:** Path planning, obstacle avoidance  
+- **Vision Module:** (optional) Image processing with OpenCV  
 - **Main Loop:** Integrates all modules in real time  
 
 <!-- <p align="center">
