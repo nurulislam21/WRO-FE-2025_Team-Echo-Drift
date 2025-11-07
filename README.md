@@ -129,8 +129,8 @@ The WRO Future Engineers 2025 competition is divided into **two progressive roun
 
 | Round | Description | Key Tasks | Track Layout |
 |:------|:-----------:|:----------|:-------------|
-| **Round 1 – Endurance Lap** | Focuses on **reliability and lap consistency**. The robot must complete **3 laps** without error while maintaining smooth navigation. Judges emphasize **stability, accuracy, and precise lane following**. | - 🎯 Focus on **stability, accuracy, and smooth lane following**  <br> - 🏁 Complete **3 full laps** without error  <br> ⏱️ Time-based scoring adds pressure   | <img src="https://github.com/majednaeem/WRO/blob/main/Assets/Round%201.png" width="400" align="top" align="right">|
-| **Round 2 – Smart Navigation + Parking** | Introduces **real-time intelligence**. After completing laps, the robot must avoid **color-coded obstacles** and then park in a **designated zone**.| - 🟩 **Green obstacle → move left**  <br> - 🟥 **Red obstacle → move right**  <br> - 🏎️ Maintain speed while **avoiding collisions**   <br> -- 🅿️ Finish with **precision parking** inside a marked box  |<img src="https://github.com/majednaeem/WRO/blob/main/Assets/Round%202.png" width="400" align="top" align="left">   |
+| **Round 1 – Endurance Lap** | Focuses on **reliability and lap consistency**. The robot must complete **3 laps** without error while maintaining smooth navigation. Judges emphasize **stability, accuracy, and precise lane following**. | - Focus on **stability, accuracy, and smooth lane following**  <br> - Complete **3 full laps** without error | <img src="https://github.com/majednaeem/WRO/blob/main/Assets/Round%201.png" width="400" align="top" align="right">|
+| **Round 2 – Smart Navigation + Parking** | Introduces **real-time intelligence**. After completing laps, the robot must avoid **color-coded obstacles** and then park in a **designated zone**.| - 🟩 **Green obstacle → move left**  <br> - **🟥 Red obstacle → move right**  <br> -  Maintain speed while **avoiding collisions**   <br> - Finish with **precision parking** inside a marked box  |<img src="https://github.com/majednaeem/WRO/blob/main/Assets/Round%202.png" width="400" align="top" align="left">   |
 
 
 > **Both rounds are aligned with the [official WRO 2025 Future Engineers Rules (PDF)](https://wro-association.org/wp-content/uploads/WRO-2025-Future-Engineers-Self-Driving-Cars-General-Rules.pdf).**
@@ -143,10 +143,9 @@ The WRO Future Engineers 2025 competition is divided into **two progressive roun
 ### Robot Overview  
 **Echo Drift** brings a **next-generation autonomous EV** to WRO 2025, built for speed, accuracy, and adaptability.
   
-- 🚗 Precise track navigation  
-- ⚡ Real-time obstacle avoidance  
-- 🎯 Controlled drift manoeuvres  
-- 🔒 Safe & reliable performance  
+- Precise track navigation  
+- Real-time obstacle avoidance  
+- Controlled drift manoeuvres
 
 🛠️ 3D-printed chassis | 🔌 Smart sensors & drivers | 🧠 Vision & PID control
 
