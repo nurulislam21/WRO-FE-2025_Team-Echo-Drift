@@ -90,7 +90,9 @@ obstacle_wall_pivot = (None, None)
 color_ranges = {}
 try:
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    with open(os.path.join(script_dir, "color_ranges.json"), "r") as f:
+    tools_dir = os.path.join(script_dir, "..", "tools")
+    tools_dir = os.path.abspath(tools_dir)
+    with open(os.path.join(tools_dir, "color_ranges.json"), "r") as f:
         color_ranges = json.load(f)
 except FileNotFoundError:
     print("Color ranges file not found. Using default values.")
@@ -242,9 +244,10 @@ def main():
     picam2.configure(config)
     # load camera settings from file
     try:
-        script_path = os.path.abspath(__file__)
-        script_dir = os.path.dirname(script_path)
-        with open(os.path.join(script_dir, "camera_settings.json"), "r") as f:
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        tools_dir = os.path.join(script_dir, "..", "tools")
+        tools_dir = os.path.abspath(tools_dir)
+        with open(os.path.join(tools_dir, "camera_settings.json"), "r") as f:
             settings = json.load(f)
             picam2.set_controls(settings)
             print("Loaded camera settings from file.")
