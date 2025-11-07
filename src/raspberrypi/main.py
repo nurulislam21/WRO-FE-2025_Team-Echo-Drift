@@ -1,3 +1,5 @@
+import os
+import json
 import sys
 import time
 import serial
@@ -231,8 +233,9 @@ def main():
     picam2.configure(config)
     # load camera settings from file
     try:
-        with open("camera_settings.json", "r") as f:
-            import json
+        script_path = os.path.abspath(__file__)
+        script_dir = os.path.dirname(script_path)
+        with open(os.path.join(script_dir, "camera_settings.json"), "r") as f:            
             settings = json.load(f)
             picam2.set_controls(settings)
             print("Loaded camera settings from file.")

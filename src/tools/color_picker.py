@@ -129,8 +129,19 @@ def main():
             # Display results
             cv2.imshow("Original", frame)
             cv2.imshow("Mask (LAB)", mask)
-            cv2.imshow("Masked Result", masked_result)
-            cv2.imshow("Colored Mask", colored_mask)
+            # cv2.imshow("Masked Result", masked_result)
+            # cv2.imshow("Colored Mask", colored_mask)
+
+
+            # mask HSV as well
+            mask_hsv = cv2.inRange(hsv_img, lower_bound_hsv, upper_bound_hsv)
+            masked_result_hsv = cv2.bitwise_and(frame, frame, mask=mask_hsv)
+            colored_mask_hsv = cv2.applyColorMap(mask_hsv, cv2.COLORMAP_JET)
+            cv2.putText(masked_result_hsv, f"FPS: {fps:.2f}", (10, 30),
+                        cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+            cv2.putText(colored_mask_hsv, f"FPS: {fps:.2f}", (10, 30),
+                        cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+            cv2.imshow("Mask (HSV)", mask_hsv)
 
             # Remove color selection callback
             cv2.setMouseCallback("Original", lambda *args: None)

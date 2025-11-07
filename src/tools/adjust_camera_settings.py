@@ -445,14 +445,14 @@ class CameraController:
             }
 
             # write to settings.json
-
-            # write in tools directory
-            with open("camera_settings.json", "w") as f:
-                json.dump(settings, f, indent=4)
-            
-            # write in raspberry directory
             script_path = os.path.abspath(__file__)
             script_dir = os.path.dirname(script_path)
+
+            # write in tools directory
+            with open(os.path.join(script_dir, "camera_settings.json"), "w") as f:
+                json.dump(settings, f, indent=4)
+            
+            # write in raspberry directory            
             data_dir = os.path.join(script_dir, "..", "raspberrypi")
             data_dir = os.path.abspath(data_dir)
 
