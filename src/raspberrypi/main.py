@@ -52,10 +52,10 @@ TOTAL_INTERSECTIONS = 12
 
 # Region of Interest coordinates
 LEFT_REGION = (
-    [20, 95, 270, 170] if MODE == "NO_OBSTACLE" else [0, 220, 250, 280]
+    [0, 110, 230, 150] if MODE == "NO_OBSTACLE" else [0, 220, 250, 280]
 )  # left
 RIGHT_REGION = (
-    [370, 95, 620, 170] if MODE == "NO_OBSTACLE" else [390, 220, 640, 280]
+    [390, 110, 640, 150] if MODE == "NO_OBSTACLE" else [390, 220, 640, 280]
 )  # right
 LAP_REGION = [225, 295, 415, 350]  # lap detection
 OBS_REGION = [85, 180, 555, 335]  # obstacle detection
@@ -244,7 +244,7 @@ def main():
     try:
         script_path = os.path.abspath(__file__)
         script_dir = os.path.dirname(script_path)
-        with open(os.path.join(script_dir, "camera_settings.json"), "r") as f:            
+        with open(os.path.join(script_dir, "camera_settings.json"), "r") as f:
             settings = json.load(f)
             picam2.set_controls(settings)
             print("Loaded camera settings from file.")
