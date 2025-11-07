@@ -86,30 +86,39 @@ OBSTACLE_DETECTOR_Y = OBS_REGION[3] - OBS_REGION[1]
 obstacle_wall_pivot = (None, None)
 
 # Color ranges
-LOWER_BLACK = np.array([9, 97, 115])
-UPPER_BLACK = np.array([69, 137, 155])
+# Load color ranges from file
+color_ranges = {}
+try:
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    with open(os.path.join(script_dir, "color_ranges.json"), "r") as f:
+        color_ranges = json.load(f)
+except FileNotFoundError:
+    print("Color ranges file not found. Using default values.")
 
-LOWER_ORANGE = np.array([59, 110, 72])
-UPPER_ORANGE = np.array([119, 150, 112])
+LOWER_BLACK = np.array(color_ranges["LOWER_BLACK"])
+UPPER_BLACK = np.array(color_ranges["UPPER_BLACK"])
 
-LOWER_BLUE = np.array([30, 123, 141])
-UPPER_BLUE = np.array([90, 163, 181])
+LOWER_ORANGE = np.array(color_ranges["LOWER_ORANGE"])
+UPPER_ORANGE = np.array(color_ranges["UPPER_ORANGE"])
+
+LOWER_BLUE = np.array(color_ranges["LOWER_BLUE"])
+UPPER_BLUE = np.array(color_ranges["UPPER_BLUE"])
 
 # obstacle color ranges LAB
-LOWER_RED = np.array([55, 138, 58])
-UPPER_RED = np.array([115, 178, 98])
+LOWER_RED = np.array(color_ranges["LOWER_RED"])
+UPPER_RED = np.array(color_ranges["UPPER_RED"])
 
 # reverse_black
-LOWER_REVERSE_BLACK = np.array([0, 95, 138])
-UPPER_REVERSE_BLACK = np.array([88, 135, 178])
+LOWER_REVERSE_BLACK = LOWER_BLACK
+UPPER_REVERSE_BLACK = UPPER_BLACK
 
 # LAB
-LOWER_GREEN = np.array([70, 79, 151])
-UPPER_GREEN = np.array([136, 119, 191])
+LOWER_GREEN = np.array(color_ranges["LOWER_GREEN"])
+UPPER_GREEN = np.array(color_ranges["UPPER_GREEN"])
 
 # parking color ranges
-LOWER_MAGENTA = np.array([87, 123, 48])
-UPPER_MAGENTA = np.array([147, 163, 88])
+LOWER_MAGENTA = np.array(color_ranges["LOWER_MAGENTA"])
+UPPER_MAGENTA = np.array(color_ranges["UPPER_MAGENTA"])
 
 
 contour_workers = ContourWorkers(

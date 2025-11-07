@@ -1,0 +1,19 @@
+{
+    "LOWER_BLACK": [9, 97, 115],
+    "UPPER_BLACK": [69, 137, 155],
+
+    "LOWER_ORANGE": [59, 110, 72],
+    "UPPER_ORANGE": [119, 150, 112],
+
+    "LOWER_BLUE": [30, 123, 141],
+    "UPPER_BLUE": [90, 163, 181],
+
+    "LOWER_RED": [55, 138, 58],
+    "UPPER_RED": [115, 178, 98],    
+    
+    "LOWER_GREEN": [70, 79, 151],
+    "UPPER_GREEN": [136, 119, 191],
+    
+    "LOWER_MAGENTA": [87, 123, 48],
+    "UPPER_MAGENTA": [147, 163, 88]
+}
