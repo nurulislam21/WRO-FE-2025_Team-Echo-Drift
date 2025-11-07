@@ -43,8 +43,8 @@ CAM_WIDTH = 640
 CAM_HEIGHT = 480
 # CAM_WIDTH = 800
 # CAM_HEIGHT = 600
-MAX_SPEED = 60 if MODE == "OBSTACLE" else 67
-MIN_SPEED = 50 if MODE == "OBSTACLE" else 50
+MAX_SPEED = 60 if MODE == "OBSTACLE" else 70
+MIN_SPEED = 50 if MODE == "OBSTACLE" else 60
 
 # Intersections
 TOTAL_INTERSECTIONS = 12
@@ -52,14 +52,14 @@ TOTAL_INTERSECTIONS = 12
 
 # Region of Interest coordinates
 LEFT_REGION = (
-    [0, 110, 230, 150] if MODE == "NO_OBSTACLE" else [0, 220, 250, 280]
+    [0, 190, 230, 240] if MODE == "NO_OBSTACLE" else [0, 220, 250, 280]
 )  # left
 RIGHT_REGION = (
-    [390, 110, 640, 150] if MODE == "NO_OBSTACLE" else [390, 220, 640, 280]
+    [390, 190, 640, 240] if MODE == "NO_OBSTACLE" else [390, 220, 640, 280]
 )  # right
-LAP_REGION = [225, 295, 415, 350]  # lap detection
-OBS_REGION = [85, 180, 555, 335]  # obstacle detection
-REVERSE_REGION = [233, 300, 407, 320]  # reverse trigger area
+LAP_REGION = [215, 260, 415, 305]  # lap detection
+OBS_REGION = [85, 140, 555, 295]  # obstacle detection
+REVERSE_REGION = [233, 260, 407, 280]  # reverse trigger area
 FRONT_WALL_REGION = [300, 195, 340, 215]  # front wall detection
 PARKING_LOT_REGION = [0, 185, CAM_WIDTH, 400]  # parking lot detection
 # DANGER_ZONE_POINTS = [175, OBS_REGION[1], 465, OBS_REGION[3]]  # area to check for obstacles
