@@ -7,7 +7,6 @@ ITG3200 gyro;
 
 // Integration & counting
 double totalAngle = 0.0;      // continuous integrated angle in degrees (can grow + or -)
-double z_offset = 0.0;        // library zeroCalibrate sets internal offsets, but keep local if needed
 unsigned long lastTime = 0;
 
 // Lap/step counting
