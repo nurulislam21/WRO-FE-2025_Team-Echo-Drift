@@ -18,6 +18,113 @@ color_ranges = {}
 color_name = ""
 
 
+# Trackbar callback (does nothing but required by OpenCV)
+def nothing(x):
+    pass
+
+
+def save_color_ranges():
+    """Save current color ranges to JSON files"""
+    global color_ranges, color_name, lower_bound, upper_bound, lower_bound_hsv, upper_bound_hsv
+
+    # Update color_ranges dictionary
+    color_upper = color_name.upper()
+    color_ranges[f"LOWER_{color_upper}"] = lower_bound.tolist()
+    color_ranges[f"UPPER_{color_upper}"] = upper_bound.tolist()
+    color_ranges[f"LOWER_{color_upper}_HSV"] = lower_bound_hsv.tolist()
+    color_ranges[f"UPPER_{color_upper}_HSV"] = upper_bound_hsv.tolist()
+
+    # Save to current directory
+    script_path = os.path.abspath(__file__)
+    script_dir = os.path.dirname(script_path)
+    with open(os.path.join(script_dir, "color_ranges.json"), "w") as f:
+        json.dump(color_ranges, f, indent=4)
+
+    # Save to raspberrypi directory
+    raspberrypi_dir = os.path.join(script_dir, "..", "raspberrypi")
+    raspberrypi_dir = os.path.abspath(raspberrypi_dir)
+    with open(os.path.join(raspberrypi_dir, "color_ranges.json"), "w") as f:
+        json.dump(color_ranges, f, indent=4)
+
+    print(f"Color ranges saved: LAB {lower_bound.tolist()} - {upper_bound.tolist()}")
+    print(
+        f"                   HSV {lower_bound_hsv.tolist()} - {upper_bound_hsv.tolist()}"
+    )
+
+
+def create_slider_window():
+    """Create window with sliders for adjusting color ranges"""
+    cv2.namedWindow("Color Range Adjustment")
+
+    # LAB sliders
+    cv2.createTrackbar(
+        "L Min", "Color Range Adjustment", int(lower_bound[0]), 255, nothing
+    )
+    cv2.createTrackbar(
+        "L Max", "Color Range Adjustment", int(upper_bound[0]), 255, nothing
+    )
+    cv2.createTrackbar(
+        "A Min", "Color Range Adjustment", int(lower_bound[1]), 255, nothing
+    )
+    cv2.createTrackbar(
+        "A Max", "Color Range Adjustment", int(upper_bound[1]), 255, nothing
+    )
+    cv2.createTrackbar(
+        "B Min", "Color Range Adjustment", int(lower_bound[2]), 255, nothing
+    )
+    cv2.createTrackbar(
+        "B Max", "Color Range Adjustment", int(upper_bound[2]), 255, nothing
+    )
+
+    # HSV sliders
+    cv2.createTrackbar(
+        "H Min", "Color Range Adjustment", int(lower_bound_hsv[0]), 179, nothing
+    )
+    cv2.createTrackbar(
+        "H Max", "Color Range Adjustment", int(upper_bound_hsv[0]), 179, nothing
+    )
+    cv2.createTrackbar(
+        "S Min", "Color Range Adjustment", int(lower_bound_hsv[1]), 255, nothing
+    )
+    cv2.createTrackbar(
+        "S Max", "Color Range Adjustment", int(upper_bound_hsv[1]), 255, nothing
+    )
+    cv2.createTrackbar(
+        "V Min", "Color Range Adjustment", int(lower_bound_hsv[2]), 255, nothing
+    )
+    cv2.createTrackbar(
+        "V Max", "Color Range Adjustment", int(upper_bound_hsv[2]), 255, nothing
+    )
+
+
+def update_ranges_from_sliders():
+    """Read slider values and update global bounds"""
+    global lower_bound, upper_bound, lower_bound_hsv, upper_bound_hsv
+
+    # Read LAB values
+    l_max = cv2.getTrackbarPos("L Max", "Color Range Adjustment")
+    a_max = cv2.getTrackbarPos("A Max", "Color Range Adjustment")
+    b_max = cv2.getTrackbarPos("B Max", "Color Range Adjustment")
+
+    l_min = cv2.getTrackbarPos("L Min", "Color Range Adjustment")
+    a_min = cv2.getTrackbarPos("A Min", "Color Range Adjustment")
+    b_min = cv2.getTrackbarPos("B Min", "Color Range Adjustment")
+
+    lower_bound = np.array([l_min, a_min, b_min])
+    upper_bound = np.array([l_max, a_max, b_max])
+
+    # Read HSV values
+    h_max = cv2.getTrackbarPos("H Max", "Color Range Adjustment")
+    s_max = cv2.getTrackbarPos("S Max", "Color Range Adjustment")
+    v_max = cv2.getTrackbarPos("V Max", "Color Range Adjustment")
+
+    h_min = cv2.getTrackbarPos("H Min", "Color Range Adjustment")
+    s_min = cv2.getTrackbarPos("S Min", "Color Range Adjustment")
+    v_min = cv2.getTrackbarPos("V Min", "Color Range Adjustment")
+
+    lower_bound_hsv = np.array([h_min, s_min, v_min])
+    upper_bound_hsv = np.array([h_max, s_max, v_max])
+
 
 # Mouse callback function
 def pick_color(event, x, y, flags, param):
@@ -64,67 +171,27 @@ def pick_color(event, x, y, flags, param):
         print(f"HSV Lower: {lower_bound_hsv.tolist()}")
         print(f"HSV Upper: {upper_bound_hsv.tolist()}")
 
-        print("Color selected! Starting video masking...")
+        print("Color selected! Starting video masking with sliders...")
         color_selected = True
 
-        # store to color_ranges.json
-        global color_ranges
-        if color_name == "red":
-            color_ranges["LOWER_RED"] = lower_bound.tolist()
-            color_ranges["UPPER_RED"] = upper_bound.tolist()
-            color_ranges["LOWER_RED_HSV"] = lower_bound_hsv.tolist()
-            color_ranges["UPPER_RED_HSV"] = upper_bound_hsv.tolist()
-        elif color_name == "green":
-            color_ranges["LOWER_GREEN"] = lower_bound.tolist()
-            color_ranges["UPPER_GREEN"] = upper_bound.tolist()
-            color_ranges["LOWER_GREEN_HSV"] = lower_bound_hsv.tolist()
-            color_ranges["UPPER_GREEN_HSV"] = upper_bound_hsv.tolist()
-        elif color_name == "blue":
-            color_ranges["LOWER_BLUE"] = lower_bound.tolist()
-            color_ranges["UPPER_BLUE"] = upper_bound.tolist()
-            color_ranges["LOWER_BLUE_HSV"] = lower_bound_hsv.tolist()
-            color_ranges["UPPER_BLUE_HSV"] = upper_bound_hsv.tolist()
-        elif color_name == "orange":
-            color_ranges["LOWER_ORANGE"] = lower_bound.tolist()
-            color_ranges["UPPER_ORANGE"] = upper_bound.tolist()
-            color_ranges["LOWER_ORANGE_HSV"] = lower_bound_hsv.tolist()
-            color_ranges["UPPER_ORANGE_HSV"] = upper_bound_hsv.tolist()
-        elif color_name == "magenta":
-            color_ranges["LOWER_MAGENTA"] = lower_bound.tolist()
-            color_ranges["UPPER_MAGENTA"] = upper_bound.tolist()
-            color_ranges["LOWER_MAGENTA_HSV"] = lower_bound_hsv.tolist()
-            color_ranges["UPPER_MAGENTA_HSV"] = upper_bound_hsv.tolist()
-        elif color_name == "black":
-            color_ranges["LOWER_BLACK"] = lower_bound.tolist()
-            color_ranges["UPPER_BLACK"] = upper_bound.tolist()
-            color_ranges["LOWER_BLACK_HSV"] = lower_bound_hsv.tolist()
-            color_ranges["UPPER_BLACK_HSV"] = upper_bound_hsv.tolist()
-        
-        # write to color_ranges.json
-        script_path = os.path.abspath(__file__)
-        script_dir = os.path.dirname(script_path)
-        with open(os.path.join(script_dir, "color_ranges.json"), "w") as f:
-            json.dump(color_ranges, f, indent=4)
-        
+        # Save initial selection
+        save_color_ranges()
 
-        # now write in raspberrypi directory as well
-        raspberrypi_dir = os.path.join(script_dir, "..", "raspberrypi")
-        raspberrypi_dir = os.path.abspath(raspberrypi_dir)
-        with open(os.path.join(raspberrypi_dir, "color_ranges.json"), "w") as f:
-            json.dump(color_ranges, f, indent=4)
-
-        print(f"Color ranges saved to {os.path.join(script_dir, 'color_ranges.json')} and {os.path.join(raspberrypi_dir, 'color_ranges.json')}")    
+        # Create slider window
+        create_slider_window()
 
 
-def main(color_name):
-    if color_name.lower() not in ["red", "green", "blue", "orange", "magenta", "black"]:
+def main(color_name_input):
+    global color_name, lab_img, hsv_img
+    global color_selected, lower_bound, upper_bound, color_ranges
+
+    color_name = color_name_input.lower()
+
+    if color_name not in ["red", "green", "blue", "orange", "magenta", "black"]:
         print(
             "Invalid color name. Choose from: red, green, blue, orange, magenta, black"
         )
         return
-
-    global lab_img, hsv_img
-    global color_selected, lower_bound, upper_bound    
 
     # Initialize Raspberry Pi Camera
     picam2 = Picamera2()
@@ -136,19 +203,16 @@ def main(color_name):
     # load camera settings from file
     try:
         with open("camera_settings.json", "r") as f:
-            import json
-
             settings = json.load(f)
             picam2.set_controls(settings)
             print("Loaded camera settings from file.")
     except FileNotFoundError:
-        # Default settings if no file found
         print("No camera settings file found. Using default settings.")
         return
 
     picam2.start()
     print("Starting Pi Camera. Click on a color to select it for masking...")
-    print("Press 'r' to reset color selection, 'q' to quit")
+    print("Press 's' to save current ranges, 'r' to reset color selection, 'q' to quit")
 
     # FPS calculation variables
     prev_time = time.time()
@@ -187,7 +251,10 @@ def main(color_name):
             cv2.imshow("Pi Camera - Click to select color", frame)
             cv2.setMouseCallback("Pi Camera - Click to select color", pick_color)
         else:
-            # Video masking mode (LAB mask by default)
+            # Update ranges from sliders
+            update_ranges_from_sliders()
+
+            # Video masking mode (LAB mask)
             mask = cv2.inRange(lab_img, lower_bound, upper_bound)
 
             # Apply morphological operations
@@ -197,7 +264,6 @@ def main(color_name):
 
             # Create masked result
             masked_result = cv2.bitwise_and(frame, frame, mask=mask)
-            colored_mask = cv2.applyColorMap(mask, cv2.COLORMAP_JET)
 
             # Overlay FPS
             cv2.putText(
@@ -209,37 +275,16 @@ def main(color_name):
                 (0, 255, 0),
                 2,
             )
-            cv2.putText(
-                colored_mask,
-                f"FPS: {fps:.2f}",
-                (10, 30),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                1,
-                (0, 255, 0),
-                2,
-            )
 
             # Display results
             cv2.imshow("Original", frame)
             cv2.imshow("Mask (LAB)", mask)
-            # cv2.imshow("Masked Result", masked_result)
-            # cv2.imshow("Colored Mask", colored_mask)
 
-            # mask HSV as well
+            # HSV mask
             mask_hsv = cv2.inRange(hsv_img, lower_bound_hsv, upper_bound_hsv)
             masked_result_hsv = cv2.bitwise_and(frame, frame, mask=mask_hsv)
-            colored_mask_hsv = cv2.applyColorMap(mask_hsv, cv2.COLORMAP_JET)
             cv2.putText(
                 masked_result_hsv,
-                f"FPS: {fps:.2f}",
-                (10, 30),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                1,
-                (0, 255, 0),
-                2,
-            )
-            cv2.putText(
-                colored_mask_hsv,
                 f"FPS: {fps:.2f}",
                 (10, 30),
                 cv2.FONT_HERSHEY_SIMPLEX,
@@ -256,6 +301,10 @@ def main(color_name):
 
         if key == ord("q"):
             break
+        elif key == ord("s") and color_selected:
+            # Save current ranges
+            save_color_ranges()
+            print("Ranges saved!")
         elif key == ord("r"):
             # Reset color selection
             color_selected = False
@@ -271,13 +320,17 @@ def main(color_name):
 
 
 if __name__ == "__main__":
-    # get color name from cli args
     import sys
-    # load color mapping json file
+
+    # Load color mapping json file
     script_path = os.path.abspath(__file__)
     script_dir = os.path.dirname(script_path)
-    with open(os.path.join(script_dir, "color_ranges.json"), "r") as f:
-        color_ranges = json.load(f)
+    try:
+        with open(os.path.join(script_dir, "color_ranges.json"), "r") as f:
+            color_ranges = json.load(f)
+    except FileNotFoundError:
+        color_ranges = {}
+        print("No existing color_ranges.json found. Will create new file.")
 
     if len(sys.argv) != 2:
         print("Usage: python color_picker.py <color_name>")

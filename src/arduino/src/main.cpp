@@ -43,6 +43,9 @@ const float FILTER_ALPHA = 0.3f;
 float gz_filtered = 0.0f;
 const float MIN_RATE_DPS = 3.0f;
 
+long long lastPrintTime = 0;
+unsigned long printInterval = 200; // Print every 200 ms
+
 void setup()
 {
     Serial.begin(115200);
@@ -146,11 +149,17 @@ void loop()
 
         // Integrate angle
         totalAngle += (double)gz_use * dt;
-
-        // print Steps,totalAngle
-        Serial.println(String(getEncoder()) + String(",") + String(totalAngle));
-        // ------- End gyro code -------
     }
+
+    // print Steps,totalAngle
+    if (millis() - lastPrintTime > printInterval)
+    {
+        lastPrintTime = millis();
+        Serial.print(getEncoder());
+        Serial.print(",");
+        Serial.println(totalAngle, 2);
+    }
+    // ------- End gyro code -------
 
     // Timeout logic: no data received recently
     if (millis() - lastReceivedTime > timeout)
