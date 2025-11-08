@@ -118,6 +118,7 @@ WRO **Future Engineers** challenges teams to design autonomous electric vehicles
 - Optimize performance for efficiency and reliability
 
 > ![part1](https://img.shields.io/badge/For%202025-555555?style=flat) ![part2](https://img.shields.io/badge/the%20challenge%20emphasizes%20real--world%20autonomous%20driving%20concepts%20aligned%20with%20SDG%2011%20%E2%80%94%20Sustainable%20Cities%20and%20Communities.-f5f578?style=flat)
+
 ---
 
 
@@ -184,6 +185,8 @@ The WRO Future Engineers 2025 competition is divided into **two progressive roun
 ## 🎥 Videos of Our Robot  
 
 [![Test Run 1 – Track Navigation](https://img.youtube.com/vi/hIYXWFPvM-o/0.jpg)](https://www.youtube.com/watch?v=hIYXWFPvM-o) 
+
+[![Test Run 2 – Track Navigation, Object avoidance & Parking out](https://img.youtube.com/vi/Nrufbg69Ze8/0.jpg)]([https://www.youtube.com/watch?v=hIYXWFPvM-o](https://www.youtube.com/watch?v=Nrufbg69Ze8) 
 
 ---
 
