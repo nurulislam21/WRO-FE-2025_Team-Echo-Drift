@@ -30,7 +30,7 @@ if camera:
         # Default settings if no file found
         print("No camera settings file found. Using default settings.")
         sys.exit(1)
-  
+
     picam2.start()
 
 # --- Control variables ---
