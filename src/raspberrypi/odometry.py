@@ -135,6 +135,18 @@ class OdometryVisualizer:
         plt.ioff()
         plt.close()
 
+def clamp_angle(totalAngle, threshold=5):
+    """Clamp totalAngle to nearest multiple of 90 if within the threshold."""
+    # Find the nearest multiple of 90
+    nearest = round(totalAngle / 90) * 90
+    
+    # If the difference is within the threshold, return the clamped value
+    if abs(totalAngle - nearest) <= threshold:
+        return nearest
+    
+    # Otherwise return original
+    return totalAngle
+
 
 def main():
     """Main function to run odometry tracking simulation."""
