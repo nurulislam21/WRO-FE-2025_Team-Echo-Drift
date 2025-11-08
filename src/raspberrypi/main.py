@@ -330,7 +330,7 @@ def main():
                         continue
             
             # draw odometry
-            if (time.time() - last_odometry_time) >= 0.2 and (abs(gyro_ticks - prev_gyro_ticks) > 1000):
+            if (time.time() - last_odometry_time) >= 0.2 and (abs(gyro_ticks - prev_gyro_ticks) > 500):
                 gyro_angle = clamp_angle(gyro_angle, threshold=20)
                 # Update odometry tracker         
                 tracker.update(gyro_ticks, gyro_angle)
