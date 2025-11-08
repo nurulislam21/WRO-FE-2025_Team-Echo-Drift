@@ -38,7 +38,7 @@ BUZZER_PIN = 4
 print("DEBUG MODE" if DEBUG else "PRODUCTION")
 
 # Simulated camera settings
-MODE = "NO_OBSTACLE"  # "NO_OBSTACLE" or "OBSTACLE"
+MODE = "OBSTACLE"  # "NO_OBSTACLE" or "OBSTACLE"
 CAM_WIDTH = 640
 CAM_HEIGHT = 480
 # CAM_WIDTH = 800
@@ -52,13 +52,13 @@ TOTAL_INTERSECTIONS = 12
 
 # Region of Interest coordinates
 LEFT_REGION = (
-    [0, 190, 230, 240] if MODE == "NO_OBSTACLE" else [0, 220, 250, 280]
+    [0, 190, 230, 240] if MODE == "NO_OBSTACLE" else [0, 190, 230, 240]
 )  # left
 RIGHT_REGION = (
-    [390, 190, 640, 240] if MODE == "NO_OBSTACLE" else [390, 220, 640, 280]
+    [390, 190, 640, 240] if MODE == "NO_OBSTACLE" else [390, 190, 640, 240]
 )  # right
 LAP_REGION = [215, 260, 415, 305]  # lap detection
-OBS_REGION = [85, 140, 555, 295]  # obstacle detection
+OBS_REGION = [85, 125, 555, 280]  # obstacle detection
 REVERSE_REGION = [233, 260, 407, 280]  # reverse trigger area
 FRONT_WALL_REGION = [300, 195, 340, 215]  # front wall detection
 PARKING_LOT_REGION = [0, 185, CAM_WIDTH, 400]  # parking lot detection
@@ -303,6 +303,9 @@ def main():
                 print(f"Arduino: {line}")
                 if line == "START":
                     startProcessing = True
+
+            if arduino.in_waiting > 0:
+                print(f"Arduino: {arduino.readline().decode('utf-8').rstrip()}")
 
             # Capture frame
             frame = picam2.capture_array()

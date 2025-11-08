@@ -121,9 +121,9 @@ def update_from_keyboard():
     
     # Speed control (forward/backward)
     if "Up" in keys_pressed:
-        speed = 80  # forward
+        speed = 60  # forward
     elif "Down" in keys_pressed:
-        speed = -80  # backward
+        speed = -60  # backward
     else:
         speed = 0
     

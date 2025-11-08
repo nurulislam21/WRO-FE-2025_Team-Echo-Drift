@@ -87,9 +87,9 @@ def find_color_signal_box(frame, lower_color, upper_color, roi, consider_area=30
             continue  # Skip small contours
         x, y, w, h = cv2.boundingRect(cnt)
         detected_boxes.append((x, y, w, h))  # Adjust coordinates to original frame
-    
+
     return boxes_to_contours(detected_boxes)
-    
+
 
 
 def find_contours(frame, lower_color, upper_color, roi, direction=None, use_convex_hull=False, consider_area=None, blur=7):
@@ -184,14 +184,14 @@ def display_debug_screen(
     obstacle_wall_pivot,
     parking_mode,
     parking_lot_region,
-    parking_result,    
+    parking_result,
 ):
     debug_frame = frame.copy()
     debug_frame = display_roi(debug_frame, [LEFT_REGION, RIGHT_REGION, LAP_REGION, OBS_REGION, REVERSE_REGION], (255, 0, 255))
 
     # if show_front_wall:
     debug_frame = display_roi(debug_frame, [FRONT_WALL_REGION], (0, 255, 255))
-        
+
     if parking_mode:
         debug_frame = display_roi(debug_frame, [parking_lot_region], (0, 255, 0))
 
@@ -210,7 +210,7 @@ def display_debug_screen(
         (CAM_WIDTH // 2, CAM_HEIGHT),
         (255, 0, 0),
         1,
-    )  # blue line in the center    
+    )  # blue line in the center
 
     # draw danger zone
     if mode == "OBSTACLE":
@@ -264,7 +264,7 @@ def display_debug_screen(
             debug_frame[OBS_REGION[1] : OBS_REGION[3], OBS_REGION[0] : OBS_REGION[2]],
             red_result.contours,
             -1,
-            (0, 0, 255),
+            (0, 255, 255),
             2,
         )
 
@@ -276,7 +276,7 @@ def display_debug_screen(
             (255, 0, 0),
             2,
         )
-    
+
     if front_wall_result.contours:
         cv2.drawContours(
             debug_frame[FRONT_WALL_REGION[1] : FRONT_WALL_REGION[3], FRONT_WALL_REGION[0] : FRONT_WALL_REGION[2]],
