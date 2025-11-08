@@ -1,3 +1,4 @@
+
 import sys
 import serial
 import cv2
@@ -16,10 +17,20 @@ if camera:
     from picamera2 import Picamera2
 
     picam2 = Picamera2()
-    config = picam2.create_preview_configuration(
-        main={"format": "RGB888", "size": (640, 480)}
-    )
-    picam2.configure(config)    
+    config = picam2.create_preview_configuration(main={"format": "RGB888", "size": (640, 480)})
+    picam2.configure(config)
+    # load camera settings from file
+    try:
+        with open("camera_settings.json", "r") as f:
+            import json
+            settings = json.load(f)
+            picam2.set_controls(settings)
+            print("Loaded camera settings from file.")
+    except FileNotFoundError:
+        # Default settings if no file found
+        print("No camera settings file found. Using default settings.")
+        sys.exit(1)
+  
     picam2.start()
 
 # --- Control variables ---
@@ -27,9 +38,19 @@ speed = 0
 angle = 95  # default straight
 keyboard_active = False  # track if keyboard is controlling
 
+# --- Debounce variables (only for Up/Down) ---
+DEBOUNCE_TIME = 300  # milliseconds to wait before applying key release
+release_timers = {}  # track pending release timers for Up/Down keys
+
 # --- Tkinter GUI ---
 root = tk.Tk()
 root.title("Car Controller")
+
+# --- Set window position ---
+# Change these values to position the window where you want
+window_x = 100  # X coordinate (distance from left edge of screen)
+window_y = 100  # Y coordinate (distance from top edge of screen)
+root.geometry(f"+{window_x}+{window_y}")
 
 lbl_status = tk.Label(root, text="Speed: 0 | Angle: 95", font=("Arial", 14))
 lbl_status.pack(pady=10)
@@ -100,38 +121,72 @@ keys_pressed = set()
 def on_key_press(event):
     global speed, angle, keyboard_active
     keyboard_active = True
+    
+    # Cancel any pending release timer for this key (only for Up/Down)
+    if event.keysym in ["Up", "Down"] and event.keysym in release_timers:
+        root.after_cancel(release_timers[event.keysym])
+        del release_timers[event.keysym]
+    
     keys_pressed.add(event.keysym)
     update_from_keyboard()
 
 def on_key_release(event):
     global speed, angle, keyboard_active
-    if event.keysym in keys_pressed:
-        keys_pressed.remove(event.keysym)
-    update_from_keyboard()
     
-    # if no keys pressed, reset to neutral
-    if not keys_pressed:
-        keyboard_active = False
-        speed = 0
-        angle = 95
-        reset_knob()
+    # Debounce logic ONLY for Up/Down keys
+    if event.keysym in ["Up", "Down"]:
+        # Schedule a delayed release
+        def apply_release():
+            if event.keysym in keys_pressed:
+                keys_pressed.remove(event.keysym)
+            if event.keysym in release_timers:
+                del release_timers[event.keysym]
+            update_from_keyboard()
+            
+            # if no keys pressed, reset to neutral
+            if not keys_pressed:
+                keyboard_active = False
+                speed = 0
+                angle = 95
+                reset_knob()
+        
+        # Cancel existing timer if any
+        if event.keysym in release_timers:
+            root.after_cancel(release_timers[event.keysym])
+        
+        # Schedule the release after debounce time
+        timer_id = root.after(DEBOUNCE_TIME, apply_release)
+        release_timers[event.keysym] = timer_id
+    
+    else:
+        # Immediate release for Left/Right keys (no debounce)
+        if event.keysym in keys_pressed:
+            keys_pressed.remove(event.keysym)
+        update_from_keyboard()
+        
+        # if no keys pressed, reset to neutral
+        if not keys_pressed:
+            keyboard_active = False
+            speed = 0
+            angle = 95
+            reset_knob()
 
 def update_from_keyboard():
     global speed, angle
     
-    # Speed control (forward/backward)
+    # Speed control (forward/backward) - independent of turning
     if "Up" in keys_pressed:
-        speed = 60  # forward
+        speed = 45  # forward
     elif "Down" in keys_pressed:
-        speed = -60  # backward
+        speed = -45  # backward
     else:
         speed = 0
     
-    # Angle control (left/right)
+    # Angle control (left/right) - independent of speed
     if "Left" in keys_pressed:
-        angle = 30  # turn left
+        angle = 35  # turn left
     elif "Right" in keys_pressed:
-        angle = 160  # turn right
+        angle = 155  # turn right
     else:
         angle = 95  # straight
     
@@ -175,6 +230,12 @@ if camera:
 
 # Start sending commands in a separate thread
 Thread(target=send_command, daemon=True).start()
+
+# --- Force focus on the GUI window ---
+root.lift()  # Bring window to front
+root.attributes('-topmost', True)  # Make it stay on top temporarily
+root.after(100, lambda: root.attributes('-topmost', False))  # Remove topmost after 100ms
+root.focus_force()  # Force keyboard focus
 
 # Run GUI
 try:

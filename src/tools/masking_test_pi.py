@@ -98,7 +98,7 @@ def main():
         print("No camera settings file found. Using default settings.")
         return
 
-    picam2.start()    
+    picam2.start()
 
     roi = (100, 100, 540, 380)  # (x1, y1, x2, y2)
 
