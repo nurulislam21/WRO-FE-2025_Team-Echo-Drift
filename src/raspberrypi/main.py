@@ -24,6 +24,7 @@ from simple_pid import PID
 import copy
 import RPi.GPIO as GPIO
 from odometry import OdometryTracker, OdometryVisualizer, clamp_angle
+import math
 
 # debug flag parsing
 debug_flag = sys.argv[1] == "--debug" if len(sys.argv) > 1 else ""
@@ -38,7 +39,7 @@ BUZZER_PIN = 4
 print("DEBUG MODE" if DEBUG else "PRODUCTION")
 
 # Simulated camera settings
-MODE = "OBSTACLE"  # "NO_OBSTACLE" or "OBSTACLE"
+MODE = "NO_OBSTACLE"  # "NO_OBSTACLE" or "OBSTACLE"
 CAM_WIDTH = 640
 CAM_HEIGHT = 480
 # CAM_WIDTH = 800
@@ -219,11 +220,23 @@ parking = Parking(
 parking.has_parked_out = False
 
 
+# Odometry
+# init odometry tracker and visualizer
+tracker = OdometryTracker(wheel_radius=0.046, ticks_per_rev=2100, gear_ratio=1.0)
+visualizer = OdometryVisualizer(title='Odometry Path (Single Encoder + Gyro)')
+
+gyro_ticks = 0
+gyro_angle = 0.0
+prev_gyro_ticks = 0
+prev_gyro_angle = 0.0
+last_odometry_time = time.time()
+
 # Threading variables - separate queues for each detection task
 def main():
     global stopFlag, stopTime, speed, trigger_reverse, reverse_angle, last_reverse_end_time
     global current_intersections, intersection_detected, intersection_crossing_start
     global startProcessing, obstacle_wall_pivot, reverse_start_time
+    global gyro_ticks, gyro_angle, prev_gyro_ticks, prev_gyro_angle, last_odometry_time
 
     # parking_walls = []
     # parking_walls_count = 0
@@ -298,14 +311,39 @@ def main():
     try:
         while True:
             # dont start until start button pressed
-            if not startProcessing and arduino.in_waiting > 0:
+            if arduino.in_waiting > 0:
                 line = arduino.readline().decode("utf-8").rstrip()
                 print(f"Arduino: {line}")
-                if line == "START":
+                if not startProcessing and line == "START":
                     startProcessing = True
+                
+                else:
+                    # Get gyro data and encoder ticks
+                    parts = line.split(',')
+                    if len(parts) != 2:
+                        continue
+                    try:
+                        gyro_ticks = -int(parts[0])
+                        gyro_angle = float(parts[1])
+                        print(f"Ticks: {gyro_ticks}, Gyro Angle: {gyro_angle}")
+                    except ValueError:
+                        continue
+            
+            # draw odometry
+            if (time.time() - last_odometry_time) >= 0.2 and (abs(gyro_ticks - prev_gyro_ticks) > 1000):
+                gyro_angle = clamp_angle(gyro_angle, threshold=20)
+                # Update odometry tracker         
+                tracker.update(gyro_ticks, gyro_angle)
+                # Get current position
+                x, y, theta = tracker.get_position()
+                print(f"Position: x={x:.3f}m, y={y:.3f}m, θ={math.degrees(theta):.1f}°")     
+                # Update visualization
+                visualizer.update_plot(tracker.get_position_history())                
 
-            if arduino.in_waiting > 0:
-                print(f"Arduino: {arduino.readline().decode('utf-8').rstrip()}")
+                # Update previous values
+                prev_gyro_ticks = gyro_ticks
+                prev_gyro_angle = gyro_angle
+                last_odometry_time = time.time()
 
             # Capture frame
             frame = picam2.capture_array()
