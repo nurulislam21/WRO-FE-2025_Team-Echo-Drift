@@ -44,8 +44,8 @@ CAM_WIDTH = 640
 CAM_HEIGHT = 480
 # CAM_WIDTH = 800
 # CAM_HEIGHT = 600
-MAX_SPEED = 60 if MODE == "OBSTACLE" else 70
-MIN_SPEED = 50 if MODE == "OBSTACLE" else 60
+MAX_SPEED = 60 if MODE == "OBSTACLE" else 100
+MIN_SPEED = 50 if MODE == "OBSTACLE" else 70
 
 # Intersections
 TOTAL_INTERSECTIONS = 12
@@ -335,15 +335,22 @@ def main():
                 # Update odometry tracker         
                 tracker.update(gyro_ticks, gyro_angle)
                 # Get current position
-                x, y, theta = tracker.get_position()
-                print(f"Position: x={x:.3f}m, y={y:.3f}m, θ={math.degrees(theta):.1f}°")     
+                x, y, theta = tracker.get_position()                
                 # Update visualization
-                visualizer.update_plot(tracker.get_position_history())                
-
+                visualizer.update_plot(tracker.get_position_history())
                 # Update previous values
                 prev_gyro_ticks = gyro_ticks
                 prev_gyro_angle = gyro_angle
                 last_odometry_time = time.time()
+
+                # TODO: Check line crossing based on odometry
+                # distance_from_initial_point = math.sqrt(
+                #     (tracker.get_position_history()[0][0] - x) ** 2 + (tracker.get_position_history()[0][1] - y) ** 2
+                # )
+
+                current_intersections = round(abs(gyro_angle) / 90)
+                print(f"Position: x={x:.3f}m, y={y:.3f}m, θ={math.degrees(theta):.1f}° | Intersections: {current_intersections}")
+                
 
             # Capture frame
             frame = picam2.capture_array()
@@ -837,52 +844,52 @@ def main():
 
             # intersection detection
             # work here
-            if not intersection_detected:
-                if (
-                    (orange_result.contours and orange_area > 80)
-                    or (blue_result.contours and blue_area > 80)
-                ) and (
-                    # ignore laps if just reversed recently for 1.4 second
-                    reverse_start_time + reverse_duration + 1.4
-                    < time.time()
-                ):
-                    intersection_detected = True
-                    intersection_crossing_start = int(time.time())
-                    current_intersections += 1
+            # if not intersection_detected:
+            #     if (
+            #         (orange_result.contours and orange_area > 80)
+            #         or (blue_result.contours and blue_area > 80)
+            #     ) and (
+            #         # ignore laps if just reversed recently for 1.4 second
+            #         reverse_start_time + reverse_duration + 1.4
+            #         < time.time()
+            #     ):
+            #         intersection_detected = True
+            #         intersection_crossing_start = int(time.time())
+            #         current_intersections += 1
 
-                    # start a thread to buzz for 0.3s
-                    threading.Thread(
-                        target=lambda: (
-                            GPIO.output(BUZZER_PIN, GPIO.HIGH),
-                            time.sleep(0.3),
-                            GPIO.output(BUZZER_PIN, GPIO.LOW),
-                        ),
-                        daemon=True,
-                    ).start()
+            #         # start a thread to buzz for 0.3s
+            #         threading.Thread(
+            #             target=lambda: (
+            #                 GPIO.output(BUZZER_PIN, GPIO.HIGH),
+            #                 time.sleep(0.3),
+            #                 GPIO.output(BUZZER_PIN, GPIO.LOW),
+            #             ),
+            #             daemon=True,
+            #         ).start()
 
-                    print(
-                        f"Intersection detected! Count: {current_intersections}/{TOTAL_INTERSECTIONS}"
-                    )
-            else:
-                if (
-                    int(time.time()) - intersection_crossing_start
-                    > intersection_crossing_duration
-                ):
-                    intersection_detected = False
-                    print("Intersection crossing ended.")
-                else:
-                    if (orange_result.contours and orange_area > 80) or (
-                        blue_result.contours and blue_area > 80
-                    ):
-                        # keep latest time to avoid multiple increments
-                        intersection_crossing_start = int(time.time())
+            #         print(
+            #             f"Intersection detected! Count: {current_intersections}/{TOTAL_INTERSECTIONS}"
+            #         )
+            # else:
+            #     if (
+            #         int(time.time()) - intersection_crossing_start
+            #         > intersection_crossing_duration
+            #     ):
+            #         intersection_detected = False
+            #         print("Intersection crossing ended.")
+            #     else:
+            #         if (orange_result.contours and orange_area > 80) or (
+            #             blue_result.contours and blue_area > 80
+            #         ):
+            #             # keep latest time to avoid multiple increments
+            #             intersection_crossing_start = int(time.time())
 
             # Stopping logic
             if (
                 # contour_workers.mode == "NO_OBSTACLE"
                 # and
                 stopFlag
-                and (int(time.time()) - stopTime) > stop_timer
+                # and (int(time.time()) - stopTime) > stop_timer
             ):
                 print("Lap completed!")
                 arduino.write(f"-5,-1,{angle}\n".encode())

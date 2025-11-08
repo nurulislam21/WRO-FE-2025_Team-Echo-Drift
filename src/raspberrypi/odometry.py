@@ -83,13 +83,15 @@ class OdometryTracker:
         """
         return (self.x, self.y, self.theta)
     
-    def get_position_history(self) -> List[Tuple[float, float]]:
+    def get_position_history(self, index=None) -> List[Tuple[float, float]]:
         """
         Get complete position history.
         
         Returns:
             List of (x, y) tuples
         """
+        if index is not None:
+            return self.positions[index]
         return self.positions.copy()
 
 
