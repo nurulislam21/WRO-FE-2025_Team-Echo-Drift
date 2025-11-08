@@ -7,7 +7,6 @@ ITG3200 gyro;
 
 // Integration & counting
 double totalAngle = 0.0; // continuous integrated angle in degrees (can grow + or -)
-double z_offset = 0.0;   // library zeroCalibrate sets internal offsets, but keep local if needed
 unsigned long lastTime = 0;
 
 // Lap/step counting
@@ -47,7 +46,26 @@ int servoMaxRight = 170;
 void motor(int speedPercent);
 void sw();
 void updateEncoder();
-void moveEncoder(int speed, long steps);
+void moveEncoder(int speed, long int steps);
+
+double clampAngle(double totalAngle, double threshold = 10.0) {
+    // Find the nearest multiple of 90
+    double nearest = round(totalAngle / 90.0) * 90.0;
+
+    Serial.print("Clamping check: totalAngle=");
+    Serial.print(totalAngle);
+    Serial.print(", nearest=");
+    Serial.print(nearest);
+
+    // If the difference is within the threshold, return the clamped value
+    if (abs(totalAngle - nearest) <= threshold) {
+        return nearest;
+    }
+
+    // Otherwise, return the original angle
+    return totalAngle;
+}
+
 void setup()
 {
   Serial.begin(115200);
@@ -165,6 +183,11 @@ void loop()
     totalAngle += (double)gz_use * dt;
 
     // Determine integer revolution count
+    // totalAngle = clampAngle(totalAngle);
+    Serial.print("Clamped Angle: ");
+    Serial.println(clampAngle(totalAngle));
+    Serial.print("Total Angle: ");
+    Serial.println(totalAngle);
     long currRevs = (long)floor(totalAngle / 360.0);
 
     // If revolutions changed since last update, update lapCount by the delta.
@@ -206,11 +229,13 @@ void loop()
     Serial.print(totalAngle, 2);
     Serial.print(" °  |  laps: ");
     Serial.println(lapCount);
-    if (lapCount >= 3 || lapCount >= -4)
+    if ((lapCount > 0 && abs(lapCount) >= 3) || (lapCount < 0 && abs(lapCount) >= 4))
     {
-      while (true)
-      {
-      }
+      Serial.println("Completed 3 laps — stopping.");
+      motor(0);
+      // while (true)
+      // {
+      // }
     }
   }
 
