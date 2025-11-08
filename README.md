@@ -184,9 +184,9 @@ The WRO Future Engineers 2025 competition is divided into **two progressive roun
 
 ## 🎥 Videos of Our Robot  
 
-[![Test Run 1 – Track Navigation](https://img.youtube.com/vi/hIYXWFPvM-o/0.jpg)](https://www.youtube.com/watch?v=hIYXWFPvM-o) 
+[![Test Run 1 – Track Navigation](https://img.youtube.com/vi/hIYXWFPvM-o/0.jpg)](https://www.youtube.com/watch?v=hIYXWFPvM-o)
 
-[![Test Run 2 – Track Navigation, Object avoidance & Parking out](https://img.youtube.com/vi/Nrufbg69Ze8/0.jpg)]([https://www.youtube.com/watch?v=hIYXWFPvM-o](https://www.youtube.com/watch?v=Nrufbg69Ze8) 
+[![Test Run 2 – Track Navigation, Object avoidance & Parking out](https://img.youtube.com/vi/Nrufbg69Ze8/0.jpg)](https://www.youtube.com/watch?v=Nrufbg69Ze8)
 
 ---
 
