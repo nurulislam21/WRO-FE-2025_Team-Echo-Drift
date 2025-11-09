@@ -1,5 +1,8 @@
 # Team Echo Drift — WRO Future Engineers 2025
-<img src="https://github.com/majednaeem/WRO/blob/main/Assets/github%20cover.gif" alt="About Me GIF" width="1021" height="300">
+<picture>
+  <source srcset="https://github.com/majednaeem/WRO/blob/main/Assets/github%20cover.gif">
+  <img src="" alt="Loading Echo Drift Cover Banner..." width="1021" height="300">
+</picture>
 
 
 ![WRO Future Engineers](https://img.shields.io/badge/WRO-Future_Engineers-orange?style=for-the-badge)
