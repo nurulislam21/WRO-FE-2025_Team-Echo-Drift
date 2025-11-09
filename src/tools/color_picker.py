@@ -22,11 +22,6 @@ def on_trackbar_change(x):
     update_color_ranges_from_trackbars()
     save_color_ranges()
 
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-=======
->>>>>>> ecab43be (Force update color_picker.py)
 # Function to save color ranges to file
 def save_color_ranges():
     global color_ranges, color_name
@@ -174,10 +169,6 @@ def create_trackbars():
     cv2.createTrackbar('H Max', 'Controls', h_max, 179, on_trackbar_change)
     cv2.createTrackbar('S Max', 'Controls', s_max, 255, on_trackbar_change)
     cv2.createTrackbar('V Max', 'Controls', v_max, 255, on_trackbar_change)
-<<<<<<< HEAD
-=======
->>>>>>> 2615af56 (color picker GUI updated)
->>>>>>> ecab43be (Force update color_picker.py)
 
 # Mouse callback function
 def pick_color(event, x, y, flags, param):
@@ -225,22 +216,6 @@ def pick_color(event, x, y, flags, param):
         print(f"HSV Upper: {upper_bound_hsv.tolist()}")
 
         print("Color selected! Starting video masking...")
-<<<<<<< HEAD
-        print("Adjust trackbars in 'Controls' window to fine-tune ranges")
-        print("Changes auto-save in real-time")
-=======
-<<<<<<< HEAD
->>>>>>> ecab43be (Force update color_picker.py)
-        color_selected = True
-        
-        # Create trackbar window first
-        create_trackbars()
-        
-        # Then update and save
-        update_color_ranges_from_trackbars()
-        save_color_ranges()
-
-=======
         print("Adjust trackbars in 'Controls' window to fine-tune ranges")
         print("Changes auto-save in real-time")
         color_selected = True
@@ -252,7 +227,17 @@ def pick_color(event, x, y, flags, param):
         update_color_ranges_from_trackbars()
         save_color_ranges()
 
->>>>>>> 2615af56 (color picker GUI updated)
+        print("Adjust trackbars in 'Controls' window to fine-tune ranges")
+        print("Changes auto-save in real-time")
+        color_selected = True
+        
+        # Create trackbar window first
+        create_trackbars()
+        
+        # Then update and save
+        update_color_ranges_from_trackbars()
+        save_color_ranges()
+
 def main(color_name):
     if color_name.lower() not in ["red", "green", "blue", "orange", "magenta", "black"]:
         print(
@@ -286,14 +271,7 @@ def main(color_name):
     picam2.start()
     print("Starting Pi Camera. Click on a color to select it for masking...")
     print("Press 'r' to reset color selection, 'q' to quit")
-<<<<<<< HEAD
     print("Note: Trackbar changes auto-save in real-time")
-=======
-<<<<<<< HEAD
-=======
-    print("Note: Trackbar changes auto-save in real-time")
->>>>>>> 2615af56 (color picker GUI updated)
->>>>>>> ecab43be (Force update color_picker.py)
 
     # FPS calculation variables
     prev_time = time.time()
@@ -332,17 +310,13 @@ def main(color_name):
             cv2.imshow("Pi Camera - Click to select color", cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
             cv2.setMouseCallback("Pi Camera - Click to select color", pick_color)
         else:
-<<<<<<< HEAD
             # Update bounds from trackbars
             update_color_ranges_from_trackbars()
             
             # Video masking mode (LAB mask)
             mask_lab = cv2.inRange(lab_img, lower_bound, upper_bound)
-=======
-<<<<<<< HEAD
             # Video masking mode (LAB mask by default)
             mask = cv2.inRange(lab_img, lower_bound, upper_bound)
->>>>>>> ecab43be (Force update color_picker.py)
 
             # Apply morphological operations
             kernel = np.ones((2, 2), np.uint8)
@@ -374,15 +348,14 @@ def main(color_name):
             masks_display = np.hstack([mask_lab_bgr, mask_hsv_bgr])
 
             # Display results
-<<<<<<< HEAD
             cv2.imshow("Pi Camera - RGB", frame_rgb)
             cv2.imshow("Masks", masks_display)
-=======
+
             cv2.imshow("Original", frame)
             cv2.imshow("Mask (LAB)", mask)
             # cv2.imshow("Masked Result", masked_result)
             # cv2.imshow("Colored Mask", colored_mask)
-=======
+
             # Update bounds from trackbars
             update_color_ranges_from_trackbars()
             
@@ -393,11 +366,9 @@ def main(color_name):
             kernel = np.ones((2, 2), np.uint8)
             mask_lab = cv2.morphologyEx(mask_lab, cv2.MORPH_CLOSE, kernel)
             mask_lab = cv2.morphologyEx(mask_lab, cv2.MORPH_OPEN, kernel)
->>>>>>> 2615af56 (color picker GUI updated)
 
             # mask HSV as well
             mask_hsv = cv2.inRange(hsv_img, lower_bound_hsv, upper_bound_hsv)
-<<<<<<< HEAD
             masked_result_hsv = cv2.bitwise_and(frame, frame, mask=mask_hsv)
             colored_mask_hsv = cv2.applyColorMap(mask_hsv, cv2.COLORMAP_JET)
             cv2.putText(
@@ -419,7 +390,6 @@ def main(color_name):
                 2,
             )
             cv2.imshow("Mask (HSV)", mask_hsv)
-=======
             mask_hsv = cv2.morphologyEx(mask_hsv, cv2.MORPH_CLOSE, kernel)
             mask_hsv = cv2.morphologyEx(mask_hsv, cv2.MORPH_OPEN, kernel)
             
@@ -445,8 +415,6 @@ def main(color_name):
             # Display results
             cv2.imshow("Pi Camera - RGB", frame_rgb)
             cv2.imshow("Masks", masks_display)
->>>>>>> 2615af56 (color picker GUI updated)
->>>>>>> ecab43be (Force update color_picker.py)
 
             # Remove color selection callback
             cv2.setMouseCallback("Pi Camera - RGB", lambda *args: None)

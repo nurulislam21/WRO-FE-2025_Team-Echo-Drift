@@ -1,4 +1,8 @@
-from img_processing_functions import find_contours, max_contour_area, find_color_signal_box
+from img_processing_functions import (
+    find_contours,
+    max_contour_area,
+    find_color_signal_box,
+)
 import threading
 from queue import Queue, Empty
 import cv2
@@ -247,7 +251,8 @@ class ContourWorkers:
                         self.LEFT_REGION,
                         direction="left",
                         use_convex_hull=False,
-                        consider_area=9000,
+                        consider_area=1000,
+                        method="HSV",
                     )
                     magenta_area, _ = max_contour_area(contours)
 
@@ -296,6 +301,7 @@ class ContourWorkers:
                         direction="right",
                         use_convex_hull=True,
                         consider_area=1000,
+                        method="HSV",
                     )
                     magenta_area, _ = max_contour_area(contours)
 
@@ -324,7 +330,11 @@ class ContourWorkers:
             try:
                 frame = self.frame_queue_orange.get(timeout=0.1)
                 contours = find_contours(
-                    frame, self.LOWER_ORANGE, self.UPPER_ORANGE, self.LAP_REGION, use_convex_hull=True
+                    frame,
+                    self.LOWER_ORANGE,
+                    self.UPPER_ORANGE,
+                    self.LAP_REGION,
+                    use_convex_hull=True,
                 )
                 area, _ = max_contour_area(contours)
                 result = ContourResult(area, contours)
@@ -351,7 +361,10 @@ class ContourWorkers:
             try:
                 frame = self.frame_queue_blue.get(timeout=0.1)
                 contours = find_contours(
-                    frame, self.LOWER_BLUE, self.UPPER_BLUE, self.LAP_REGION
+                    frame,
+                    self.LOWER_BLUE,
+                    self.UPPER_BLUE,
+                    self.LAP_REGION,
                 )
                 area, _ = max_contour_area(contours)
                 result = ContourResult(area, contours)
@@ -378,7 +391,13 @@ class ContourWorkers:
             try:
                 frame = self.frame_queue_green.get(timeout=0.1)
                 contours = find_contours(
-                    frame, self.LOWER_GREEN, self.UPPER_GREEN, self.OBS_REGION, consider_area=900, blur=3
+                    frame,
+                    self.LOWER_GREEN,
+                    self.UPPER_GREEN,
+                    self.OBS_REGION,
+                    consider_area=900,
+                    blur=3,
+                    method="HSV",
                 )
                 area, _ = max_contour_area(contours)
                 result = ContourResult(area, contours, "green_pillar")
@@ -405,7 +424,13 @@ class ContourWorkers:
             try:
                 frame = self.frame_queue_red.get(timeout=0.1)
                 contours = find_contours(
-                    frame, self.LOWER_RED, self.UPPER_RED, self.OBS_REGION, consider_area=900, blur=3
+                    frame,
+                    self.LOWER_RED,
+                    self.UPPER_RED,
+                    self.OBS_REGION,
+                    consider_area=900,
+                    blur=3,
+                    method="HSV",
                 )
                 area, _ = max_contour_area(contours)
                 result = ContourResult(area, contours, "red_pillar")
@@ -466,7 +491,10 @@ class ContourWorkers:
                 # reverse region processing
                 frame = self.frame_queue_reverse.get(timeout=0.1)
                 contours = find_contours(
-                    frame, self.LOWER_REVERSE_BLACK, self.UPPER_REVERSE_BLACK, self.REVERSE_REGION
+                    frame,
+                    self.LOWER_REVERSE_BLACK,
+                    self.UPPER_REVERSE_BLACK,
+                    self.REVERSE_REGION,
                 )
                 area, _ = max_contour_area(contours)
                 result = ContourResult(area, contours, "reverse_trigger")
@@ -485,7 +513,11 @@ class ContourWorkers:
                 # front wall region processing
                 frame_fw = self.frame_queue_front_wall.get(timeout=0.1)
                 contours_fw = find_contours(
-                    frame_fw, self.LOWER_BLACK, self.UPPER_BLACK, self.FRONT_WALL_REGION, use_convex_hull=True
+                    frame_fw,
+                    self.LOWER_BLACK,
+                    self.UPPER_BLACK,
+                    self.FRONT_WALL_REGION,
+                    use_convex_hull=True,
                 )
                 area_fw, _ = max_contour_area(contours_fw)
                 result_fw = ContourResult(area_fw, contours_fw, "front_wall_trigger")

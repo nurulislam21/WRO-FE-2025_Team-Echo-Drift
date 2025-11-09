@@ -108,20 +108,20 @@ LOWER_BLUE = np.array(color_ranges["LOWER_BLUE"])
 UPPER_BLUE = np.array(color_ranges["UPPER_BLUE"])
 
 # obstacle color ranges LAB
-LOWER_RED = np.array(color_ranges["LOWER_RED"])
-UPPER_RED = np.array(color_ranges["UPPER_RED"])
+LOWER_RED = np.array(color_ranges["LOWER_RED_HSV"])
+UPPER_RED = np.array(color_ranges["UPPER_RED_HSV"])
 
 # reverse_black
 LOWER_REVERSE_BLACK = LOWER_BLACK
 UPPER_REVERSE_BLACK = UPPER_BLACK
 
 # LAB
-LOWER_GREEN = np.array(color_ranges["LOWER_GREEN"])
-UPPER_GREEN = np.array(color_ranges["UPPER_GREEN"])
+LOWER_GREEN = np.array(color_ranges["LOWER_GREEN_HSV"])
+UPPER_GREEN = np.array(color_ranges["UPPER_GREEN_HSV"])
 
 # parking color ranges
-LOWER_MAGENTA = np.array(color_ranges["LOWER_MAGENTA"])
-UPPER_MAGENTA = np.array(color_ranges["UPPER_MAGENTA"])
+LOWER_MAGENTA = np.array(color_ranges["LOWER_MAGENTA_HSV"])
+UPPER_MAGENTA = np.array(color_ranges["UPPER_MAGENTA_HSV"])
 
 
 contour_workers = ContourWorkers(

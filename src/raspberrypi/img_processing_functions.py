@@ -21,15 +21,23 @@ def check_overlap(region, contours):
     """
 
     # Convert region into a rectangle contour
-    rect_pts = np.array([
-        [region[0], region[1]],  # top-left
-        [region[2], region[1]],  # top-right
-        [region[2], region[3]],  # bottom-right
-        [region[0], region[3]],  # bottom-left
-    ]).reshape((-1, 1, 2)).astype(np.int32)
+    rect_pts = (
+        np.array(
+            [
+                [region[0], region[1]],  # top-left
+                [region[2], region[1]],  # top-right
+                [region[2], region[3]],  # bottom-right
+                [region[0], region[3]],  # bottom-left
+            ]
+        )
+        .reshape((-1, 1, 2))
+        .astype(np.int32)
+    )
 
     for cnt in contours:
-        area, _ = cv2.intersectConvexConvex(cnt.astype(np.float32), rect_pts.astype(np.float32))
+        area, _ = cv2.intersectConvexConvex(
+            cnt.astype(np.float32), rect_pts.astype(np.float32)
+        )
         if area > 0:  # overlap detected
             return True
 
@@ -50,6 +58,7 @@ def transform_danger_zone_xshift(points, steering_angle, sensitivity=2):
     #     transformed.append({"x1": x1_new, "y1": y1, "x2": x2, "y2": y2})
     return transformed
 
+
 def create_mask(hsv, lower_limit, upper_limit, kernel):
     """Creates a mask with given HSV limits and applies morphological operations using a precomputed kernel."""
     mask = cv2.inRange(hsv, lower_limit, upper_limit)
@@ -57,15 +66,13 @@ def create_mask(hsv, lower_limit, upper_limit, kernel):
     mask = cv2.erode(mask, kernel, iterations=2)
     return mask
 
+
 def boxes_to_contours(boxes):
     contours = []
-    for (x, y, w, h) in boxes:
-        contour = np.array([
-            [[x, y]],
-            [[x + w, y]],
-            [[x + w, y + h]],
-            [[x, y + h]]
-        ], dtype=np.int32)
+    for x, y, w, h in boxes:
+        contour = np.array(
+            [[[x, y]], [[x + w, y]], [[x + w, y + h]], [[x, y + h]]], dtype=np.int32
+        )
         contours.append(contour)
     return contours
 
@@ -91,11 +98,24 @@ def find_color_signal_box(frame, lower_color, upper_color, roi, consider_area=30
     return boxes_to_contours(detected_boxes)
 
 
-
-def find_contours(frame, lower_color, upper_color, roi, direction=None, use_convex_hull=False, consider_area=None, blur=7):
+def find_contours(
+    frame,
+    lower_color,
+    upper_color,
+    roi,
+    direction=None,
+    use_convex_hull=False,
+    consider_area=None,
+    blur=7,
+    method="LAB",
+):
     x1, y1, x2, y2 = roi
     roi_frame = frame[y1:y2, x1:x2]
-    labImg = cv2.cvtColor(roi_frame, cv2.COLOR_RGB2Lab)
+
+    if method == "LAB":
+        img = cv2.cvtColor(roi_frame, cv2.COLOR_RGB2Lab)        
+    else:
+        img = cv2.cvtColor(roi_frame, cv2.COLOR_RGB2HSV)
 
     # lighting normalization
     # l, a, b = cv2.split(labImg)
@@ -104,7 +124,7 @@ def find_contours(frame, lower_color, upper_color, roi, direction=None, use_conv
     # labImg = cv2.merge((l,a,b))
 
     # blur and mask
-    img_blur = cv2.medianBlur(labImg, blur)
+    img_blur = cv2.medianBlur(img, blur)
     # img_blur = cv2.bilateralFilter(labImg, d=7, sigmaColor=75, sigmaSpace=75)
     mask = cv2.inRange(img_blur, lower_color, upper_color)
     kernel = np.ones((13, 13), np.uint8)
@@ -187,7 +207,11 @@ def display_debug_screen(
     parking_result,
 ):
     debug_frame = frame.copy()
-    debug_frame = display_roi(debug_frame, [LEFT_REGION, RIGHT_REGION, LAP_REGION, OBS_REGION, REVERSE_REGION], (255, 0, 255))
+    debug_frame = display_roi(
+        debug_frame,
+        [LEFT_REGION, RIGHT_REGION, LAP_REGION, OBS_REGION, REVERSE_REGION],
+        (255, 0, 255),
+    )
 
     # if show_front_wall:
     debug_frame = display_roi(debug_frame, [FRONT_WALL_REGION], (0, 255, 255))
@@ -214,13 +238,27 @@ def display_debug_screen(
 
     # draw danger zone
     if mode == "OBSTACLE":
-        cv2.line(debug_frame, (DANGER_ZONE_POINTS[0]["x1"], DANGER_ZONE_POINTS[0]["y1"]), (DANGER_ZONE_POINTS[0]["x2"], DANGER_ZONE_POINTS[0]["y2"]), (0, 0, 255), 2)
-        cv2.line(debug_frame, (DANGER_ZONE_POINTS[1]["x1"], DANGER_ZONE_POINTS[1]["y1"]), (DANGER_ZONE_POINTS[1]["x2"], DANGER_ZONE_POINTS[1]["y2"]), (0, 0, 255), 2)
+        cv2.line(
+            debug_frame,
+            (DANGER_ZONE_POINTS[0]["x1"], DANGER_ZONE_POINTS[0]["y1"]),
+            (DANGER_ZONE_POINTS[0]["x2"], DANGER_ZONE_POINTS[0]["y2"]),
+            (0, 0, 255),
+            2,
+        )
+        cv2.line(
+            debug_frame,
+            (DANGER_ZONE_POINTS[1]["x1"], DANGER_ZONE_POINTS[1]["y1"]),
+            (DANGER_ZONE_POINTS[1]["x2"], DANGER_ZONE_POINTS[1]["y2"]),
+            (0, 0, 255),
+            2,
+        )
 
     # Draw contours using the latest results
     if left_result.contours:
         cv2.drawContours(
-            debug_frame[LEFT_REGION[1] : LEFT_REGION[3], LEFT_REGION[0] : LEFT_REGION[2]],
+            debug_frame[
+                LEFT_REGION[1] : LEFT_REGION[3], LEFT_REGION[0] : LEFT_REGION[2]
+            ],
             left_result.contours,
             -1,
             (0, 255, 0),
@@ -228,7 +266,9 @@ def display_debug_screen(
         )
     if right_result.contours:
         cv2.drawContours(
-            debug_frame[RIGHT_REGION[1] : RIGHT_REGION[3], RIGHT_REGION[0] : RIGHT_REGION[2]],
+            debug_frame[
+                RIGHT_REGION[1] : RIGHT_REGION[3], RIGHT_REGION[0] : RIGHT_REGION[2]
+            ],
             right_result.contours,
             -1,
             (0, 255, 0),
@@ -270,7 +310,10 @@ def display_debug_screen(
 
     if reverse_result.contours:
         cv2.drawContours(
-            debug_frame[REVERSE_REGION[1] : REVERSE_REGION[3], REVERSE_REGION[0] : REVERSE_REGION[2]],
+            debug_frame[
+                REVERSE_REGION[1] : REVERSE_REGION[3],
+                REVERSE_REGION[0] : REVERSE_REGION[2],
+            ],
             reverse_result.contours,
             -1,
             (255, 0, 0),
@@ -279,7 +322,10 @@ def display_debug_screen(
 
     if front_wall_result.contours:
         cv2.drawContours(
-            debug_frame[FRONT_WALL_REGION[1] : FRONT_WALL_REGION[3], FRONT_WALL_REGION[0] : FRONT_WALL_REGION[2]],
+            debug_frame[
+                FRONT_WALL_REGION[1] : FRONT_WALL_REGION[3],
+                FRONT_WALL_REGION[0] : FRONT_WALL_REGION[2],
+            ],
             front_wall_result.contours,
             -1,
             (0, 255, 0),
@@ -288,7 +334,10 @@ def display_debug_screen(
 
     if parking_mode and parking_result.contours:
         cv2.drawContours(
-            debug_frame[parking_lot_region[1] : parking_lot_region[3], parking_lot_region[0] : parking_lot_region[2]],
+            debug_frame[
+                parking_lot_region[1] : parking_lot_region[3],
+                parking_lot_region[0] : parking_lot_region[2],
+            ],
             parking_result.contours,
             -1,
             (255, 255, 0),
@@ -305,7 +354,6 @@ def display_debug_screen(
         (255, 0, 0),
         2,
     )
-
 
     cv2.imshow("Debug View", debug_frame)
 
@@ -337,7 +385,6 @@ def get_max_x_coord(contours) -> tuple[int, int] | tuple[None, None]:
     all_points = np.vstack(contours).reshape(-1, 2)
     max_idx = np.argmax(all_points[:, 0])  # index of largest x
     return tuple(all_points[max_idx])  # (x, y)
-
 
 
 def get_overall_centroid(contours):
