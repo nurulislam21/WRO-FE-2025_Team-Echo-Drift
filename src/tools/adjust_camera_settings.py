@@ -510,62 +510,10 @@ class CameraController:
         """Add current settings as overlay on the frame"""
         font = cv2.FONT_HERSHEY_SIMPLEX
         overlay = frame.copy()
-        cv2.rectangle(overlay, (10, 10), (450, 185), (0, 0, 0), -1)
+        cv2.rectangle(overlay, (10, 10), (380, 55), (0, 0, 0), -1)
         cv2.addWeighted(overlay, 0.7, frame, 0.3, 0, frame)
 
-        y = 28
-        cv2.putText(
-            frame,
-            f"Exp: {self.exposure_time}us | Gain: {self.analogue_gain:.1f}",
-            (15, y),
-            font,
-            0.45,
-            (0, 255, 0),
-            1,
-        )
-        y += 22
-        cv2.putText(
-            frame,
-            f"Sat: {self.saturation:.1f} | Cont: {self.contrast:.1f} | Bright: {self.brightness:.2f}",
-            (15, y),
-            font,
-            0.45,
-            (255, 200, 0),
-            1,
-        )
-        y += 22
-        cv2.putText(
-            frame,
-            f"Sharpness: {self.sharpness:.1f}",
-            (15, y),
-            font,
-            0.45,
-            (255, 200, 0),
-            1,
-        )
-        y += 22
-
-        awb_status = "ON" if self.awb_enable else "OFF"
-        cv2.putText(
-            frame,
-            f"AWB: {awb_status} | Mode: {self.awb_mode} | Temp: {self.colour_temp}K",
-            (15, y),
-            font,
-            0.45,
-            (0, 200, 255),
-            1,
-        )
-        y += 22
-        cv2.putText(
-            frame,
-            f"Color Gains - Red: {self.red_gain:.1f} | Blue: {self.blue_gain:.1f}",
-            (15, y),
-            font,
-            0.45,
-            (0, 200, 255),
-            1,
-        )
-        y += 22
+        y = 28        
         cv2.putText(
             frame,
             "S=Save | R=Reset | Q/ESC=Quit",

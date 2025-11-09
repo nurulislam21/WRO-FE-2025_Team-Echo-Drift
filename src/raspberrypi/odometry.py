@@ -22,7 +22,7 @@ class OdometryTracker:
         # Robot parameters
         self.wheel_radius = wheel_radius
         self.ticks_per_rev = ticks_per_rev
-        self.gear_ratio = gear_ratio
+        self.gear_ratio = gear_ratio        
         
         # Position and orientation state
         self.x = 0.0
@@ -100,7 +100,7 @@ class OdometryVisualizer:
     A class to visualize odometry data in real-time.
     """
     
-    def __init__(self, title: str = "Odometry Path"):
+    def __init__(self, title: str = "Odometry Path", start_zone_radius: float = 1.0):
         """
         Initialize the visualizer.
         
@@ -110,6 +110,7 @@ class OdometryVisualizer:
         self.title = title
         plt.ion()  # Enable interactive mode
         self.fig, self.ax = plt.subplots()
+        self.start_zone_radius = start_zone_radius
         
     def update_plot(self, positions: List[Tuple[float, float]]):
         """
@@ -123,6 +124,9 @@ class OdometryVisualizer:
         if len(positions) > 0:
             xs, ys = zip(*positions)
             self.ax.plot(xs, ys, marker='.', linewidth=1.5, markersize=4)
+
+            # draw a zone on start point
+            self.ax.add_patch(plt.Circle((0, 0), self.start_zone_radius, color='green', alpha=0.3))
         
         self.ax.set_xlabel('X (m)')
         self.ax.set_ylabel('Y (m)')

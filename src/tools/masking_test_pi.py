@@ -22,10 +22,11 @@ except FileNotFoundError:
 
 
 # get color name from cli arg
-if len(sys.argv) > 1:
+if len(sys.argv) > 2:
     color_name = sys.argv[1].lower()
+    method = sys.argv[2].upper()
 else:
-    print("Usage: python masking_test_pi.py <color_name>")
+    print("Usage: python masking_test_pi.py <color_name> <method>")
     sys.exit(1)
 
 # validate color name
@@ -37,41 +38,72 @@ if color_name.lower() not in ["red", "green", "blue", "orange", "magenta", "blac
 
 
 if color_name == "red":
-    LOWER = np.array(color_ranges["LOWER_RED"])
-    UPPER = np.array(color_ranges["UPPER_RED"])
+    if method == "LAB":    
+        LOWER = np.array(color_ranges["LOWER_RED"])
+        UPPER = np.array(color_ranges["UPPER_RED"])
+    else:
+        LOWER = np.array(color_ranges["LOWER_RED_HSV"])
+        UPPER = np.array(color_ranges["UPPER_RED_HSV"])
 elif color_name == "green":
-    LOWER = np.array(color_ranges["LOWER_GREEN"])
-    UPPER = np.array(color_ranges["UPPER_GREEN"])
+    if method == "LAB":    
+        LOWER = np.array(color_ranges["LOWER_GREEN"])
+        UPPER = np.array(color_ranges["UPPER_GREEN"])
+    else:
+        LOWER = np.array(color_ranges["LOWER_GREEN_HSV"])
+        UPPER = np.array(color_ranges["UPPER_GREEN_HSV"])
 elif color_name == "blue":
-    LOWER = np.array(color_ranges["LOWER_BLUE"])
-    UPPER = np.array(color_ranges["UPPER_BLUE"])
+    if method == "LAB":    
+        LOWER = np.array(color_ranges["LOWER_BLUE"])
+        UPPER = np.array(color_ranges["UPPER_BLUE"])
+    else:
+        LOWER = np.array(color_ranges["LOWER_BLUE_HSV"])
+        UPPER = np.array(color_ranges["UPPER_BLUE_HSV"])
 elif color_name == "orange":
-    LOWER = np.array(color_ranges["LOWER_ORANGE"])
-    UPPER = np.array(color_ranges["UPPER_ORANGE"])
+    if method == "LAB":    
+        LOWER = np.array(color_ranges["LOWER_ORANGE"])
+        UPPER = np.array(color_ranges["UPPER_ORANGE"])
+    else:
+        LOWER = np.array(color_ranges["LOWER_ORANGE_HSV"])
+        UPPER = np.array(color_ranges["UPPER_ORANGE_HSV"])
 elif color_name == "magenta":
-    LOWER = np.array(color_ranges["LOWER_MAGENTA"])
-    UPPER = np.array(color_ranges["UPPER_MAGENTA"])
+    if method == "LAB":    
+        LOWER = np.array(color_ranges["LOWER_MAGENTA"])
+        UPPER = np.array(color_ranges["UPPER_MAGENTA"])
+    else:
+        LOWER = np.array(color_ranges["LOWER_MAGENTA_HSV"])
+        UPPER = np.array(color_ranges["UPPER_MAGENTA_HSV"])
 elif color_name == "black":
-    LOWER = np.array(color_ranges["LOWER_BLACK"])
-    UPPER = np.array(color_ranges["UPPER_BLACK"])
+    if method == "LAB":    
+        LOWER = np.array(color_ranges["LOWER_BLACK"])
+        UPPER = np.array(color_ranges["UPPER_BLACK"])
+    else:
+        LOWER = np.array(color_ranges["LOWER_BLACK_HSV"])
+        UPPER = np.array(color_ranges["UPPER_BLACK_HSV"])
 
 # LOWER = np.array([30, 95, 138])
 # UPPER = np.array([88, 135, 178])
 
 
 
-def find_contours(frame, lower_color, upper_color, roi):
+def find_contours(frame, lower_color, upper_color, roi, method, blur, consider_area=None):
     x1, y1, x2, y2 = roi
     roi_frame = frame[y1:y2, x1:x2]
-    labImg = cv2.cvtColor(roi_frame, cv2.COLOR_BGR2Lab)
 
-    mask = cv2.inRange(labImg, lower_color, upper_color)
-
-    kernel = np.ones((5, 5), np.uint8)
+    if method == "LAB":
+        img = cv2.cvtColor(roi_frame, cv2.COLOR_RGB2Lab)        
+    else:
+        img = cv2.cvtColor(roi_frame, cv2.COLOR_RGB2HSV)
+    # blur and mask
+    img_blur = cv2.medianBlur(img, blur)
+    # img_blur = cv2.bilateralFilter(labImg, d=7, sigmaColor=75, sigmaSpace=75)
+    mask = cv2.inRange(img_blur, lower_color, upper_color)
+    kernel = np.ones((13, 13), np.uint8)
     mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
     mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
-
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    if consider_area is not None:
+        contours = [cnt for cnt in contours if cv2.contourArea(cnt) >= consider_area]
 
     # shift contours back to original image coordinates
     shifted_contours = []
@@ -84,7 +116,7 @@ def find_contours(frame, lower_color, upper_color, roi):
 def main():
     # Initialize Raspberry Pi Camera
     picam2 = Picamera2()
-    config = picam2.create_preview_configuration(main={"format": "BGR888", "size": (640, 480)})
+    config = picam2.create_preview_configuration(main={"format": "RGB888", "size": (640, 480)})
     picam2.configure(config)
     # load camera settings from file
     try:
@@ -100,12 +132,12 @@ def main():
 
     picam2.start()
 
-    roi = (100, 100, 540, 380)  # (x1, y1, x2, y2)
+    roi = (100, 10, 540, 380)  # (x1, y1, x2, y2)
 
     while True:
         frame = picam2.capture_array()
 
-        contours = find_contours(frame, LOWER, UPPER, roi)
+        contours = find_contours(frame, LOWER, UPPER, roi, method, blur=11, consider_area=700)
 
         # draw ROI box
         cv2.rectangle(frame, (roi[0], roi[1]), (roi[2], roi[3]), (255, 0, 255), 2)

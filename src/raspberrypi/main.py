@@ -44,8 +44,8 @@ CAM_WIDTH = 640
 CAM_HEIGHT = 480
 # CAM_WIDTH = 800
 # CAM_HEIGHT = 600
-MAX_SPEED = 55 if MODE == "OBSTACLE" else 100
-MIN_SPEED = 45 if MODE == "OBSTACLE" else 70
+MAX_SPEED = 50 if MODE == "OBSTACLE" else 100
+MIN_SPEED = 40 if MODE == "OBSTACLE" else 70
 
 # Intersections
 TOTAL_INTERSECTIONS = 12
@@ -59,7 +59,7 @@ RIGHT_REGION = (
     [390, 190, 640, 240] if MODE == "NO_OBSTACLE" else [390, 190, 640, 240]
 )  # right
 LAP_REGION = [215, 260, 415, 305]  # lap detection
-OBS_REGION = [85, 125, 555, 280]  # obstacle detection
+OBS_REGION = [85, 110, 555, 280]  # obstacle detection
 REVERSE_REGION = [233, 260, 407, 280]  # reverse trigger area
 FRONT_WALL_REGION = [300, 195, 340, 215]  # front wall detection
 PARKING_LOT_REGION = [0, 185, CAM_WIDTH, 400]  # parking lot detection
@@ -206,7 +206,7 @@ arduino.write(b"0,-1,95\n")
 
 # parking
 parking = Parking(
-    parking_speed=45,
+    parking_speed=35,
     arduino=arduino,
     camera_width=CAM_WIDTH,
     camera_height=CAM_HEIGHT,
@@ -222,8 +222,9 @@ parking.has_parked_out = False
 
 # Odometry
 # init odometry tracker and visualizer
+start_zone_radius = 1  # meters
 tracker = OdometryTracker(wheel_radius=0.046, ticks_per_rev=2100, gear_ratio=1.0)
-visualizer = OdometryVisualizer(title="Odometry Path (Single Encoder + Gyro)")
+visualizer = OdometryVisualizer(title="Odometry Path (Single Encoder + Gyro)", start_zone_radius=start_zone_radius)
 
 encoder_ticks = 0
 gyro_angle = 0.0
@@ -232,7 +233,6 @@ prev_gyro_angle = 0.0
 last_odometry_time = time.time()
 last_lap_time = time.time()
 lap_count_interval = 5 # seconds
-lap_count_distance_threshold = 0.3 # meters
 
 # Threading variables - separate queues for each detection task
 def main():
@@ -355,7 +355,7 @@ def main():
                 #     (tracker.get_position_history()[0][0] - x) ** 2 + (tracker.get_position_history()[0][1] - y) ** 2
                 # )
                 # current_intersections = round(abs(gyro_angle) / 90)
-                if (time.time() - last_lap_time) >= lap_count_interval and math.sqrt(x**2 + y**2) <= lap_count_distance_threshold:
+                if (time.time() - last_lap_time) >= lap_count_interval and math.sqrt(x**2 + y**2) <= start_zone_radius:
                     current_intersections += 4
                     last_lap_time = time.time()
 
