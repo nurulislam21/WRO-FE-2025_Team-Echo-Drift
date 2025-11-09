@@ -32,12 +32,6 @@ def save_color_ranges():
     with open(os.path.join(script_dir, "color_ranges.json"), "w") as f:
         json.dump(color_ranges, f, indent=4)
     
-    # Save to raspberrypi directory as well
-    raspberrypi_dir = os.path.join(script_dir, "..", "raspberrypi")
-    raspberrypi_dir = os.path.abspath(raspberrypi_dir)
-    with open(os.path.join(raspberrypi_dir, "color_ranges.json"), "w") as f:
-        json.dump(color_ranges, f, indent=4)
-    
     print(f"Color ranges saved to files")
 
 # Function to update color ranges from trackbars

@@ -44,8 +44,8 @@ CAM_WIDTH = 640
 CAM_HEIGHT = 480
 # CAM_WIDTH = 800
 # CAM_HEIGHT = 600
-MAX_SPEED = 60 if MODE == "OBSTACLE" else 100
-MIN_SPEED = 50 if MODE == "OBSTACLE" else 70
+MAX_SPEED = 55 if MODE == "OBSTACLE" else 100
+MIN_SPEED = 45 if MODE == "OBSTACLE" else 70
 
 # Intersections
 TOTAL_INTERSECTIONS = 12
@@ -159,7 +159,7 @@ STRAIGHT_CONST = 95
 turnThresh = 150
 exitThresh = 1500
 
-MAX_OFFSET_DEGREE = 40
+MAX_OFFSET_DEGREE = 55
 maxRight = STRAIGHT_CONST + MAX_OFFSET_DEGREE
 maxLeft = STRAIGHT_CONST - MAX_OFFSET_DEGREE
 
@@ -223,20 +223,23 @@ parking.has_parked_out = False
 # Odometry
 # init odometry tracker and visualizer
 tracker = OdometryTracker(wheel_radius=0.046, ticks_per_rev=2100, gear_ratio=1.0)
-visualizer = OdometryVisualizer(title='Odometry Path (Single Encoder + Gyro)')
+visualizer = OdometryVisualizer(title="Odometry Path (Single Encoder + Gyro)")
 
-gyro_ticks = 0
+encoder_ticks = 0
 gyro_angle = 0.0
-prev_gyro_ticks = 0
+prev_encoder_ticks = 0
 prev_gyro_angle = 0.0
 last_odometry_time = time.time()
+last_lap_time = time.time()
+lap_count_interval = 5 # seconds
+lap_count_distance_threshold = 0.3 # meters
 
 # Threading variables - separate queues for each detection task
 def main():
     global stopFlag, stopTime, speed, trigger_reverse, reverse_angle, last_reverse_end_time
     global current_intersections, intersection_detected, intersection_crossing_start
     global startProcessing, obstacle_wall_pivot, reverse_start_time
-    global gyro_ticks, gyro_angle, prev_gyro_ticks, prev_gyro_angle, last_odometry_time
+    global encoder_ticks, gyro_angle, prev_encoder_ticks, prev_gyro_angle, last_odometry_time, last_lap_time
 
     # parking_walls = []
     # parking_walls_count = 0
@@ -250,9 +253,7 @@ def main():
     # Initialize PiCamera2
     picam2 = Picamera2()
     config = picam2.create_preview_configuration(
-        main={"format": "RGB888", "size": (
-            CAM_WIDTH, CAM_HEIGHT
-        )}
+        main={"format": "RGB888", "size": (CAM_WIDTH, CAM_HEIGHT)}
     )
     picam2.configure(config)
     # load camera settings from file
@@ -316,30 +317,36 @@ def main():
                 print(f"Arduino: {line}")
                 if not startProcessing and line == "START":
                     startProcessing = True
-                
+                    last_lap_time = time.time()
+
                 else:
                     # Get gyro data and encoder ticks
-                    parts = line.split(',')
+                    parts = line.split(",")
                     if len(parts) != 2:
                         continue
                     try:
-                        gyro_ticks = -int(parts[0])
+                        encoder_ticks = -int(parts[0])
                         gyro_angle = float(parts[1])
-                        print(f"Ticks: {gyro_ticks}, Gyro Angle: {gyro_angle}")
+                        print(f"Ticks: {encoder_ticks}, Gyro Angle: {gyro_angle}")
                     except ValueError:
                         continue
-            
+
             # draw odometry
-            if (time.time() - last_odometry_time) >= 0.2 and (abs(gyro_ticks - prev_gyro_ticks) > 500):
+            if (
+                (time.time() - last_odometry_time) >= 0.2
+                and (abs(encoder_ticks - prev_encoder_ticks) > 500)
+                # dont collect odometry data during parking maneuver
+                and (MODE == "OBSTACLE" and parking.has_parked_out)
+            ):
                 gyro_angle = clamp_angle(gyro_angle, threshold=20)
-                # Update odometry tracker         
-                tracker.update(gyro_ticks, gyro_angle)
+                # Update odometry tracker
+                tracker.update(encoder_ticks, gyro_angle)
                 # Get current position
-                x, y, theta = tracker.get_position()                
+                x, y, theta = tracker.get_position()
                 # Update visualization
                 visualizer.update_plot(tracker.get_position_history())
                 # Update previous values
-                prev_gyro_ticks = gyro_ticks
+                prev_encoder_ticks = encoder_ticks
                 prev_gyro_angle = gyro_angle
                 last_odometry_time = time.time()
 
@@ -347,10 +354,14 @@ def main():
                 # distance_from_initial_point = math.sqrt(
                 #     (tracker.get_position_history()[0][0] - x) ** 2 + (tracker.get_position_history()[0][1] - y) ** 2
                 # )
+                # current_intersections = round(abs(gyro_angle) / 90)
+                if (time.time() - last_lap_time) >= lap_count_interval and math.sqrt(x**2 + y**2) <= lap_count_distance_threshold:
+                    current_intersections += 4
+                    last_lap_time = time.time()
 
-                current_intersections = round(abs(gyro_angle) / 90)
-                print(f"Position: x={x:.3f}m, y={y:.3f}m, θ={math.degrees(theta):.1f}° | Intersections: {current_intersections}")
-                
+                print(
+                    f"Position: x={x:.3f}m, y={y:.3f}m, θ={math.degrees(theta):.1f}° | Intersections: {current_intersections}"
+                )
 
             # Capture frame
             frame = picam2.capture_array()
@@ -426,13 +437,19 @@ def main():
 
             # --- PARKING OUT LOGIC ---
             if contour_workers.mode == "OBSTACLE":
-            # process parking out first if not yet done
-               if not parking.has_parked_out:
-                   parking.process_parking_out(
-                       left_result=left_result, right_result=right_result
-                   )
-                   parking.has_parked_out = contour_workers.has_parked_out = True
-                   continue
+                # process parking out first if not yet done
+                if not parking.has_parked_out:
+                    parking.process_parking_out(
+                        left_result=left_result, right_result=right_result
+                    )
+                    parking.has_parked_out = contour_workers.has_parked_out = True
+
+                    # collect parking out odometry history and update tracker
+                    for entry in parking.parking_out_odometry_history:
+                        tracker.update(entry[0], entry[1])
+                    # set the lap time to now to avoid lap count right after parking
+                    last_lap_time = time.time()
+                    continue
 
             # --- Reversing logic ---
             if (
@@ -683,7 +700,8 @@ def main():
                 # print(f"Obj: {red_obj_x}, {red_obj_y} | Wall: {r_wall_x}, {r_wall_y}")
             if contour_workers.mode == "OBSTACLE":
                 if (
-                    front_wall_area > 350
+                    front_wall_area
+                    > 350
                     # and (red_area == 0 and green_area == 0)
                     # and (left_area > 800 and right_area > 800)
                 ):
@@ -694,13 +712,15 @@ def main():
                         normalized_angle_offset = -1  # turn left hard
                         print("right area too big")
                     else:
-                        normalized_angle_offset = -1 if parking.parking_lot_side == "left" else 1
+                        normalized_angle_offset = (
+                            -1 if parking.parking_lot_side == "left" else 1
+                        )
                         print("only front wall")
                     obstacle_wall_pivot = (None, None)
                 #     show_front_wall = True
                 # else:
                 #     show_front_wall = False
-                    # wall following logic
+                # wall following logic
 
             if (
                 # or if x or y coords are not assigned and front area is small

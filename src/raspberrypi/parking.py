@@ -64,24 +64,26 @@ class Parking:
             # right -> exit to right
             "left": [
                 # speed, steps, angle
-                (-self.parking_speed, 600, 170),
+                (-self.parking_speed, 600, 160),
                 (self.parking_speed, 2100, 20),
                 (-self.parking_speed, 800, 95),                
-                (self.parking_speed, 3000, 170),
+                (self.parking_speed, 3000, 160),
                 (self.parking_speed, 1000, 95),
                 # (-self.parking_speed, 2000, 95),
             ],
             "right": [
                 # speed, steps, angle
-                (-self.parking_speed, 600, 20),
+                (-self.parking_speed, 600, 30),
                 (self.parking_speed, 2100, 170),
                 (-self.parking_speed, 800, 95),
-                (self.parking_speed, 3000, 20),
+                (self.parking_speed, 3000, 30),
                 (self.parking_speed, 1000, 95),
                 # (self.parking_speed, 2500, 20),
                 # (-self.parking_speed, 1000, 95),
             ],
         }
+        self.parking_out_odometry_history = []
+
 
         self.parking_in_instructions = {
             # right -> parking lot is on the right
@@ -147,6 +149,17 @@ class Parking:
                     if "DONE" in line:
                         print("found DONE")
                         break
+                    else:
+                        parts = line.split(",")
+                        if len(parts) == 2:
+                            try:
+                                encoder_ticks = int(parts[0])
+                                gyro_angle = float(parts[1])
+                                self.parking_out_odometry_history.append(
+                                    (encoder_ticks, gyro_angle)
+                                )
+                            except ValueError:
+                                pass
 
                 # if arduino.in_waiting > 0:
             #     line = arduino.readline().decode("utf-8").rstrip()

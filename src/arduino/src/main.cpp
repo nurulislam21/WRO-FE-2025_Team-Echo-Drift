@@ -27,6 +27,7 @@ int servoMaxRight = 170;
 
 void motor(int speedPercent);
 void sw();
+void updateGyroTotalAngle();
 long getEncoder();
 void resetEncoder();
 void updateEncoder();
@@ -76,6 +77,7 @@ void setup()
     gyro.zeroCalibrate(400, 5);
     lastTime = millis();
     totalAngle = 0.0;
+    delay(200);
     // --- End gyro setup ---
 
     // Once serial is available, perform the servo movement
@@ -129,26 +131,7 @@ void loop()
         }
 
         // ------- Gyro code -------
-        float gx, gy, gz;
-        gyro.getAngularVelocity(&gx, &gy, &gz);
-
-        // Time delta
-        unsigned long now = millis();
-        float dt = (now - lastTime) / 1000.0f;
-        if (dt <= 0)
-            dt = 0.001f;
-        lastTime = now;
-
-        // Low-pass filter
-        gz_filtered = FILTER_ALPHA * gz + (1.0f - FILTER_ALPHA) * gz_filtered;
-
-        // Ignore tiny rates
-        float gz_use = gz_filtered;
-        if (fabs(gz_use) < MIN_RATE_DPS)
-            gz_use = 0.0f;
-
-        // Integrate angle
-        totalAngle += (double)gz_use * dt;
+        updateGyroTotalAngle();
     }
 
     // print Steps,totalAngle
@@ -276,15 +259,58 @@ void moveEncoder(int speed, long int targetPulses)
     {
         while (getEncoder() > -targetPulses)
         {
-            // loop until target reached
+            // update gyro
+            updateGyroTotalAngle();
+            // print steps and angle
+            if (millis() - lastPrintTime > printInterval)
+            {
+                lastPrintTime = millis();
+                Serial.print(getEncoder());
+                Serial.print(",");
+                Serial.println(totalAngle, 2);
+            }
         }
     }
     else
     {
         while (getEncoder() < targetPulses)
         {
-            // loop until target reached
+            // update gyro
+            updateGyroTotalAngle();
+            // print steps and angle
+            if (millis() - lastPrintTime > printInterval)
+            {
+                lastPrintTime = millis();
+                Serial.print(getEncoder());
+                Serial.print(",");
+                Serial.println(totalAngle, 2);
+            }
         }
     }
     motor(0);
+}
+
+void updateGyroTotalAngle()
+{
+    // ------- Gyro code -------
+    float gx, gy, gz;
+    gyro.getAngularVelocity(&gx, &gy, &gz);
+
+    // Time delta
+    unsigned long now = millis();
+    float dt = (now - lastTime) / 1000.0f;
+    if (dt <= 0)
+        dt = 0.001f;
+    lastTime = now;
+
+    // Low-pass filter
+    gz_filtered = FILTER_ALPHA * gz + (1.0f - FILTER_ALPHA) * gz_filtered;
+
+    // Ignore tiny rates
+    float gz_use = gz_filtered;
+    if (fabs(gz_use) < MIN_RATE_DPS)
+        gz_use = 0.0f;
+
+    // Integrate angle
+    totalAngle += (double)gz_use * dt;
 }

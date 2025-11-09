@@ -122,15 +122,15 @@ class ContourWorkers:
         except:
             pass
 
-        try:
-            self.frame_queue_orange.put_nowait(frame_copy)
-        except:
-            pass
+        # try:
+        #     self.frame_queue_orange.put_nowait(frame_copy)
+        # except:
+        #     pass
 
-        try:
-            self.frame_queue_blue.put_nowait(frame_copy)
-        except:
-            pass
+        # try:
+        #     self.frame_queue_blue.put_nowait(frame_copy)
+        # except:
+        #     pass
 
         try:
             self.frame_queue_reverse.put_nowait(frame_copy)
