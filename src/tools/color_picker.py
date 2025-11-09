@@ -349,10 +349,7 @@ def main(color_name):
 
             # Display results
             cv2.imshow("Pi Camera - RGB", frame_rgb)
-            cv2.imshow("Masks", masks_display)
-
-            cv2.imshow("Original", frame)
-            cv2.imshow("Mask (LAB)", mask)
+            # cv2.imshow("Masks", masks_display)            
             # cv2.imshow("Masked Result", masked_result)
             # cv2.imshow("Colored Mask", colored_mask)
 
@@ -389,7 +386,7 @@ def main(color_name):
                 (0, 255, 0),
                 2,
             )
-            cv2.imshow("Mask (HSV)", mask_hsv)
+            # cv2.imshow("Mask (HSV)", mask_hsv)
             mask_hsv = cv2.morphologyEx(mask_hsv, cv2.MORPH_CLOSE, kernel)
             mask_hsv = cv2.morphologyEx(mask_hsv, cv2.MORPH_OPEN, kernel)
             
