@@ -8,7 +8,7 @@ time.sleep(2)
 arduino.write(b"0,-1,95\n")
 
 instructions = [
-    (10, 2100, 95)
+    (5, 2220, 95)
 ]
 
 # init odometry tracker and visualizer
@@ -24,9 +24,12 @@ while True:
         if line == "START":
             break
 
-# for instr in instructions:
-#     arduino.write(f"{instr[0]},{instr[1]},{instr[2]}\n".encode())
-#     time.sleep(1)
+for instr in instructions:
+    arduino.write(f"{instr[0]},{instr[1]},{instr[2]}\n".encode())
+    time.sleep(1)
+
+    if arduino.in_waiting > 0:
+        print(arduino.readline().decode("utf-8").rstrip())
 
 ticks = 0
 gyro_angle = 0.0
@@ -50,6 +53,7 @@ while True:
     if arduino.in_waiting > 0:
         line = arduino.readline().decode('utf-8').rstrip()
         parts = line.split(',')
+        print(f"Arduino: {line}")
         if len(parts) != 2:
             continue
         try:

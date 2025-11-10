@@ -39,13 +39,13 @@ BUZZER_PIN = 4
 print("DEBUG MODE" if DEBUG else "PRODUCTION")
 
 # Simulated camera settings
-MODE = "OBSTACLE"  # "NO_OBSTACLE" or "OBSTACLE"
+MODE = "NO_OBSTACLE"  # "NO_OBSTACLE" or "OBSTACLE"
 CAM_WIDTH = 640
 CAM_HEIGHT = 480
 # CAM_WIDTH = 800
 # CAM_HEIGHT = 600
-MAX_SPEED = 50 if MODE == "OBSTACLE" else 100
-MIN_SPEED = 40 if MODE == "OBSTACLE" else 70
+MAX_SPEED = 50 if MODE == "OBSTACLE" else 80
+MIN_SPEED = 40 if MODE == "OBSTACLE" else 50
 
 # Intersections
 TOTAL_INTERSECTIONS = 12
@@ -222,8 +222,8 @@ parking.has_parked_out = False
 
 # Odometry
 # init odometry tracker and visualizer
-start_zone_radius = 1  # meters
-tracker = OdometryTracker(wheel_radius=0.046, ticks_per_rev=2100, gear_ratio=1.0)
+start_zone_radius = 0.55  # meters
+tracker = OdometryTracker(wheel_radius=0.046, ticks_per_rev=2220, gear_ratio=1.0)
 visualizer = OdometryVisualizer(title="Odometry Path (Single Encoder + Gyro)", start_zone_radius=start_zone_radius)
 
 encoder_ticks = 0
@@ -232,7 +232,7 @@ prev_encoder_ticks = 0
 prev_gyro_angle = 0.0
 last_odometry_time = time.time()
 last_lap_time = time.time()
-lap_count_interval = 5 # seconds
+lap_count_interval = 6 # seconds
 
 # Threading variables - separate queues for each detection task
 def main():
@@ -336,7 +336,7 @@ def main():
                 (time.time() - last_odometry_time) >= 0.2
                 and (abs(encoder_ticks - prev_encoder_ticks) > 500)
                 # dont collect odometry data during parking maneuver
-                and (MODE == "OBSTACLE" and parking.has_parked_out)
+                and (parking.has_parked_out if MODE == "OBSTACLE" else True)
             ):
                 gyro_angle = clamp_angle(gyro_angle, threshold=20)
                 # Update odometry tracker

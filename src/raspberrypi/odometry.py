@@ -32,6 +32,9 @@ class OdometryTracker:
         # History tracking
         self.positions: List[Tuple[float, float]] = [(0.0, 0.0)]
         self.prev_ticks = 0
+
+        # open a log file to record odometry data
+        self.log_file = open("odometry_log.txt", "w")
         
     def reset_position(self):
         """Reset position and orientation to origin."""
@@ -73,6 +76,10 @@ class OdometryTracker:
         
         # Store position history
         self.positions.append((self.x, self.y))
+
+        # append to log file
+        self.log_file.write(f"({ticks}, {gyro_angle}),\n")
+        self.log_file.flush()
     
     def get_position(self) -> Tuple[float, float, float]:
         """
@@ -112,6 +119,7 @@ class OdometryVisualizer:
         self.fig, self.ax = plt.subplots()
         self.start_zone_radius = start_zone_radius
         
+        
     def update_plot(self, positions: List[Tuple[float, float]]):
         """
         Update the plot with new position data.
@@ -132,7 +140,7 @@ class OdometryVisualizer:
         self.ax.set_ylabel('Y (m)')
         self.ax.set_title(self.title)
         self.ax.axis('equal')
-        self.ax.grid(True, alpha=0.3)
+        self.ax.grid(True, alpha=0.3)            
         
         plt.pause(0.01)
     
