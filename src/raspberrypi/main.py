@@ -222,9 +222,11 @@ parking.has_parked_out = False
 
 # Odometry
 # init odometry tracker and visualizer
-start_zone_radius = 0.55  # meters
+start_zone_rect = [0.55, 2]  # meters
 tracker = OdometryTracker(wheel_radius=0.046, ticks_per_rev=2220, gear_ratio=1.0)
-visualizer = OdometryVisualizer(title="Odometry Path (Single Encoder + Gyro)", start_zone_radius=start_zone_radius)
+visualizer = OdometryVisualizer(
+    title="Odometry Path (Single Encoder + Gyro)", start_zone_rect=start_zone_rect
+)
 
 encoder_ticks = 0
 gyro_angle = 0.0
@@ -232,14 +234,23 @@ prev_encoder_ticks = 0
 prev_gyro_angle = 0.0
 last_odometry_time = time.time()
 last_lap_time = time.time()
-lap_count_interval = 6 # seconds
+current_lap = 0
+odometry_lap_samples = {}
+DRIFT_ALPHA = 0.3  # between 0.05–0.3, depending on how noisy your drift is
+MAX_DRIFT_THRESHOLD = 0.5
+LAP_COUNT_INTERVAL = 6  # seconds
+smoothed_drift_x = 0.0
+smoothed_drift_y = 0.0
+
 
 # Threading variables - separate queues for each detection task
 def main():
     global stopFlag, stopTime, speed, trigger_reverse, reverse_angle, last_reverse_end_time
     global current_intersections, intersection_detected, intersection_crossing_start
     global startProcessing, obstacle_wall_pivot, reverse_start_time
-    global encoder_ticks, gyro_angle, prev_encoder_ticks, prev_gyro_angle, last_odometry_time, last_lap_time
+    global encoder_ticks, gyro_angle, prev_encoder_ticks, prev_gyro_angle
+    global last_odometry_time, last_lap_time, current_lap, odometry_lap_samples
+    global smoothed_drift_x, smoothed_drift_y
 
     # parking_walls = []
     # parking_walls_count = 0
@@ -334,7 +345,7 @@ def main():
             # draw odometry
             if (
                 (time.time() - last_odometry_time) >= 0.2
-                and (abs(encoder_ticks - prev_encoder_ticks) > 500)
+                and (abs(encoder_ticks - prev_encoder_ticks) > 300)
                 # dont collect odometry data during parking maneuver
                 and (parking.has_parked_out if MODE == "OBSTACLE" else True)
             ):
@@ -343,21 +354,54 @@ def main():
                 tracker.update(encoder_ticks, gyro_angle)
                 # Get current position
                 x, y, theta = tracker.get_position()
-                # Update visualization
-                visualizer.update_plot(tracker.get_position_history())
                 # Update previous values
                 prev_encoder_ticks = encoder_ticks
                 prev_gyro_angle = gyro_angle
                 last_odometry_time = time.time()
 
-                # TODO: Check line crossing based on odometry
-                # distance_from_initial_point = math.sqrt(
-                #     (tracker.get_position_history()[0][0] - x) ** 2 + (tracker.get_position_history()[0][1] - y) ** 2
-                # )
+                if odometry_lap_samples.get(current_lap) is None:
+                    odometry_lap_samples[current_lap] = []
+                odometry_lap_samples[current_lap].append((x, y))
+
+                # Drift correction using previous lap data
+                if current_lap > 0:
+                    # skip correction for first few samples
+                    if len(odometry_lap_samples[current_lap]) > 6:
+                        # get closest point to (x, y) from previous lap, because robot starts from a different position
+                        prev_lap_points = odometry_lap_samples[current_lap - 1]
+                        closest_point = min(
+                            prev_lap_points,
+                            key=lambda p: math.sqrt((p[0] - x) ** 2 + (p[1] - y) ** 2),
+                        )
+                        # Raw drift measurement
+                        new_drift_x = x - closest_point[0]
+                        new_drift_y = y - closest_point[1]
+                        drift_mag = math.sqrt(new_drift_x**2 + new_drift_y**2)
+                        if drift_mag < MAX_DRIFT_THRESHOLD:
+
+                            # Smoothed drift (exponential moving average)
+                            smoothed_drift_x = (
+                                DRIFT_ALPHA * new_drift_x
+                                + (1 - DRIFT_ALPHA) * smoothed_drift_x
+                            )
+                            smoothed_drift_y = (
+                                DRIFT_ALPHA * new_drift_y
+                                + (1 - DRIFT_ALPHA) * smoothed_drift_y
+                            )
+
+                            # Apply partial correction
+                            correction_rate = 0.25
+                            tracker.x -= smoothed_drift_x * correction_rate
+                            tracker.y -= smoothed_drift_y * correction_rate
+
+                # Update visualization
+                visualizer.update_plot(tracker.get_position_history())
+
                 # current_intersections = round(abs(gyro_angle) / 90)
-                if (time.time() - last_lap_time) >= lap_count_interval and math.sqrt(x**2 + y**2) <= start_zone_radius:
-                    current_intersections += 4
-                    last_lap_time = time.time()
+                if (time.time() - last_lap_time) >= LAP_COUNT_INTERVAL and (
+                    abs(x) < start_zone_rect[0] and abs(y) < start_zone_rect[1]
+                ):
+                    current_lap += 1
 
                 print(
                     f"Position: x={x:.3f}m, y={y:.3f}m, θ={math.degrees(theta):.1f}° | Intersections: {current_intersections}"
