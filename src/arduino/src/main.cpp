@@ -129,10 +129,10 @@ void loop()
             delay(200);
             sw(); // Wait for button press to restart
         }
-
-        // ------- Gyro code -------
-        updateGyroTotalAngle();
     }
+
+    // ------- Gyro code -------
+    updateGyroTotalAngle();
 
     // print Steps,totalAngle
     if (millis() - lastPrintTime > printInterval)
@@ -215,25 +215,15 @@ void motor(int speedPercent)
 
 void updateEncoder()
 {
-    int MSB = digitalRead(encoderPin1); // MSB = most significant bit
-    int LSB = digitalRead(encoderPin2); // LSB = least significant bit
-
-    int encoded = (MSB << 1) | LSB;         // converting the 2 pin value to single number
-    int sum = (lastEncoded << 2) | encoded; // adding it to the previous encoded value
-
+    int state = (PIND >> 2) & 0b11; // read both pins (2 and 3 on UNO)
+    int sum = (lastEncoded << 2) | state;
     if (sum == 0b1101 || sum == 0b0100 || sum == 0b0010 || sum == 0b1011)
         encoderValue--;
-    if (sum == 0b1110 || sum == 0b0111 || sum == 0b0001 || sum == 0b1000)
+    else if (sum == 0b1110 || sum == 0b0111 || sum == 0b0001 || sum == 0b1000)
         encoderValue++;
-
-    lastEncoded = encoded; // store this value for next time
+    lastEncoded = state;
 }
-volatile long encoderCount = 0;
 
-void encoderISR()
-{
-    encoderCount++;
-}
 void resetEncoder()
 {
     noInterrupts();
@@ -297,8 +287,8 @@ void updateGyroTotalAngle()
     gyro.getAngularVelocity(&gx, &gy, &gz);
 
     // Time delta
-    unsigned long now = millis();
-    float dt = (now - lastTime) / 1000.0f;
+    unsigned long now = micros();
+    float dt = (now - lastTime) / 1e6f; // Convert microseconds to seconds
     if (dt <= 0)
         dt = 0.001f;
     lastTime = now;

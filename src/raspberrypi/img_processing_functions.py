@@ -209,7 +209,7 @@ def display_debug_screen(
     debug_frame = frame.copy()
     debug_frame = display_roi(
         debug_frame,
-        [LEFT_REGION, RIGHT_REGION, LAP_REGION, OBS_REGION, REVERSE_REGION],
+        [LEFT_REGION, RIGHT_REGION, OBS_REGION, REVERSE_REGION],
         (255, 0, 255),
     )
 
@@ -274,22 +274,22 @@ def display_debug_screen(
             (0, 255, 0),
             2,
         )
-    if orange_result.contours:
-        cv2.drawContours(
-            debug_frame[LAP_REGION[1] : LAP_REGION[3], LAP_REGION[0] : LAP_REGION[2]],
-            orange_result.contours,
-            -1,
-            (0, 165, 255),
-            2,
-        )
-    if blue_result.contours:
-        cv2.drawContours(
-            debug_frame[LAP_REGION[1] : LAP_REGION[3], LAP_REGION[0] : LAP_REGION[2]],
-            blue_result.contours,
-            -1,
-            (0, 165, 255),
-            2,
-        )
+    # if orange_result.contours:
+    #     cv2.drawContours(
+    #         debug_frame[LAP_REGION[1] : LAP_REGION[3], LAP_REGION[0] : LAP_REGION[2]],
+    #         orange_result.contours,
+    #         -1,
+    #         (0, 165, 255),
+    #         2,
+    #     )
+    # if blue_result.contours:
+    #     cv2.drawContours(
+    #         debug_frame[LAP_REGION[1] : LAP_REGION[3], LAP_REGION[0] : LAP_REGION[2]],
+    #         blue_result.contours,
+    #         -1,
+    #         (0, 165, 255),
+    #         2,
+    #     )
 
     if green_result.contours:
         cv2.drawContours(

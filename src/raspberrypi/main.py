@@ -56,7 +56,7 @@ LEFT_REGION = (
     [0, 190, 230, 240] if MODE == "NO_OBSTACLE" else [0, 190, 230, 240]
 )  # left
 RIGHT_REGION = (
-    [390, 190, 640, 240] if MODE == "NO_OBSTACLE" else [390, 190, 640, 240]
+    [410, 190, 640, 240] if MODE == "NO_OBSTACLE" else [410, 190, 640, 240]
 )  # right
 LAP_REGION = [215, 260, 415, 305]  # lap detection
 OBS_REGION = [85, 110, 555, 280]  # obstacle detection
