@@ -66,15 +66,15 @@ PARKING_LOT_REGION = [0, 185, CAM_WIDTH, 400]  # parking lot detection
 # DANGER_ZONE_POINTS = [175, OBS_REGION[1], 465, OBS_REGION[3]]  # area to check for obstacles
 DANGER_ZONE_POINTS = [
     {
-        "x1": 290,
+        "x1": 275,
         "y1": OBS_REGION[1],
-        "x2": 205,
+        "x2": 190,
         "y2": OBS_REGION[3],
     },
     {
-        "x1": 350,
+        "x1": 365,
         "y1": OBS_REGION[1],
-        "x2": 435,
+        "x2": 450,
         "y2": OBS_REGION[3],
     },
 ]
@@ -312,12 +312,7 @@ def main():
     # buzz to indicate ready
     GPIO.output(BUZZER_PIN, GPIO.HIGH)
     time.sleep(0.3)
-    GPIO.output(BUZZER_PIN, GPIO.LOW)
-
-    # State variables
-    # lTurn = rTurn = lDetected = False
-    # t = 0
-    # turnDir = "none"
+    GPIO.output(BUZZER_PIN, GPIO.LOW)    
     angle = STRAIGHT_CONST
 
     try:
@@ -411,7 +406,7 @@ def main():
             frame = picam2.capture_array()
 
             # Distribute frame to all processing threads (non-blocking)
-            frame_copy = copy.deepcopy(frame)
+            frame_copy = frame.copy()
             contour_workers.put_frames_in_queues(frame_copy)
 
             # default values
@@ -498,6 +493,7 @@ def main():
             # --- Reversing logic ---
             if (
                 trigger_reverse
+                # avoid reversing again too soon after last reverse
                 and (last_reverse_end_time + reverse_pause_time) < time.time()
             ):
                 speed = -MIN_SPEED
@@ -871,13 +867,21 @@ def main():
 
                 obstacle_wall_pivot = (None, None)
                 # PID controller
-                left_buf.append(left_area)
-                right_buf.append(right_area)
-                left_s = sum(left_buf) / len(left_buf)
-                right_s = sum(right_buf) / len(right_buf)
-                aDiff = right_s - left_s
-                aSum = left_s + right_s
-                error = aDiff / (aSum + 1e-6)  # normalized between roughly [-1,1]
+                right_total_area = ((RIGHT_REGION[2] - RIGHT_REGION[0]) * (RIGHT_REGION[3] - RIGHT_REGION[1]))
+                left_total_area = ((LEFT_REGION[2] - LEFT_REGION[0]) * (LEFT_REGION[3] - LEFT_REGION[1]))
+                # left_area_normalized = left_area / ((LEFT_REGION[2] - LEFT_REGION[0]) * (LEFT_REGION[3] - LEFT_REGION[1]))
+
+                # interpolate
+                right_area_normalized = np.interp(right_area, [0, right_total_area/2, right_total_area], [0.01, 0.7, 1])
+                left_area_normalized = np.interp(left_area, [0, left_total_area/2, left_total_area], [0.01, 0.7, 1])
+                error = right_area_normalized - left_area_normalized
+                # left_buf.append(left_area)
+                # right_buf.append(right_area)
+                # left_s = sum(left_buf) / len(left_buf)
+                # right_s = sum(right_buf) / len(right_buf)
+                # aDiff = right_s - left_s
+                # aSum = left_s + right_s
+                # error = aDiff / (aSum + 1e-6)  # normalized between roughly [-1,1]
                 normalized_angle_offset = pid(error)
 
                 print(

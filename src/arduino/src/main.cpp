@@ -32,9 +32,7 @@ unsigned long lastStepTime = 0;
 
 #define CONTROL_PIN 13
 
-
-int brightnessLevel = 3;  // Change this: 0=OFF, 1=Full, 2=Medium, 3=Low
-
+int brightnessLevel = 2; // Change this: 0=OFF, 1=Full, 2=Medium, 3=Low
 
 Servo steeringServo;
 
