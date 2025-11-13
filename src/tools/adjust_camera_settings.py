@@ -17,7 +17,10 @@ class CameraController:
 
         # load the settings from the json file if it exists
         try:
-            with open("camera_settings.json", "r") as f:
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            tools_dir = os.path.join(script_dir, "..", "tools")
+            tools_dir = os.path.abspath(tools_dir)
+            with open(os.path.join(tools_dir, "camera_settings.json"), "r") as f:
                 settings = json.load(f)
                 self.exposure_time = settings.get("ExposureTime", 6000)
                 self.analogue_gain = settings.get("AnalogueGain", 9.4)
