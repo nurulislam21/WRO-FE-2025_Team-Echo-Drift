@@ -1,8 +1,5 @@
 # Team Echo Drift — WRO Future Engineers 2025
-<picture>
-  <source srcset="https://github.com/majednaeem/WRO/blob/main/Assets/github%20cover.gif">
-  <img src="" alt="Loading Echo Drift Cover Banner..." width="1021" height="300">
-</picture>
+<img src="https://github.com/majednaeem/WRO/blob/main/Assets/github%20cover.gif" alt="Loading Echo Drift Cover Banner..." height="300">
 
 
 ![WRO Future Engineers](https://img.shields.io/badge/WRO-Future_Engineers-orange?style=for-the-badge)
@@ -495,6 +492,13 @@ aSum = left_s + right_s
 error = aDiff / (aSum + 1e-6)  # normalized between roughly [-1,1]
 normalized_angle_offset = pid(error)
 ```
+
+<br>
+
+For Lap detection, we are using odometry (getting xy coords from encoders and gyro)
+
+
+![odometry](https://github.com/user-attachments/assets/b58366ba-ec3c-489a-a64e-3c3e39929d62)
 
 <br>
 
