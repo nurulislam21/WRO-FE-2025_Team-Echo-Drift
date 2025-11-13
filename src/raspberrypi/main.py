@@ -222,7 +222,7 @@ parking.has_parked_out = False
 
 # Odometry
 # init odometry tracker and visualizer
-start_zone_rect = [0.55, 2]  # meters
+start_zone_rect = [0.35, 2]  # meters
 tracker = OdometryTracker(wheel_radius=0.046, ticks_per_rev=2220, gear_ratio=1.0)
 visualizer = OdometryVisualizer(
     title="Odometry Path (Single Encoder + Gyro)", start_zone_rect=start_zone_rect
@@ -397,6 +397,8 @@ def main():
                     abs(x) < start_zone_rect[0] and abs(y) < start_zone_rect[1]
                 ):
                     current_lap += 1
+                    current_intersections += 4
+                    last_lap_time = time.time()
 
                 print(
                     f"Position: x={x:.3f}m, y={y:.3f}m, θ={math.degrees(theta):.1f}° | Intersections: {current_intersections}"
