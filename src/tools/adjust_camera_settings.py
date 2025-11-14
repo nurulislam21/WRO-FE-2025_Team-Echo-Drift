@@ -13,7 +13,7 @@ class CameraController:
         config = self.picam2.create_preview_configuration(
             main={"format": "RGB888", "size": (800, 600)}
         )
-        self.picam2.configure(config)
+        self.picam2.configure(config)        
 
         # load the settings from the json file if it exists
         try:
@@ -47,6 +47,10 @@ class CameraController:
 
         # Control window setup
         self.setup_control_window()
+
+        print("\n=== AVAILABLE CONTROLS ===")
+        for name, info in self.picam2.camera_controls.items():
+            print(f"{name}: {info}")
 
         # Threading control
         self.running = True
@@ -432,7 +436,16 @@ class CameraController:
                 "Contrast": self.contrast,
                 "Brightness": self.brightness,
                 "Sharpness": self.sharpness,
+                "ColourTemperature": self.colour_temp,
             }
+
+            # Add white balance controls
+            if self.awb_enable:
+                controls["AwbEnable"] = True
+                controls["AwbMode"] = self.awb_mode
+            else:
+                controls["AwbEnable"] = False
+                controls["ColourGains"] = (self.red_gain, self.blue_gain)
 
             # save the current settings to a json file
             settings = {
@@ -453,22 +466,7 @@ class CameraController:
 
             # write in tools directory
             with open(os.path.join(script_dir, "camera_settings.json"), "w") as f:
-                json.dump(settings, f, indent=4)
-            
-            # write in raspberry directory            
-            data_dir = os.path.join(script_dir, "..", "raspberrypi")
-            data_dir = os.path.abspath(data_dir)
-
-            with open(os.path.join(data_dir, "camera_settings.json"), "w") as f:
-                json.dump(settings, f, indent=4)
-
-            # Add white balance controls
-            if self.awb_enable:
-                controls["AwbEnable"] = True
-                controls["AwbMode"] = self.awb_mode
-            else:
-                controls["AwbEnable"] = False
-                controls["ColourGains"] = (self.red_gain, self.blue_gain)
+                json.dump(settings, f, indent=4)            
 
             self.picam2.set_controls(controls)
         except Exception as e:
