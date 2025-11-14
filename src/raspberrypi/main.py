@@ -39,7 +39,7 @@ BUZZER_PIN = 4
 print("DEBUG MODE" if DEBUG else "PRODUCTION")
 
 # Simulated camera settings
-MODE = "NO_OBSTACLE"  # "NO_OBSTACLE" or "OBSTACLE"
+MODE = "OBSTACLE"  # "NO_OBSTACLE" or "OBSTACLE"
 CAM_WIDTH = 640
 CAM_HEIGHT = 480
 # CAM_WIDTH = 800
@@ -742,8 +742,7 @@ def main():
                 # print(f"Obj: {red_obj_x}, {red_obj_y} | Wall: {r_wall_x}, {r_wall_y}")
             if contour_workers.mode == "OBSTACLE":
                 if (
-                    front_wall_area
-                    > 350
+                    front_wall_area > 350
                     # and (red_area == 0 and green_area == 0)
                     # and (left_area > 800 and right_area > 800)
                 ):

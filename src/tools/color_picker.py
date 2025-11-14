@@ -251,7 +251,9 @@ def main(color_name):
 
     # load camera settings from file
     try:
-        with open("camera_settings.json", "r") as f:
+        script_path = os.path.abspath(__file__)
+        script_dir = os.path.dirname(script_path)
+        with open(os.path.join(script_dir, "camera_settings.json"), "r") as f:
             import json
 
             settings = json.load(f)
@@ -434,6 +436,7 @@ if __name__ == "__main__":
     # load color mapping json file
     script_path = os.path.abspath(__file__)
     script_dir = os.path.dirname(script_path)
+
     with open(os.path.join(script_dir, "color_ranges.json"), "r") as f:
         color_ranges = json.load(f)
 

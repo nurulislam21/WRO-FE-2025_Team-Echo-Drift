@@ -137,9 +137,9 @@ class Parking:
             self.parking_lot_side = "right" # parking lot is on the right
 
         for speed, steps, angle in parking_out_instructions:
-            self.arduino.write(f"{speed},{steps},{angle}\n".encode())
-            time.sleep(0.1)
             print(f"Parking Out | Speed: {speed}, Steps: {steps}, Angle: {angle}")
+            self.arduino.write(f"{speed},{steps},{angle}\n".encode())
+            time.sleep(0.1)            
 
             # wait for arduino to respond
             while True:
