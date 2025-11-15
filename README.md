@@ -494,6 +494,18 @@ For Lap detection, we are using odometry (getting xy coords from encoders and gy
 
 ![odometry](https://github.com/user-attachments/assets/b58366ba-ec3c-489a-a64e-3c3e39929d62)
 
+
+To draw this odometry, we've collected some data of encoder ticks and gyro angle by running our bot on the track few times, and made `csv` files.
+For analyzing the values, we've used [MATLAB](https://www.mathworks.com/) 
+
+
+<img width="1440" height="787" alt="image" src="https://github.com/user-attachments/assets/126efcdc-e461-494a-8e94-372904fda5ec" />
+
+
+Then we've discovered that, the bot was drifting away, due to machanical error, after that we have used [Moving Average](https://en.wikipedia.org/wiki/Moving_average) realtime with the previous lap data, and hence 
+calculated the drift of xy coordinates. After that, we substracted these values to omit the drift.
+
+
 <br>
 
 
