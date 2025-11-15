@@ -4,6 +4,7 @@ import cv2
 import numpy as np
 import time
 from picamera2 import Picamera2
+import tkinter as tk
 
 # Global variables
 clicked_pixel = None
@@ -16,6 +17,12 @@ lower_bound_hsv = None
 upper_bound_hsv = None
 color_ranges = {}
 color_name = ""
+
+# Get screen dimensions for window sizing
+root = tk.Tk()
+root.withdraw()
+screen_width = root.winfo_screenwidth()
+screen_height = root.winfo_screenheight()
 
 # Trackbar callback - saves on every change
 def on_trackbar_change(x):
@@ -120,11 +127,13 @@ def update_color_ranges_from_trackbars():
 
     # Show the swatches
     cv2.imshow("Color Preview", swatches)
+    cv2.moveWindow("Color Preview", 100, screen_height - 650)
 
 
 # Function to create control window with trackbars
 def create_trackbars():
     cv2.namedWindow('Controls')
+    cv2.moveWindow('Controls', 100, screen_height - 450)
 
     print(f"L Min: {lower_bound[0]}, A Min: {lower_bound[1]}, B Min: {lower_bound[2]}")
     print(f"L Max: {upper_bound[0]}, A Max: {upper_bound[1]}, B Max: {upper_bound[2]}")
@@ -407,7 +416,10 @@ def main(color_name):
 
             # Display results
             cv2.imshow("Pi Camera - RGB", frame_rgb)
-            cv2.imshow("Masks", masks_display)
+
+            # set this window to top left
+            cv2.imshow("Masks", cv2.resize(masks_display, (800, 400)))
+            cv2.moveWindow("Masks", 0, 0)
 
             # Remove color selection callback
             cv2.setMouseCallback("Pi Camera - RGB", lambda *args: None)

@@ -64,16 +64,16 @@ class Parking:
             # right -> exit to right
             "left": [
                 # speed, steps, angle
-                (-self.parking_speed, 100, 160),
-                (self.parking_speed, 2100, 20),
-                (-self.parking_speed, 500, 95),                
-                (self.parking_speed, 3000, 160),
-                (-self.parking_speed, 1000, 95),
+                (-self.parking_speed, 500, 160),
+                (self.parking_speed, 2100, 25),
+                # (-self.parking_speed, 500, 95),              
+                (self.parking_speed, 2400, 160),
+                (-self.parking_speed, 4000, 95),
                 # (-self.parking_speed, 2000, 95),
             ],
             "right": [
                 # speed, steps, angle
-                (-self.parking_speed, 100, 30),
+                (-self.parking_speed, 500, 30),
                 (self.parking_speed, 2100, 170),
                 (-self.parking_speed, 500, 95),
                 (self.parking_speed, 3000, 30),

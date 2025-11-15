@@ -436,7 +436,7 @@ class CameraController:
                 "Contrast": self.contrast,
                 "Brightness": self.brightness,
                 "Sharpness": self.sharpness,
-                "ColourTemperature": self.colour_temp,
+                # "ColourTemperature": self.colour_temp,
             }
 
             # Add white balance controls

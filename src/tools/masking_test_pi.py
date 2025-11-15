@@ -120,7 +120,10 @@ def main():
     picam2.configure(config)
     # load camera settings from file
     try:
-        with open("camera_settings.json", "r") as f:
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        tools_dir = os.path.join(script_dir, "..", "tools")
+        tools_dir = os.path.abspath(tools_dir)
+        with open(os.path.join(tools_dir, "camera_settings.json"), "r") as f:
             import json
             settings = json.load(f)
             picam2.set_controls(settings)

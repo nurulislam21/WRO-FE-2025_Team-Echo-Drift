@@ -344,7 +344,7 @@ def main():
                 # dont collect odometry data during parking maneuver
                 and (parking.has_parked_out if MODE == "OBSTACLE" else True)
             ):
-                gyro_angle = clamp_angle(gyro_angle, threshold=10)
+                gyro_angle = clamp_angle(gyro_angle, threshold=7)
                 # Update odometry tracker
                 tracker.update(encoder_ticks, gyro_angle)
                 # Get current position
