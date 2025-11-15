@@ -256,7 +256,7 @@ void moveEncoder(int speed, long int targetPulses)
 
     if (speed > 0)
     {
-        while (getEncoder() > -targetPulses)
+        while (getEncoder() < targetPulses )
         {
             // update gyro
             updateGyroTotalAngle();
@@ -272,7 +272,7 @@ void moveEncoder(int speed, long int targetPulses)
     }
     else
     {
-        while (getEncoder() < targetPulses)
+        while (getEncoder() > -targetPulses)
         {
             // update gyro
             updateGyroTotalAngle();
