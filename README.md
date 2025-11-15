@@ -234,20 +234,14 @@ Our robot is designed with a balanced mix of mechanical, electrical, and electro
 | **TB6612FNG Motor Driver** | <img src="Assets/Motor Driver.jpeg" width="120"> | x1 | Controls DC motors |
 | **N20 DC Gear Motors (12V)** | <img src="Assets/n20.jpg" width="120"> | x2 | Linked to rear axle |
 | **MG90s Servo** | <img src="Assets/servo.jpg" width="120"> | x1 | Ackermann steering |
-| **HC-SR04 Ultrasonic Sensor** | <img src="Assets/Ultrasonic Sensor.jpeg" width="120"> | x2 | Obstacle detection (front + side) |
-| **IMU MPU6050 Gyroscope** | <img src="images/mpu6050.jpg" width="120"> | x1 | Orientation & stability |
+| **IMU MPU6050 Gyroscope** | <img width="120" alt="image" src="https://github.com/user-attachments/assets/20df5329-e3b6-4edf-9643-8bdfafa15b68" /> | x1 | Orientation & stability |
 | **OV5647 Camera Module for Raspberry Pi** | <img src="Assets/Camera.jpg" width="120"> | x1 | Lane & obstacle detection |
 | **Li-Po Battery (3S, 11.1V, 2200mAh)** | <img src="Assets/lipo.jpeg" width="120"> | x1 | Main power source |
 | **XL4015 Step-down Converter** | <img src="Assets/buck.jpeg" width="120"> | x1 | Voltage regulation |
 | **Prototype PCB Board** | <img src="images/pcb-proto.jpg" width="120"> | x1 | Custom wiring layout |
-| **Wheels with Rubber Tires** | <img src="images/wheel.jpg" width="120"> | x4 | High grip on track |
 | **3D Printed Chassis Parts** | <img src="images/chassis.jpg" width="120"> | - | Lightweight & modular |
 | **XT60 Connector** | <img src="Assets/xt60.jpeg" width="120"> | x1 |  Main power control |
-| **Start Button** | <img src="Assets/Push-Button.jpg" width="120"> | x1 | Competition start |
-| **Heat Shrink Tubes** | <img src="Assets/heat shrink.jpeg" width="120"> | Pack | Wire insulation |
-| **Screws & Standoffs** | <img src="Assets/screw.jpeg" width="120"> | - | Mounting hardware |
 | **Buzzer** | <img src="Assets/Buzzer.jpeg" width="120"> | x1 |Line Status Check |
-| **LED Indicators** | <img src="Assets/Led.png" width="120"> | x2 | Status display |
 
 
 ## Mobility Management
