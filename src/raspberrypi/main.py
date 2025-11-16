@@ -312,7 +312,7 @@ def main():
     # buzz to indicate ready
     GPIO.output(BUZZER_PIN, GPIO.HIGH)
     time.sleep(0.3)
-    GPIO.output(BUZZER_PIN, GPIO.LOW)    
+    GPIO.output(BUZZER_PIN, GPIO.LOW)
     angle = STRAIGHT_CONST
 
     try:
@@ -485,6 +485,10 @@ def main():
                     )
                     parking.has_parked_out = contour_workers.has_parked_out = True
 
+                    # set dir to odometry visualizer
+                    visualizer.set_dir(
+                        "ccw" if parking.parking_lot_side == "right" else "cw"
+                    )
                     # collect parking out odometry history and update tracker
                     for entry in parking.parking_out_odometry_history:
                         tracker.update(entry[0], entry[1])
@@ -742,21 +746,44 @@ def main():
                 # print(f"Obj: {red_obj_x}, {red_obj_y} | Wall: {r_wall_x}, {r_wall_y}")
             if contour_workers.mode == "OBSTACLE":
                 if (
-                    front_wall_area > 350
+                    front_wall_area
+                    > 350
                     # and (red_area == 0 and green_area == 0)
                     # and (left_area > 800 and right_area > 800)
                 ):
-                    if left_area - right_area > 1500:
-                        normalized_angle_offset = 1  # turn right hard
-                        print("left area too big")
-                    elif right_area - left_area > 1500:
-                        normalized_angle_offset = -1  # turn left hard
-                        print("right area too big")
-                    else:
-                        normalized_angle_offset = (
-                            -1 if parking.parking_lot_side == "left" else 1
-                        )
-                        print("only front wall")
+                    # if left_area - right_area > 1500:
+                    #     normalized_angle_offset = 1  # turn right hard
+                    #     print("left area too big")
+                    # elif right_area - left_area > 1500:
+                    #     normalized_angle_offset = -1  # turn left hard
+                    #     print("right area too big")
+                    # else:
+                    #     normalized_angle_offset = (
+                    #         -1 if parking.parking_lot_side == "left" else 1
+                    #     )
+                    #     print("only front wall")
+                    print("+" * 50)
+                    if visualizer.direction == "cw":
+                        if (
+                            visualizer.get_boundary_proximity(tracker.x, tracker.y)
+                            == "close_outer"
+                        ):
+                            normalized_angle_offset = 1  # turn right hard
+                            print("front wall + close to outer boundary CW")
+                        else:
+                            normalized_angle_offset = -1  # turn left hard
+                            print("front wall + not close to outer boundary CW")
+                    elif visualizer.direction == "ccw":
+                        if (
+                            visualizer.get_boundary_proximity(tracker.x, tracker.y)
+                            == "close_outer"
+                        ):
+                            normalized_angle_offset = -1  # turn left hard
+                            print("front wall + close to outer boundary CCW")
+                        else:
+                            normalized_angle_offset = 1  # turn right hard
+                            print("front wall + not close to outer boundary CCW")
+
                     obstacle_wall_pivot = (None, None)
                 #     show_front_wall = True
                 # else:
@@ -868,13 +895,23 @@ def main():
 
                 obstacle_wall_pivot = (None, None)
                 # PID controller
-                right_total_area = ((RIGHT_REGION[2] - RIGHT_REGION[0]) * (RIGHT_REGION[3] - RIGHT_REGION[1]))
-                left_total_area = ((LEFT_REGION[2] - LEFT_REGION[0]) * (LEFT_REGION[3] - LEFT_REGION[1]))
+                right_total_area = (RIGHT_REGION[2] - RIGHT_REGION[0]) * (
+                    RIGHT_REGION[3] - RIGHT_REGION[1]
+                )
+                left_total_area = (LEFT_REGION[2] - LEFT_REGION[0]) * (
+                    LEFT_REGION[3] - LEFT_REGION[1]
+                )
                 # left_area_normalized = left_area / ((LEFT_REGION[2] - LEFT_REGION[0]) * (LEFT_REGION[3] - LEFT_REGION[1]))
 
                 # interpolate
-                right_area_normalized = np.interp(right_area, [0, right_total_area/2, right_total_area], [0.01, 0.7, 1])
-                left_area_normalized = np.interp(left_area, [0, left_total_area/2, left_total_area], [0.01, 0.7, 1])
+                right_area_normalized = np.interp(
+                    right_area,
+                    [0, right_total_area / 2, right_total_area],
+                    [0.01, 0.7, 1],
+                )
+                left_area_normalized = np.interp(
+                    left_area, [0, left_total_area / 2, left_total_area], [0.01, 0.7, 1]
+                )
                 error = right_area_normalized - left_area_normalized
                 # left_buf.append(left_area)
                 # right_buf.append(right_area)

@@ -2,6 +2,7 @@ import time
 import matplotlib.pyplot as plt
 import math
 from typing import List, Tuple
+import numpy as np
 
 
 class OdometryTracker:
@@ -107,17 +108,22 @@ class OdometryTracker:
 
 class OdometryVisualizer:
     """
-    A class to visualize odometry data in real-time.
+    A class to visualize odometry data in real-time with inner and outer boundaries.
     """
 
     def __init__(
-        self, title: str = "Odometry Path", start_zone_rect: list = [0.55, 1.5]
+        self,
+        title: str = "Odometry Path",
+        start_zone_rect: list = [0.55, 1.5],
+        inner_margin: float = 0.5,  # Default margin from outer boundary
     ):
         """
         Initialize the visualizer.
 
         Args:
             title: Plot title
+            start_zone_rect: [width, height] of start zone
+            inner_margin: Margin between outer and inner boundaries
         """
         self.title = title
         plt.ion()  # Enable interactive mode
@@ -128,6 +134,61 @@ class OdometryVisualizer:
 
         self.start_zone_rect_x = start_zone_rect[0]
         self.start_zone_rect_y = start_zone_rect[1]
+        self.direction = "auto"
+
+        # Boundary line coordinates
+        self.padding = 0.3
+        self.inner_margin = inner_margin
+
+        # Outer boundary
+        self.x_min = None
+        self.x_max = None
+        self.y_min = None
+        self.y_max = None
+
+        # Inner boundary (will be computed from outer)
+        self.inner_x_min = None
+        self.inner_x_max = None
+        self.inner_y_min = None
+        self.inner_y_max = None
+
+        # middle boundary
+        self.middle_x_min = None
+        self.middle_x_max = None
+        self.middle_y_min = None
+        self.middle_y_max = None
+
+        # Tuning parameters
+        self.inner_margin_adjust = 0.0  # Additional adjustment for tuning
+        self.position_history = []  # Store positions for best-fit calculation
+
+    def set_dir(self, dir: str):
+        """
+        Set direction for predefined boundaries.
+
+        Args:
+            - 'ccw', 'cw' for obstacle challenge,
+            - 'auto' for open challenge
+        """
+        self.direction = dir
+        if dir == "cw":
+            self.x_min = -1.5
+            self.x_max = 1.5
+            self.y_min = -3
+            self.y_max = 0
+        elif dir == "ccw":
+            self.x_min = -1.5
+            self.x_max = 1.5
+            self.y_min = 0
+            self.y_max = 3
+        else:
+            self.x_min = None
+            self.x_max = None
+            self.y_min = None
+            self.y_max = None
+
+        # Update inner boundary when outer is set
+        self._update_inner_boundary()
 
     def _move_window_top_left(self):
         """Attempt to move the Matplotlib window to the top-left corner of the screen."""
@@ -142,20 +203,118 @@ class OdometryVisualizer:
                 # Other or unsupported backends (e.g., Agg)
                 pass
 
-    def update_plot(self, positions: List[Tuple[float, float]]):
+    def _update_inner_boundary(self):
+        """Calculate inner boundary based on outer boundary and margins."""
+        if all(v is not None for v in [self.x_min, self.x_max, self.y_min, self.y_max]):
+            total_margin = self.inner_margin + self.inner_margin_adjust
+            self.inner_x_min = self.x_min + total_margin
+            self.inner_x_max = self.x_max - total_margin
+            self.inner_y_min = self.y_min + total_margin
+            self.inner_y_max = self.y_max - total_margin
+
+            # Middle boundary (for reference)
+            self.middle_x_min = (self.x_min + self.inner_x_min - self.padding) / 2
+            self.middle_x_max = (self.x_max + self.inner_x_max + self.padding) / 2
+            self.middle_y_min = (self.y_min + self.inner_y_min - self.padding) / 2
+            self.middle_y_max = (self.y_max + self.inner_y_max + self.padding) / 2        
+
+    def tune_inner_margin(self, adjustment: float):
+        """
+        Adjust the inner boundary margin.
+
+        Args:
+            adjustment: Amount to adjust margin (positive = shrink inner rect, negative = expand)
+        """
+        self.inner_margin_adjust += adjustment
+        self._update_inner_boundary()
+
+    def set_inner_margin(self, margin: float):
+        """
+        Set the total inner margin directly.
+
+        Args:
+            margin: New margin value
+        """
+        self.inner_margin = margin
+        self.inner_margin_adjust = 0.0
+        self._update_inner_boundary()
+
+    def compute_best_fit_boundaries(
+        self, positions: List[Tuple[float, float]], percentile: float = 95
+    ):
+        """
+        Compute best-fit outer and inner boundaries from position data.
+
+        Args:
+            positions: List of (x, y) tuples
+            percentile: Percentile to use for boundary detection (to ignore outliers)
+        """
+        if len(positions) < 10:
+            return
+
+        xs, ys = zip(*positions)
+        xs, ys = np.array(xs), np.array(ys)
+
+        # Use percentile to be robust against outliers
+        lower_p = (100 - percentile) / 2
+        upper_p = 100 - lower_p
+
+        self.x_min = np.percentile(xs, lower_p)
+        self.x_max = np.percentile(xs, upper_p)
+        self.y_min = np.percentile(ys, lower_p)
+        self.y_max = np.percentile(ys, upper_p)
+
+        # Update inner boundary
+        self._update_inner_boundary()
+
+    def get_boundary_proximity(self, x: float, y: float) -> str:
+        # check if current position is within middle boundary
+        if x >= self.middle_x_min and x <= self.middle_x_max and y >= self.middle_y_min and y <= self.middle_y_max:
+            return "close_inner"
+        else:
+            return "close_outer"
+
+    def update_plot(self, positions: List[Tuple[float, float]], auto_fit: bool = False):
         """
         Update the plot with new position data.
 
         Args:
             positions: List of (x, y) position tuples
+            auto_fit: If True, automatically compute best-fit boundaries
         """
         self.ax.clear()
 
         if len(positions) > 0:
             xs, ys = zip(*positions)
-            self.ax.plot(xs, ys, marker=".", linewidth=1.5, markersize=4)
 
-            # draw a zone on start point
+            # Auto-fit boundaries if requested
+            if auto_fit:
+                self.compute_best_fit_boundaries(positions)
+            else:
+                # Dynamic boundary expansion
+                if self.x_min is None or min(xs) < self.x_min:
+                    self.x_min = min(xs)
+                if self.x_max is None or max(xs) > self.x_max:
+                    self.x_max = max(xs)
+                if self.y_min is None or min(ys) < self.y_min:
+                    self.y_min = min(ys)
+                if self.y_max is None or max(ys) > self.y_max:
+                    self.y_max = max(ys)                            
+
+                self._update_inner_boundary()
+
+            # Plot the path
+            self.ax.plot(
+                xs,
+                ys,
+                marker=".",
+                linewidth=1.5,
+                markersize=4,
+                color="blue",
+                label="Path",
+            )
+
+            # Draw start zone
             self.ax.add_patch(
                 plt.Rectangle(
                     (0 - self.start_zone_rect_x, 0 - self.start_zone_rect_y),
@@ -163,14 +322,139 @@ class OdometryVisualizer:
                     2 * self.start_zone_rect_y,
                     color="green",
                     alpha=0.3,
+                    label="Start Zone",
                 )
             )
 
+            # Draw outer boundary (red dashed)
+            outer_coords = [
+                [self.x_min - self.padding, self.x_max + self.padding],
+                [self.y_min - self.padding, self.y_min - self.padding],
+            ]
+            self.ax.plot(*outer_coords, color="red", linestyle="--", linewidth=2)
+
+            outer_coords = [
+                [self.x_min - self.padding, self.x_max + self.padding],
+                [self.y_max + self.padding, self.y_max + self.padding],
+            ]
+            self.ax.plot(*outer_coords, color="red", linestyle="--", linewidth=2)
+
+            outer_coords = [
+                [self.x_min - self.padding, self.x_min - self.padding],
+                [self.y_min - self.padding, self.y_max + self.padding],
+            ]
+            self.ax.plot(*outer_coords, color="red", linestyle="--", linewidth=2)
+
+            outer_coords = [
+                [self.x_max + self.padding, self.x_max + self.padding],
+                [self.y_min - self.padding, self.y_max + self.padding],
+            ]
+            self.ax.plot(
+                *outer_coords,
+                color="red",
+                linestyle="--",
+                linewidth=2,
+                label="Outer Boundary",
+            )
+            
+
+            # Draw inner boundary (orange solid) if defined
+            if all(
+                v is not None
+                for v in [
+                    self.inner_x_min,
+                    self.inner_x_max,
+                    self.inner_y_min,
+                    self.inner_y_max,
+                ]
+            ):
+                # Bottom
+                self.ax.plot(
+                    [self.inner_x_min, self.inner_x_max],
+                    [self.inner_y_min, self.inner_y_min],
+                    color="orange",
+                    linestyle="-",
+                    linewidth=2,
+                )
+                # Top
+                self.ax.plot(
+                    [self.inner_x_min, self.inner_x_max],
+                    [self.inner_y_max, self.inner_y_max],
+                    color="orange",
+                    linestyle="-",
+                    linewidth=2,
+                )
+                # Left
+                self.ax.plot(
+                    [self.inner_x_min, self.inner_x_min],
+                    [self.inner_y_min, self.inner_y_max],
+                    color="orange",
+                    linestyle="-",
+                    linewidth=2,
+                )
+                # Right
+                self.ax.plot(
+                    [self.inner_x_max, self.inner_x_max],
+                    [self.inner_y_min, self.inner_y_max],
+                    color="orange",
+                    linestyle="-",
+                    linewidth=2,
+                    label="Inner Boundary",
+                )
+
+
+            # Draw middle boundary (purple solid) if defined
+            if all(
+                v is not None
+                for v in [
+                    self.middle_x_min,
+                    self.middle_x_max,
+                    self.middle_y_min,
+                    self.middle_y_max,
+                ]
+            ):
+                # Bottom
+                self.ax.plot(
+                    [self.middle_x_min, self.middle_x_max],
+                    [self.middle_y_min, self.middle_y_min],
+                    color="gray",
+                    linestyle="--",
+                    linewidth=1,
+                )
+                # Top
+                self.ax.plot(
+                    [self.middle_x_min, self.middle_x_max],
+                    [self.middle_y_max, self.middle_y_max],
+                    color="gray",
+                    linestyle="--",
+                    linewidth=1,
+                )
+                # Left
+                self.ax.plot(
+                    [self.middle_x_min, self.middle_x_min],
+                    [self.middle_y_min, self.middle_y_max],
+                    color="gray",
+                    linestyle="--",
+                    linewidth=1,
+                )
+                # Right
+                self.ax.plot(
+                    [self.middle_x_max, self.middle_x_max],
+                    [self.middle_y_min, self.middle_y_max],
+                    color="gray",
+                    linestyle="--",
+                    linewidth=1,
+                    label="Middle Boundary",
+                )
+
         self.ax.set_xlabel("X (m)")
         self.ax.set_ylabel("Y (m)")
-        self.ax.set_title(self.title)
+        self.ax.set_title(
+            f"{self.title}\nInner Margin: {self.inner_margin + self.inner_margin_adjust:.2f}m"
+        )
         self.ax.axis("equal")
         self.ax.grid(True, alpha=0.3)
+        self.ax.legend(loc="upper right", fontsize=8)
 
         plt.pause(0.01)
 
@@ -195,164 +479,20 @@ def clamp_angle(totalAngle, threshold=5):
 
 def main():
     """Main function to run odometry tracking simulation."""
+    from odometry_log1 import od
 
     # Sample odometry data (ticks, gyro_angle)
-    odometry_data = [
-        (2706, 0),
-        (3221, 0),
-        (5546, -40.49),
-        (6932, -25.56),
-        (10165, 0),
-        (11927, 0),
-        (14835, 0),
-        (16226, 0),
-        (18639, -36.93),
-        (19768, -57.7),
-        (22387, -38.5),
-        (23570, -52.28),
-        (26139, -90),
-        (27903, -90),
-        (31665, -90),
-        (33575, -90),
-        (37138, -90),
-        (38463, -90),
-        (40726, -117.02),
-        (41848, -90),
-        (44521, -90),
-        (46006, -116.72),
-        (48666, -146.7),
-        (50067, -180),
-        (51824, -159.21),
-        (55456, -180),
-        (57260, -180),
-        (60662, -180),
-        (62068, -206.6),
-        (64642, -180),
-        (65884, -180),
-        (68859, -180),
-        (70160, -219.2),
-        (71509, -237.79),
-        (75064, -235.85),
-        (76844, -243.67),
-        (80608, -244.32),
-        (82476, -246.55),
-        (85740, -270),
-        (87067, -249.1),
-        (89370, -270),
-        (90463, -270),
-        (91928, -270),
-        (94895, -270),
-        (96775, -270),
-        (99403, -297.83),
-        (100522, -320.66),
-        (102894, -360),
-        (104504, -360),
-        (107808, -337.74),
-        (109611, -360),
-        (113248, -338.14),
-        (114630, -360),
-        (117001, -360),
-        (118332, -338.04),
-        (120702, -360),
-        (121874, -394.85),
-        (124814, -385.03),
-        (126035, -405.23),
-        (127432, -421.35),
-        (131075, -418.79),
-        (133004, -417.31),
-        (136841, -416.91),
-        (138412, -428.01),
-        (140851, -450),
-        (141981, -450),
-        (144325, -450),
-        (145548, -450),
-        (147282, -450),
-        (150135, -486.21),
-        (151590, -499.15),
-        (155143, -493.03),
-        (156858, -501.57),
-        (160503, -505.56),
-        (161875, -540),
-        (164347, -516.0),
-        (165745, -503.57),
-        (168252, -540),
-        (169608, -540),
-        (172651, -563.83),
-        (174380, -570.25),
-        (177911, -583.41),
-        (179813, -579.47),
-        (183492, -589.27),
-        (185356, -591.33),
-        (188205, -630),
-        (189380, -604.1),
-        (190673, -589.74),
-        (193139, -630),
-        (194741, -630),
-        (197329, -667.58),
-        (198817, -661.84),
-        (202185, -662.71),
-        (203975, -671.69),
-        (207705, -668.55),
-        (209194, -691.65),
-        (210533, -695.58),
-        (213026, -671.9),
-        (214152, -696.14),
-        (216864, -720),
-        (218202, -720),
-        (220830, -746.19),
-        (222268, -720),
-        (224944, -759.39),
-        (226673, -762.39),
-        (230429, -755.4),
-        (232348, -756.61),
-        (235482, -784.48),
-        (236734, -787.63),
-        (239116, -767.67),
-        (240180, -787.72),
-        (243518, -810),
-        (245343, -810),
-        (247956, -837.7),
-        (249457, -845.96),
-        (251183, -839.27),
-        (254815, -843.02),
-        (256545, -853.45),
-        (259918, -858.77),
-        (261189, -900),
-        (263512, -865.18),
-        (264744, -847.3),
-        (268352, -844.89),
-        (269922, -853.78),
-        (272363, -900),
-        (273458, -920.45),
-        (275805, -962.18),
-        (277409, -967.73),
-        (278783, -947.77),
-        (281905, -931.1),
-        (283779, -930.48),
-        (287380, -928.43),
-        (288701, -952.37),
-        (291004, -940.28),
-        (292358, -927.72),
-        (294841, -963.68),
-        (296300, -966.46),
-        (299162, -990),
-        (300954, -990),
-        (304426, -1013.39),
-        (306242, -990),
-        (309773, -1016.18),
-        (311524, -1022.25),
-        (314505, -1032.91),
-        (315658, -1054.84),
-        (318016, -1029.87),
-    ]
-
+    odometry_data = od
     lap_samples = {}
 
     # Initialize tracker and visualizer
     tracker = OdometryTracker(wheel_radius=0.046, ticks_per_rev=2220, gear_ratio=1.0)
     visualizer = OdometryVisualizer(
-        title="Odometry Path (Single Encoder + Gyro)", start_zone_rect=[0.55, 2]
+        title="Odometry Path (Single Encoder + Gyro)",
+        start_zone_rect=[0.55, 2],
+        inner_margin=0.75,
     )
+    visualizer.set_dir("ccw")  # set direction for boundary lines
 
     print("Starting odometry simulation...")
     time.sleep(1)
@@ -367,7 +507,11 @@ def main():
         alpha = 0.3  # between 0.05–0.3, depending on how noisy your drift is
         MAX_DRIFT_THRESHOLD = 0.5
 
+        count = 0
+
         for ticks, gyro_angle in odometry_data:
+            count += 1            
+
             # Update tracker with new data
             tracker.update(ticks, gyro_angle)
             # Get current position
@@ -378,6 +522,10 @@ def main():
             # x -= offset_x
             # y -= offset_y
             # print(f"Position: x={x:.3f}m, y={y:.3f}m, θ={math.degrees(theta):.1f}°")
+
+            if count % 10 == 0:
+                print("close to inner" if visualizer.get_boundary_proximity(tracker.x, tracker.y) else "close to outer")
+                time.sleep(5)
 
             if lap > 0:
                 # skip correction for first few samples
