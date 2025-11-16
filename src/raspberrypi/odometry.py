@@ -15,6 +15,7 @@ class OdometryTracker:
         wheel_radius: float = 0.033,
         ticks_per_rev: int = 1000,
         gear_ratio: float = 1.0,
+        debug: bool = False,
     ):
         """
         Initialize the odometry tracker.
@@ -28,6 +29,7 @@ class OdometryTracker:
         self.wheel_radius = wheel_radius
         self.ticks_per_rev = ticks_per_rev
         self.gear_ratio = gear_ratio
+        self.debug = debug
 
         # Position and orientation state
         self.x = 0.0
@@ -37,6 +39,10 @@ class OdometryTracker:
         # History tracking
         self.positions: List[Tuple[float, float]] = [(0.0, 0.0)]
         self.prev_ticks = 0
+
+        # open a log file if debug is enabled
+        if self.debug:
+            self.log_file = open("odometry_debug_log.txt", "w")
 
     def reset_position(self):
         """Reset position and orientation to origin."""
@@ -85,6 +91,10 @@ class OdometryTracker:
         # Store position history
         self.positions.append((self.x, self.y))
 
+        if self.debug:
+            log_entry = f"({ticks}, {gyro_angle})"
+            self.log_file.write(log_entry + "\n")
+
     def get_position(self) -> Tuple[float, float, float]:
         """
         Get current position and orientation.
@@ -104,6 +114,11 @@ class OdometryTracker:
         if index is not None:
             return self.positions[index]
         return self.positions.copy()
+    
+    def close(self):
+        """Close any resources."""
+        if self.debug:
+            self.log_file.close()
 
 
 class OdometryVisualizer:
@@ -115,7 +130,8 @@ class OdometryVisualizer:
         self,
         title: str = "Odometry Path",
         start_zone_rect: list = [0.55, 1.5],
-        inner_margin: float = 0.5,  # Default margin from outer boundary
+        inner_margin: float = 1,  # Default margin from outer boundary
+        debug: bool = False,
     ):
         """
         Initialize the visualizer.
@@ -128,6 +144,7 @@ class OdometryVisualizer:
         self.title = title
         plt.ion()  # Enable interactive mode
         self.fig, self.ax = plt.subplots()
+        self.debug = debug
 
         # Move the plot window to top-left corner
         self._move_window_top_left()
@@ -172,13 +189,14 @@ class OdometryVisualizer:
         """
         self.direction = dir
         if dir == "cw":
-            self.x_min = -1.5
-            self.x_max = 1.5
+            self.x_min = -1
+            self.x_max = 1
             self.y_min = -3
             self.y_max = 0
+
         elif dir == "ccw":
-            self.x_min = -1.5
-            self.x_max = 1.5
+            self.x_min = -1
+            self.x_max = 1
             self.y_min = 0
             self.y_max = 3
         else:
@@ -206,17 +224,23 @@ class OdometryVisualizer:
     def _update_inner_boundary(self):
         """Calculate inner boundary based on outer boundary and margins."""
         if all(v is not None for v in [self.x_min, self.x_max, self.y_min, self.y_max]):
-            total_margin = self.inner_margin + self.inner_margin_adjust
-            self.inner_x_min = self.x_min + total_margin
-            self.inner_x_max = self.x_max - total_margin
-            self.inner_y_min = self.y_min + total_margin
-            self.inner_y_max = self.y_max - total_margin
+            # total_margin = self.inner_margin + self.inner_margin_adjust
+            # always set inner boundary to be 1/3 of outer boundary size
+            width = self.x_max - self.x_min
+            height = self.y_max - self.y_min            
+            margin_x = (width) / 3
+            margin_y = (height) / 3
+            
+            self.inner_x_min = self.x_min + margin_x
+            self.inner_x_max = self.x_max - margin_x
+            self.inner_y_min = self.y_min + margin_y
+            self.inner_y_max = self.y_max - margin_y
 
             # Middle boundary (for reference)
-            self.middle_x_min = (self.x_min + self.inner_x_min - self.padding) / 2
-            self.middle_x_max = (self.x_max + self.inner_x_max + self.padding) / 2
-            self.middle_y_min = (self.y_min + self.inner_y_min - self.padding) / 2
-            self.middle_y_max = (self.y_max + self.inner_y_max + self.padding) / 2        
+            self.middle_x_min = (self.x_min + self.inner_x_min) / 2
+            self.middle_x_max = (self.x_max + self.inner_x_max) / 2
+            self.middle_y_min = (self.y_min + self.inner_y_min) / 2
+            self.middle_y_max = (self.y_max + self.inner_y_max) / 2
 
     def tune_inner_margin(self, adjustment: float):
         """

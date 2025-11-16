@@ -44,7 +44,7 @@ CAM_WIDTH = 640
 CAM_HEIGHT = 480
 # CAM_WIDTH = 800
 # CAM_HEIGHT = 600
-MAX_SPEED = 50 if MODE == "OBSTACLE" else 80
+MAX_SPEED = 50 if MODE == "OBSTACLE" else 90
 MIN_SPEED = 40 if MODE == "OBSTACLE" else 50
 
 # Intersections
@@ -66,15 +66,15 @@ PARKING_LOT_REGION = [0, 185, CAM_WIDTH, 400]  # parking lot detection
 # DANGER_ZONE_POINTS = [175, OBS_REGION[1], 465, OBS_REGION[3]]  # area to check for obstacles
 DANGER_ZONE_POINTS = [
     {
-        "x1": 275,
+        "x1": 260,
         "y1": OBS_REGION[1],
-        "x2": 190,
+        "x2": 175,
         "y2": OBS_REGION[3],
     },
     {
-        "x1": 365,
+        "x1": 380,
         "y1": OBS_REGION[1],
-        "x2": 450,
+        "x2": 465,
         "y2": OBS_REGION[3],
     },
 ]
@@ -223,9 +223,9 @@ parking.has_parked_out = False
 # Odometry
 # init odometry tracker and visualizer
 start_zone_rect = [0.35, 2]  # meters
-tracker = OdometryTracker(wheel_radius=0.046, ticks_per_rev=2220, gear_ratio=1.0)
+tracker = OdometryTracker(wheel_radius=0.046, ticks_per_rev=2220, gear_ratio=1.0, debug=DEBUG)
 visualizer = OdometryVisualizer(
-    title="Odometry Path (Single Encoder + Gyro)", start_zone_rect=start_zone_rect
+    title="Odometry Path (Single Encoder + Gyro)", start_zone_rect=start_zone_rect, debug=DEBUG
 )
 
 encoder_ticks = 0
@@ -393,11 +393,12 @@ def main():
                 visualizer.update_plot(tracker.get_position_history())
 
                 # current_intersections = round(abs(gyro_angle) / 90)
-                if (time.time() - last_lap_time) >= LAP_COUNT_INTERVAL and (
-                    abs(x) < start_zone_rect[0] and abs(y) < start_zone_rect[1]
-                ):
-                    current_lap += 1
-                    current_intersections += 4
+                if abs(x) < start_zone_rect[0] and abs(y) < start_zone_rect[1]:                    
+                    if (time.time() - last_lap_time) >= LAP_COUNT_INTERVAL:
+                        current_lap += 1
+                        current_intersections += 4
+
+                    # keep resetting lap time only when inside start zone
                     last_lap_time = time.time()
 
                 print(
@@ -487,11 +488,11 @@ def main():
 
                     # set dir to odometry visualizer
                     visualizer.set_dir(
-                        "ccw" if parking.parking_lot_side == "right" else "cw"
+                        "ccw" if parking.parking_lot_side == "left" else "cw"
                     )
                     # collect parking out odometry history and update tracker
-                    for entry in parking.parking_out_odometry_history:
-                        tracker.update(entry[0], entry[1])
+                    # for entry in parking.parking_out_odometry_history:
+                    #     tracker.update(entry[0], entry[1])
                     # set the lap time to now to avoid lap count right after parking
                     last_lap_time = time.time()
                     continue
@@ -520,7 +521,11 @@ def main():
                 print("continue")
                 continue
 
-            elif reverse_area > 1000:
+            elif reverse_area > 1000 and not (
+                # avoid triggering reverse when front wall is too close in obstacle mode
+                # cause we want to reverse out in angle
+                front_wall_area > 350 if MODE == "OBSTACLE" else False
+            ):
                 print("Reverse trigger detected!")
                 trigger_reverse = True
                 reverse_start_time = time.time()
@@ -750,7 +755,7 @@ def main():
                     > 350
                     # and (red_area == 0 and green_area == 0)
                     # and (left_area > 800 and right_area > 800)
-                ):
+                ):                
                     # if left_area - right_area > 1500:
                     #     normalized_angle_offset = 1  # turn right hard
                     #     print("left area too big")
@@ -761,30 +766,34 @@ def main():
                     #     normalized_angle_offset = (
                     #         -1 if parking.parking_lot_side == "left" else 1
                     #     )
-                    #     print("only front wall")
+                    #     print("only front wall")                    
                     print("+" * 50)
                     if visualizer.direction == "cw":
                         if (
                             visualizer.get_boundary_proximity(tracker.x, tracker.y)
                             == "close_outer"
                         ):
-                            normalized_angle_offset = 1  # turn right hard
-                            print("front wall + close to outer boundary CW")
+                            normalized_angle_offset = -1
+                            print("front wall + close to outer boundary CW + left")                                                        
                         else:
-                            normalized_angle_offset = -1  # turn left hard
-                            print("front wall + not close to outer boundary CW")
+                            normalized_angle_offset = 1
+                            print("front wall + not close to outer boundary CW + right")
                     elif visualizer.direction == "ccw":
                         if (
                             visualizer.get_boundary_proximity(tracker.x, tracker.y)
                             == "close_outer"
                         ):
-                            normalized_angle_offset = -1  # turn left hard
-                            print("front wall + close to outer boundary CCW")
+                            normalized_angle_offset = 1
+                            print("front wall + close to outer boundary CCW + right")
                         else:
-                            normalized_angle_offset = 1  # turn right hard
-                            print("front wall + not close to outer boundary CCW")
-
+                            normalized_angle_offset = -1
+                            print("front wall + not close to outer boundary CCW + left")
                     obstacle_wall_pivot = (None, None)
+                    
+                    if reverse_area > 1000:
+                        reverse_angle = STRAIGHT_CONST - (30 * normalized_angle_offset)  # turn left/right when reversing
+                        trigger_reverse = True
+                        reverse_start_time = time.time()
                 #     show_front_wall = True
                 # else:
                 #     show_front_wall = False
@@ -1022,6 +1031,7 @@ def main():
         picam2.stop()
         arduino.close()
         cv2.destroyAllWindows()
+        tracker.close()
 
 
 if __name__ == "__main__":
