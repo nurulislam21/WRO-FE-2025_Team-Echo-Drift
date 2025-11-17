@@ -232,14 +232,13 @@ Our robot is designed with a balanced mix of mechanical, electrical, and electro
 | **Arduino Nano** | <img src="Assets/Arduino.jpeg" width="120"> | x1 | Microcontroller for low-level control |
 | **Raspberry Pi 5** | <img src="Assets/Pi 5.jpeg" width="120"> | x1 | Main controller for vision & navigation |
 | **TB6612FNG Motor Driver** | <img src="Assets/Motor Driver.jpeg" width="120"> | x1 | Controls DC motors |
-| **N20 DC Gear Motors (12V)** | <img src="Assets/n20.jpg" width="120"> | x2 | Linked to rear axle |
+| **N20 DC Gear Motors (12V) with encoder** | <img src="Assets/n20.jpg" width="120"> | x2 | Linked to rear axle |
 | **MG90s Servo** | <img src="Assets/servo.jpg" width="120"> | x1 | Ackermann steering |
 | **IMU MPU6050 Gyroscope** | <img width="120" alt="image" src="https://github.com/user-attachments/assets/20df5329-e3b6-4edf-9643-8bdfafa15b68" /> | x1 | Orientation & stability |
 | **OV5647 Camera Module for Raspberry Pi** | <img src="Assets/Camera.jpg" width="120"> | x1 | Lane & obstacle detection |
 | **Li-Po Battery (3S, 11.1V, 2200mAh)** | <img src="Assets/lipo.jpeg" width="120"> | x1 | Main power source |
 | **XL4015 Step-down Converter** | <img src="Assets/buck.jpeg" width="120"> | x1 | Voltage regulation |
-| **Prototype PCB Board** | <img src="images/pcb-proto.jpg" width="120"> | x1 | Custom wiring layout |
-| **3D Printed Chassis Parts** | <img src="images/chassis.jpg" width="120"> | - | Lightweight & modular |
+| **Prototype PCB Board** | <img width="120" alt="PCB" src="https://github.com/user-attachments/assets/51638b75-3a6b-45b4-a1e0-fda27e10d7e4" /> | x1 | Custom wiring layout |
 | **XT60 Connector** | <img src="Assets/xt60.jpeg" width="120"> | x1 |  Main power control |
 | **Buzzer** | <img src="Assets/Buzzer.jpeg" width="120"> | x1 |Line Status Check |
 
