@@ -32,7 +32,6 @@ if debug_flag:
     DEBUG = True
 else:
     DEBUG = False
-DEBUG = True
 
 BUZZER_PIN = 4
 # DEBUG = True
