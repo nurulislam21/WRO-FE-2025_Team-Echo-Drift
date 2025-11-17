@@ -54,12 +54,13 @@ Now, we’re giving it our all to lift Bangladesh’s flag high at the World Rob
     <td>
 <h2> Nurul Islam Noman – Mechanical Engineering </h2>
 
-Specializing in Mechanical Design with strong experience in Robotics and Embedded Systems. Extensive work in research and development has built expertise where precision, innovation, and reliability are key.
-
-Skills span Robotics, Embedded Systems, and Mechanical Design, enabling a holistic approach to complex technical challenges. With a focus on Mechanical Design, the goal is to create solutions that seamlessly integrate hardware, software, and system reliability.
+Specialized in Mechanical Design with strong experience in SolidWorks, Fusion 360, and 3D modeling. Strong background in robotics and embedded systems, 
+supported by hands-on R&D work. Experience in robotics and embedded systems supports a well-rounded engineering approach, enabling the design of precise, reliable, and integrated mechanical solutions.
+<br/>
+_Github: [github.com/nurulislam21](https://github.com/nurulislam21/)_
     </td>
     <td>
-      <img src="t-photos/noman.jpg" alt="Nurul Islam Noman" width="400" style="object-fit: cover;"/>
+      <img src="t-photos/noman.jpg" alt="Nurul Islam Noman" width="600" style="object-fit: cover;"/>
     </td>
   </tr>
 </table>
@@ -71,6 +72,8 @@ Skills span Robotics, Embedded Systems, and Mechanical Design, enabling a holist
 <h2> Tanim – Programming & Software Architecture </h2>
 
 A versatile programmer with expertise in Python, C++, and JavaScript, specializing in robotics and embedded systems. Skilled in integrating Raspberry Pi and microcontrollers for automation and control. Proficient in image processing and computer vision with OpenCV, enabling advanced robotic perception. Experienced in real-time communication, lightweight AI models, and deploying reliable robotics applications.
+<br/>
+_Github: [github.com/tanimsk](https://github.com/tanimsk/)_
     </td>
     <td>
       <img src="t-photos/Tanim.jpeg" alt="Tanim SK" width="700" style="object-fit: cover;"/>
@@ -87,6 +90,8 @@ A versatile programmer with expertise in Python, C++, and JavaScript, specializi
 Majedul Islam Naeem is a passionate Robotics and Embedded Systems innovator with strong expertise in Electronics & Circuit Design. He excels at transforming ideas into practical, intelligent solutions, designing efficient circuits, and integrating electronics seamlessly with robotics projects.
 
 Driven by curiosity and creativity, Naeem thrives in collaborative environments and is committed to pushing the boundaries of technology while inspiring others to innovate.
+<br/>
+_Github: [github.com/Naeem](https://github.com/Naeem/)_
     </td>
     <td>
       <img src="t-photos/Naeem.jpg" alt="Majedul Islam Naeem" width="400" style="object-fit: cover;"/>
