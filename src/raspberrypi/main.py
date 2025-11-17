@@ -66,15 +66,15 @@ PARKING_LOT_REGION = [0, 185, CAM_WIDTH, 400]  # parking lot detection
 # DANGER_ZONE_POINTS = [175, OBS_REGION[1], 465, OBS_REGION[3]]  # area to check for obstacles
 DANGER_ZONE_POINTS = [
     {
-        "x1": 260,
+        "x1": 250,
         "y1": OBS_REGION[1],
-        "x2": 175,
+        "x2": 165,
         "y2": OBS_REGION[3],
     },
     {
-        "x1": 380,
+        "x1": 390,
         "y1": OBS_REGION[1],
-        "x2": 465,
+        "x2": 475,
         "y2": OBS_REGION[3],
     },
 ]
@@ -794,6 +794,16 @@ def main():
                         reverse_angle = STRAIGHT_CONST - (30 * normalized_angle_offset)  # turn left/right when reversing
                         trigger_reverse = True
                         reverse_start_time = time.time()
+
+                        speed = 0  # stop before reversing
+                        arduino.write(f"{speed},-1,{reverse_angle}\n".encode())
+                        if DEBUG and cv2.waitKey(1) & 0xFF == ord("q"):
+                            break
+
+                        print("continue")
+                        continue
+
+
                 #     show_front_wall = True
                 # else:
                 #     show_front_wall = False

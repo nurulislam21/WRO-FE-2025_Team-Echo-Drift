@@ -142,9 +142,12 @@ class OdometryVisualizer:
             inner_margin: Margin between outer and inner boundaries
         """
         self.title = title
-        plt.ion()  # Enable interactive mode
-        self.fig, self.ax = plt.subplots()
         self.debug = debug
+
+        if self.debug:
+            plt.ion()  # Enable interactive mode
+            self.fig, self.ax = plt.subplots()
+        
 
         # Move the plot window to top-left corner
         self._move_window_top_left()
@@ -175,8 +178,7 @@ class OdometryVisualizer:
         self.middle_y_min = None
         self.middle_y_max = None
 
-        # Tuning parameters
-        self.inner_margin_adjust = 0.0  # Additional adjustment for tuning
+        # Tuning parameters        
         self.position_history = []  # Store positions for best-fit calculation
 
     def set_dir(self, dir: str):
@@ -209,6 +211,8 @@ class OdometryVisualizer:
         self._update_inner_boundary()
 
     def _move_window_top_left(self):
+        if self.debug:
+            return
         """Attempt to move the Matplotlib window to the top-left corner of the screen."""
         try:
             # Tkinter backend
@@ -242,26 +246,6 @@ class OdometryVisualizer:
             self.middle_y_min = (self.y_min + self.inner_y_min) / 2
             self.middle_y_max = (self.y_max + self.inner_y_max) / 2
 
-    def tune_inner_margin(self, adjustment: float):
-        """
-        Adjust the inner boundary margin.
-
-        Args:
-            adjustment: Amount to adjust margin (positive = shrink inner rect, negative = expand)
-        """
-        self.inner_margin_adjust += adjustment
-        self._update_inner_boundary()
-
-    def set_inner_margin(self, margin: float):
-        """
-        Set the total inner margin directly.
-
-        Args:
-            margin: New margin value
-        """
-        self.inner_margin = margin
-        self.inner_margin_adjust = 0.0
-        self._update_inner_boundary()
 
     def compute_best_fit_boundaries(
         self, positions: List[Tuple[float, float]], percentile: float = 95
@@ -306,8 +290,6 @@ class OdometryVisualizer:
             positions: List of (x, y) position tuples
             auto_fit: If True, automatically compute best-fit boundaries
         """
-        self.ax.clear()
-
         if len(positions) > 0:
             xs, ys = zip(*positions)
 
@@ -327,166 +309,169 @@ class OdometryVisualizer:
 
                 self._update_inner_boundary()
 
-            # Plot the path
-            self.ax.plot(
-                xs,
-                ys,
-                marker=".",
-                linewidth=1.5,
-                markersize=4,
-                color="blue",
-                label="Path",
-            )
 
-            # Draw start zone
-            self.ax.add_patch(
-                plt.Rectangle(
-                    (0 - self.start_zone_rect_x, 0 - self.start_zone_rect_y),
-                    2 * self.start_zone_rect_x,
-                    2 * self.start_zone_rect_y,
-                    color="green",
-                    alpha=0.3,
-                    label="Start Zone",
+            if self.debug:
+                self.ax.clear()
+                # Plot the path
+                self.ax.plot(
+                    xs,
+                    ys,
+                    marker=".",
+                    linewidth=1.5,
+                    markersize=4,
+                    color="blue",
+                    label="Path",
                 )
-            )
 
-            # Draw outer boundary (red dashed)
-            outer_coords = [
-                [self.x_min - self.padding, self.x_max + self.padding],
-                [self.y_min - self.padding, self.y_min - self.padding],
-            ]
-            self.ax.plot(*outer_coords, color="red", linestyle="--", linewidth=2)
+                # Draw start zone
+                self.ax.add_patch(
+                    plt.Rectangle(
+                        (0 - self.start_zone_rect_x, 0 - self.start_zone_rect_y),
+                        2 * self.start_zone_rect_x,
+                        2 * self.start_zone_rect_y,
+                        color="green",
+                        alpha=0.3,
+                        label="Start Zone",
+                    )
+                )
 
-            outer_coords = [
-                [self.x_min - self.padding, self.x_max + self.padding],
-                [self.y_max + self.padding, self.y_max + self.padding],
-            ]
-            self.ax.plot(*outer_coords, color="red", linestyle="--", linewidth=2)
-
-            outer_coords = [
-                [self.x_min - self.padding, self.x_min - self.padding],
-                [self.y_min - self.padding, self.y_max + self.padding],
-            ]
-            self.ax.plot(*outer_coords, color="red", linestyle="--", linewidth=2)
-
-            outer_coords = [
-                [self.x_max + self.padding, self.x_max + self.padding],
-                [self.y_min - self.padding, self.y_max + self.padding],
-            ]
-            self.ax.plot(
-                *outer_coords,
-                color="red",
-                linestyle="--",
-                linewidth=2,
-                label="Outer Boundary",
-            )
-            
-
-            # Draw inner boundary (orange solid) if defined
-            if all(
-                v is not None
-                for v in [
-                    self.inner_x_min,
-                    self.inner_x_max,
-                    self.inner_y_min,
-                    self.inner_y_max,
+                # Draw outer boundary (red dashed)
+                outer_coords = [
+                    [self.x_min - self.padding, self.x_max + self.padding],
+                    [self.y_min - self.padding, self.y_min - self.padding],
                 ]
-            ):
-                # Bottom
-                self.ax.plot(
-                    [self.inner_x_min, self.inner_x_max],
-                    [self.inner_y_min, self.inner_y_min],
-                    color="orange",
-                    linestyle="-",
-                    linewidth=2,
-                )
-                # Top
-                self.ax.plot(
-                    [self.inner_x_min, self.inner_x_max],
-                    [self.inner_y_max, self.inner_y_max],
-                    color="orange",
-                    linestyle="-",
-                    linewidth=2,
-                )
-                # Left
-                self.ax.plot(
-                    [self.inner_x_min, self.inner_x_min],
-                    [self.inner_y_min, self.inner_y_max],
-                    color="orange",
-                    linestyle="-",
-                    linewidth=2,
-                )
-                # Right
-                self.ax.plot(
-                    [self.inner_x_max, self.inner_x_max],
-                    [self.inner_y_min, self.inner_y_max],
-                    color="orange",
-                    linestyle="-",
-                    linewidth=2,
-                    label="Inner Boundary",
-                )
+                self.ax.plot(*outer_coords, color="red", linestyle="--", linewidth=2)
 
-
-            # Draw middle boundary (purple solid) if defined
-            if all(
-                v is not None
-                for v in [
-                    self.middle_x_min,
-                    self.middle_x_max,
-                    self.middle_y_min,
-                    self.middle_y_max,
+                outer_coords = [
+                    [self.x_min - self.padding, self.x_max + self.padding],
+                    [self.y_max + self.padding, self.y_max + self.padding],
                 ]
-            ):
-                # Bottom
-                self.ax.plot(
-                    [self.middle_x_min, self.middle_x_max],
-                    [self.middle_y_min, self.middle_y_min],
-                    color="gray",
-                    linestyle="--",
-                    linewidth=1,
-                )
-                # Top
-                self.ax.plot(
-                    [self.middle_x_min, self.middle_x_max],
-                    [self.middle_y_max, self.middle_y_max],
-                    color="gray",
-                    linestyle="--",
-                    linewidth=1,
-                )
-                # Left
-                self.ax.plot(
-                    [self.middle_x_min, self.middle_x_min],
-                    [self.middle_y_min, self.middle_y_max],
-                    color="gray",
-                    linestyle="--",
-                    linewidth=1,
-                )
-                # Right
-                self.ax.plot(
-                    [self.middle_x_max, self.middle_x_max],
-                    [self.middle_y_min, self.middle_y_max],
-                    color="gray",
-                    linestyle="--",
-                    linewidth=1,
-                    label="Middle Boundary",
-                )
+                self.ax.plot(*outer_coords, color="red", linestyle="--", linewidth=2)
 
-        self.ax.set_xlabel("X (m)")
-        self.ax.set_ylabel("Y (m)")
-        self.ax.set_title(
-            f"{self.title}\nInner Margin: {self.inner_margin + self.inner_margin_adjust:.2f}m"
-        )
-        self.ax.axis("equal")
-        self.ax.grid(True, alpha=0.3)
-        self.ax.legend(loc="upper right", fontsize=8)
+                outer_coords = [
+                    [self.x_min - self.padding, self.x_min - self.padding],
+                    [self.y_min - self.padding, self.y_max + self.padding],
+                ]
+                self.ax.plot(*outer_coords, color="red", linestyle="--", linewidth=2)
 
-        plt.pause(0.01)
+                outer_coords = [
+                    [self.x_max + self.padding, self.x_max + self.padding],
+                    [self.y_min - self.padding, self.y_max + self.padding],
+                ]
+                self.ax.plot(
+                    *outer_coords,
+                    color="red",
+                    linestyle="--",
+                    linewidth=2,
+                    label="Outer Boundary",
+                )
+                
+
+                # Draw inner boundary (orange solid) if defined
+                if all(
+                    v is not None
+                    for v in [
+                        self.inner_x_min,
+                        self.inner_x_max,
+                        self.inner_y_min,
+                        self.inner_y_max,
+                    ]
+                ):
+                    # Bottom
+                    self.ax.plot(
+                        [self.inner_x_min, self.inner_x_max],
+                        [self.inner_y_min, self.inner_y_min],
+                        color="orange",
+                        linestyle="-",
+                        linewidth=2,
+                    )
+                    # Top
+                    self.ax.plot(
+                        [self.inner_x_min, self.inner_x_max],
+                        [self.inner_y_max, self.inner_y_max],
+                        color="orange",
+                        linestyle="-",
+                        linewidth=2,
+                    )
+                    # Left
+                    self.ax.plot(
+                        [self.inner_x_min, self.inner_x_min],
+                        [self.inner_y_min, self.inner_y_max],
+                        color="orange",
+                        linestyle="-",
+                        linewidth=2,
+                    )
+                    # Right
+                    self.ax.plot(
+                        [self.inner_x_max, self.inner_x_max],
+                        [self.inner_y_min, self.inner_y_max],
+                        color="orange",
+                        linestyle="-",
+                        linewidth=2,
+                        label="Inner Boundary",
+                    )
+
+
+                # Draw middle boundary (purple solid) if defined
+                if all(
+                    v is not None
+                    for v in [
+                        self.middle_x_min,
+                        self.middle_x_max,
+                        self.middle_y_min,
+                        self.middle_y_max,
+                    ]
+                ):
+                    # Bottom
+                    self.ax.plot(
+                        [self.middle_x_min, self.middle_x_max],
+                        [self.middle_y_min, self.middle_y_min],
+                        color="gray",
+                        linestyle="--",
+                        linewidth=1,
+                    )
+                    # Top
+                    self.ax.plot(
+                        [self.middle_x_min, self.middle_x_max],
+                        [self.middle_y_max, self.middle_y_max],
+                        color="gray",
+                        linestyle="--",
+                        linewidth=1,
+                    )
+                    # Left
+                    self.ax.plot(
+                        [self.middle_x_min, self.middle_x_min],
+                        [self.middle_y_min, self.middle_y_max],
+                        color="gray",
+                        linestyle="--",
+                        linewidth=1,
+                    )
+                    # Right
+                    self.ax.plot(
+                        [self.middle_x_max, self.middle_x_max],
+                        [self.middle_y_min, self.middle_y_max],
+                        color="gray",
+                        linestyle="--",
+                        linewidth=1,
+                        label="Middle Boundary",
+                    )
+
+            self.ax.set_xlabel("X (m)")
+            self.ax.set_ylabel("Y (m)")
+            self.ax.set_title(
+                f"{self.title}\nInner Margin: {self.inner_margin}m"
+            )
+            self.ax.axis("equal")
+            self.ax.grid(True, alpha=0.3)
+            self.ax.legend(loc="upper right", fontsize=8)
+
+            plt.pause(0.01)
 
     def close(self):
-        """Close the plot window."""
-        plt.ioff()
-        plt.close()
-
+        if self.debug:
+            """Close the plot window."""
+            plt.ioff()
+            plt.close()
 
 def clamp_angle(totalAngle, threshold=5):
     """Clamp totalAngle to nearest multiple of 90 if within the threshold."""

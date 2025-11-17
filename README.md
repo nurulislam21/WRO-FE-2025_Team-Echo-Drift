@@ -91,7 +91,7 @@ Majedul Islam Naeem is a passionate Robotics and Embedded Systems innovator with
 
 Driven by curiosity and creativity, Naeem thrives in collaborative environments and is committed to pushing the boundaries of technology while inspiring others to innovate.
 <br/>
-_Github: [github.com/Naeem](https://github.com/Naeem/)_
+_Github: [github.com/majednaeem](https://github.com/majednaeem/)_
     </td>
     <td>
       <img src="t-photos/Naeem.jpg" alt="Majedul Islam Naeem" width="400" style="object-fit: cover;"/>
