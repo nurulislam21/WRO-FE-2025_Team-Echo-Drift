@@ -60,20 +60,20 @@ RIGHT_REGION = (
 LAP_REGION = [215, 260, 415, 305]  # lap detection
 OBS_REGION = [85, 110, 555, 280]  # obstacle detection
 REVERSE_REGION = [233, 260, 407, 280]  # reverse trigger area
-FRONT_WALL_REGION = [300, 195, 340, 215]  # front wall detection
+FRONT_WALL_REGION = [300, 175, 340, 195]  # front wall detection
 PARKING_LOT_REGION = [0, 185, CAM_WIDTH, 400]  # parking lot detection
 # DANGER_ZONE_POINTS = [175, OBS_REGION[1], 465, OBS_REGION[3]]  # area to check for obstacles
 DANGER_ZONE_POINTS = [
     {
-        "x1": 250,
+        "x1": 267,
         "y1": OBS_REGION[1],
-        "x2": 165,
+        "x2": 182,
         "y2": OBS_REGION[3],
     },
     {
-        "x1": 390,
+        "x1": 373,
         "y1": OBS_REGION[1],
-        "x2": 475,
+        "x2": 458,
         "y2": OBS_REGION[3],
     },
 ]
@@ -221,7 +221,7 @@ parking.has_parked_out = False
 
 # Odometry
 # init odometry tracker and visualizer
-start_zone_rect = [0.35, 2]  # meters
+start_zone_rect = [0.5, 1.5]  # meters x, y
 tracker = OdometryTracker(wheel_radius=0.046, ticks_per_rev=2220, gear_ratio=1.0, debug=DEBUG)
 visualizer = OdometryVisualizer(
     title="Odometry Path (Single Encoder + Gyro)", start_zone_rect=start_zone_rect, debug=DEBUG
@@ -343,7 +343,7 @@ def main():
                 # dont collect odometry data during parking maneuver
                 and (parking.has_parked_out if MODE == "OBSTACLE" else True)
             ):
-                gyro_angle = clamp_angle(gyro_angle, threshold=7)
+                # gyro_angle = clamp_angle(gyro_angle, threshold=7)
                 # Update odometry tracker
                 tracker.update(encoder_ticks, gyro_angle)
                 # Get current position
@@ -468,6 +468,7 @@ def main():
                     parking_mode=contour_workers.parking_mode,
                     parking_lot_region=PARKING_LOT_REGION,
                     parking_result=parking_result,
+                    gyro_angle=gyro_angle,
                 )
 
             if not startProcessing:
@@ -599,7 +600,7 @@ def main():
                         and (red_obj_x + OBS_REGION[0]) < REVERSE_REGION[2]
                     ):
                         print("Object too close! Backing off. RED Object")
-                        reverse_angle = STRAIGHT_CONST - 20  # turn left when reversing
+                        reverse_angle = STRAIGHT_CONST - 25  # turn left when reversing
                         trigger_reverse = True
                         reverse_start_time = time.time()
 
@@ -609,7 +610,7 @@ def main():
                         and (green_obj_x + OBS_REGION[0]) < REVERSE_REGION[2]
                     ):
                         print("Object too close! Backing off. GREEN Object")
-                        reverse_angle = STRAIGHT_CONST + 20  # turn right when reversing
+                        reverse_angle = STRAIGHT_CONST + 25  # turn right when reversing
                         trigger_reverse = True
                         reverse_start_time = time.time()
 
@@ -740,7 +741,7 @@ def main():
                             (CAM_HEIGHT // 2) - 20,
                             OBS_REGION[3],
                         ],
-                        [0, 0.2, 0.7, 1],
+                        [0, 0.45, 0.7, 1],
                     )
                     normalized_angle_offset *= y_gain
                     speed_factor = 1 - (0.3 * y_gain)  # slow down when closer to object
@@ -925,11 +926,19 @@ def main():
                 right_area_normalized = np.interp(
                     right_area,
                     [0, right_total_area / 2, right_total_area],
-                    [0.01, 0.7, 1],
+                    [0, 0.7, 1],
                 )
                 left_area_normalized = np.interp(
-                    left_area, [0, left_total_area / 2, left_total_area], [0.01, 0.7, 1]
+                    left_area, [0, left_total_area / 2, left_total_area], [0, 0.7, 1]
                 )
+
+                if right_area_normalized == 0 and not left_area_normalized == 0:
+                    # boost right side if left is detected but right is not                    
+                    left_area_normalized = min(left_area_normalized * 2, 1)
+                elif left_area_normalized == 0 and not right_area_normalized == 0:
+                    # boost left side if right is detected but left is not                    
+                    right_area_normalized = min(right_area_normalized * 2, 1)
+
                 error = right_area_normalized - left_area_normalized
                 # left_buf.append(left_area)
                 # right_buf.append(right_area)
@@ -1013,6 +1022,7 @@ def main():
                 # contour_workers.mode == "NO_OBSTACLE"
                 # and
                 stopFlag
+                and (clamp_angle(gyro_angle, threshold=50) % 360 == 0)
                 # and (int(time.time()) - stopTime) > stop_timer
             ):
                 print("Lap completed!")

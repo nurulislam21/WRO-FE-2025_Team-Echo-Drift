@@ -211,19 +211,18 @@ class OdometryVisualizer:
         self._update_inner_boundary()
 
     def _move_window_top_left(self):
-        if self.debug:
-            return
-        """Attempt to move the Matplotlib window to the top-left corner of the screen."""
-        try:
-            # Tkinter backend
-            self.fig.canvas.manager.window.wm_geometry("+0+0")
-        except Exception:
+        if self.debug:            
+            """Attempt to move the Matplotlib window to the top-left corner of the screen."""
             try:
-                # Qt backend
-                self.fig.canvas.manager.window.move(0, 0)
+                # Tkinter backend
+                self.fig.canvas.manager.window.wm_geometry("+0+0")
             except Exception:
-                # Other or unsupported backends (e.g., Agg)
-                pass
+                try:
+                    # Qt backend
+                    self.fig.canvas.manager.window.move(0, 0)
+                except Exception:
+                    # Other or unsupported backends (e.g., Agg)
+                    pass
 
     def _update_inner_boundary(self):
         """Calculate inner boundary based on outer boundary and margins."""
@@ -456,16 +455,16 @@ class OdometryVisualizer:
                         label="Middle Boundary",
                     )
 
-            self.ax.set_xlabel("X (m)")
-            self.ax.set_ylabel("Y (m)")
-            self.ax.set_title(
-                f"{self.title}\nInner Margin: {self.inner_margin}m"
-            )
-            self.ax.axis("equal")
-            self.ax.grid(True, alpha=0.3)
-            self.ax.legend(loc="upper right", fontsize=8)
+                self.ax.set_xlabel("X (m)")
+                self.ax.set_ylabel("Y (m)")
+                self.ax.set_title(
+                    f"{self.title}\nInner Margin: {self.inner_margin}m"
+                )
+                self.ax.axis("equal")
+                self.ax.grid(True, alpha=0.3)
+                self.ax.legend(loc="upper right", fontsize=8)
 
-            plt.pause(0.01)
+                plt.pause(0.01)
 
     def close(self):
         if self.debug:

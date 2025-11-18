@@ -205,6 +205,7 @@ def display_debug_screen(
     parking_mode,
     parking_lot_region,
     parking_result,
+    gyro_angle,
 ):
     debug_frame = frame.copy()
     debug_frame = display_roi(
@@ -344,7 +345,7 @@ def display_debug_screen(
             2,
         )
 
-    status = f"Angle: {angle} | Turns: {current_intersections/4} | L: {left_area} | R: {right_area}"
+    status = f"Angle: {angle} | Turns: {current_intersections/4} | L: {left_area} | R: {right_area} | Gyro: {gyro_angle}"
     cv2.putText(
         debug_frame,
         status,
