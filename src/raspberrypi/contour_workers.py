@@ -395,7 +395,7 @@ class ContourWorkers:
                     self.LOWER_GREEN,
                     self.UPPER_GREEN,
                     self.OBS_REGION,
-                    consider_area=900,
+                    consider_area=300,
                     blur=3,
                     method="HSV",
                 )
@@ -428,7 +428,7 @@ class ContourWorkers:
                     self.LOWER_RED,
                     self.UPPER_RED,
                     self.OBS_REGION,
-                    consider_area=900,
+                    consider_area=300,
                     blur=3,
                     method="HSV",
                 )

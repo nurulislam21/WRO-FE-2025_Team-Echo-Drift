@@ -573,7 +573,7 @@ def main():
 
             if count > 81:
                 print(f"ticks: {ticks}, gyro: {gyro_angle}) index: {count}")
-                print(visualizer.get_boundary_proximity(tracker.positions[-2][0], tracker.positions[-2][1], tracker.x, tracker.y))
+                print(visualizer.get_boundary_vector_proximity(tracker.positions[-2][0], tracker.positions[-2][1], tracker.x, tracker.y))
                 # print(f"heading {visualizer.heading_toward_rectangle(tracker.positions[-2][0], tracker.positions[-2][1], tracker.x, tracker.y)}")
                 # time.sleep(1)
 

@@ -58,9 +58,9 @@ RIGHT_REGION = (
     [410, 190, 640, 240] if MODE == "NO_OBSTACLE" else [410, 190, 640, 240]
 )  # right
 LAP_REGION = [215, 260, 415, 305]  # lap detection
-OBS_REGION = [85, 110, 555, 280]  # obstacle detection
-REVERSE_REGION = [233, 260, 407, 280]  # reverse trigger area
-FRONT_WALL_REGION = [300, 175, 340, 195]  # front wall detection
+OBS_REGION = [77, 110, 563, 315]  # obstacle detection
+REVERSE_REGION = [213, 240, 427, 268]  # reverse trigger area
+FRONT_WALL_REGION = [300, 155, 340, 175]  # front wall detection
 PARKING_LOT_REGION = [0, 185, CAM_WIDTH, 400]  # parking lot detection
 # DANGER_ZONE_POINTS = [175, OBS_REGION[1], 465, OBS_REGION[3]]  # area to check for obstacles
 DANGER_ZONE_POINTS = [
@@ -163,7 +163,7 @@ maxRight = STRAIGHT_CONST + MAX_OFFSET_DEGREE
 maxLeft = STRAIGHT_CONST - MAX_OFFSET_DEGREE
 
 # PID controller constants
-kp = 1.6
+kp = 1.75 if MODE == "OBSTACLE" else 1.6
 ki = 0.0
 kd = 0.07
 pid = PID(Kp=kp, Ki=ki, Kd=kd, setpoint=0)
@@ -221,7 +221,7 @@ parking.has_parked_out = False
 
 # Odometry
 # init odometry tracker and visualizer
-start_zone_rect = [0.5, 1.5]  # meters x, y
+start_zone_rect = [0.75, 1.5]  # meters x, y
 tracker = OdometryTracker(wheel_radius=0.046, ticks_per_rev=2220, gear_ratio=1.0, debug=DEBUG)
 visualizer = OdometryVisualizer(
     title="Odometry Path (Single Encoder + Gyro)", start_zone_rect=start_zone_rect, debug=DEBUG
@@ -524,7 +524,7 @@ def main():
             elif reverse_area > 1000 and not (
                 # avoid triggering reverse when front wall is too close in obstacle mode
                 # cause we want to reverse out in angle
-                front_wall_area > 350 if MODE == "OBSTACLE" else False
+                front_wall_area > 200 if MODE == "OBSTACLE" else False
             ):
                 print("Reverse trigger detected!")
                 trigger_reverse = True
@@ -752,7 +752,7 @@ def main():
             if contour_workers.mode == "OBSTACLE":
                 if (
                     front_wall_area
-                    > 350
+                    > 200
                     # and (red_area == 0 and green_area == 0)
                     # and (left_area > 800 and right_area > 800)
                 ):                
@@ -771,6 +771,7 @@ def main():
                     if visualizer.direction == "cw":
                         if (
                             visualizer.get_boundary_proximity(tracker.x, tracker.y)
+                            # visualizer.get_boundary_vector_proximity(tracker.positions[-4][0], tracker.positions[-4][1], tracker.x, tracker.y)
                             == "close_outer"
                         ):
                             normalized_angle_offset = -1
@@ -781,6 +782,7 @@ def main():
                     elif visualizer.direction == "ccw":
                         if (
                             visualizer.get_boundary_proximity(tracker.x, tracker.y)
+                            # visualizer.get_boundary_vector_proximity(tracker.positions[-4][0], tracker.positions[-4][1], tracker.x, tracker.y)
                             == "close_outer"
                         ):
                             normalized_angle_offset = 1
@@ -818,7 +820,7 @@ def main():
                         and red_obj_y is None
                         and green_obj_y is None
                     )
-                    and front_wall_area < 350
+                    and front_wall_area < 200
                 )
                 or (
                     # or if both obstacles are outside the danger zone
@@ -866,7 +868,7 @@ def main():
                                 and red_obj_y is None
                                 and green_obj_y is None
                             )
-                            and front_wall_area < 350
+                            and front_wall_area < 200
                         )
                     ),
                 )
@@ -926,18 +928,20 @@ def main():
                 right_area_normalized = np.interp(
                     right_area,
                     [0, right_total_area / 2, right_total_area],
-                    [0, 0.7, 1],
+                    [0, 0.7, 1] if MODE == "NO_OBSTACLE" else [0, 0.5, 0.7]
                 )
                 left_area_normalized = np.interp(
-                    left_area, [0, left_total_area / 2, left_total_area], [0, 0.7, 1]
+                    left_area,
+                    [0, left_total_area / 2, left_total_area],
+                    [0, 0.7, 1] if MODE == "NO_OBSTACLE" else [0, 0.5, 0.7]
                 )
 
-                if right_area_normalized == 0 and not left_area_normalized == 0:
+                if right_area_normalized == 0 and not left_area_normalized == 0 and MODE == "OBSTACLE":
                     # boost right side if left is detected but right is not                    
-                    left_area_normalized = min(left_area_normalized * 2, 1)
-                elif left_area_normalized == 0 and not right_area_normalized == 0:
+                    left_area_normalized = min(left_area_normalized * 2.1, 1)
+                elif left_area_normalized == 0 and not right_area_normalized == 0 and MODE == "OBSTACLE":
                     # boost left side if right is detected but left is not                    
-                    right_area_normalized = min(right_area_normalized * 2, 1)
+                    right_area_normalized = min(right_area_normalized * 2.1, 1)
 
                 error = right_area_normalized - left_area_normalized
                 # left_buf.append(left_area)
