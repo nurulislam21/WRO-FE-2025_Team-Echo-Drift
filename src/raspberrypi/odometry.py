@@ -92,7 +92,7 @@ class OdometryTracker:
         self.positions.append((self.x, self.y))
 
         if self.debug:
-            log_entry = f"({ticks}, {gyro_angle})"
+            log_entry = f"({ticks}, {gyro_angle}),"
             self.log_file.write(log_entry + "\n")
 
     def get_position(self) -> Tuple[float, float, float]:
@@ -176,10 +176,7 @@ class OdometryVisualizer:
         self.middle_x_min = None
         self.middle_x_max = None
         self.middle_y_min = None
-        self.middle_y_max = None
-
-        # Tuning parameters        
-        self.position_history = []  # Store positions for best-fit calculation
+        self.middle_y_max = None        
 
     def set_dir(self, dir: str):
         """
@@ -272,8 +269,50 @@ class OdometryVisualizer:
         self.y_max = np.percentile(ys, upper_p)
 
         # Update inner boundary
-        self._update_inner_boundary()
+        self._update_inner_boundary()    
+    
+    def intersects_middle_rectangle(self, ax, ay, bx, by):
+        # 1. Check if A or B lies inside the rectangle
+        if (self.middle_x_min <= ax <= self.middle_x_max and self.middle_y_min <= ay <= self.middle_y_max) or \
+        (self.middle_x_min <= bx <= self.middle_x_max and self.middle_y_min <= by <= self.middle_y_max):
+            return True
 
+        # Helper: Check line segment intersection
+        def ccw(x1, y1, x2, y2, x3, y3):
+            return (y3 - y1) * (x2 - x1) > (y2 - y1) * (x3 - x1)
+
+        def intersect(p1, p2, p3, p4):
+            return (ccw(*p1, *p3, *p4) != ccw(*p2, *p3, *p4)) and \
+                (ccw(*p1, *p2, *p3) != ccw(*p1, *p2, *p4))
+
+        # 2. Rectangle edges as line segments
+        edges = [
+            ((self.middle_x_min, self.middle_y_min), (self.middle_x_max, self.middle_y_min)),  # bottom
+            ((self.middle_x_max, self.middle_y_min), (self.middle_x_max, self.middle_y_max)),  # right
+            ((self.middle_x_max, self.middle_y_max), (self.middle_x_min, self.middle_y_max)),  # top
+            ((self.middle_x_min, self.middle_y_max), (self.middle_x_min, self.middle_y_min)),  # left
+        ]
+
+        for e1, e2 in edges:
+            if intersect((ax, ay), (bx, by), e1, e2):
+                return True
+
+        return False
+
+    def get_boundary_vector_proximity(self, prev_x: float, prev_y: float, x: float, y: float) -> str:
+        if self.intersects_middle_rectangle(prev_x, prev_y, x, y):
+            print("intersects middle rectangle")
+            ref_x = (self.middle_x_min + self.middle_x_max) / 2
+            ref_y = (self.middle_y_min + self.middle_y_max) / 2
+            current_dist = math.sqrt((x - ref_x) ** 2 + (y - ref_y) ** 2)
+            prev_dist = math.sqrt((prev_x - ref_x) ** 2 + (prev_y - ref_y) ** 2)
+            if current_dist < prev_dist:
+                return "close_inner"
+            else:
+                return "close_outer"
+        else:
+            return "close_outer"
+    
     def get_boundary_proximity(self, x: float, y: float) -> str:
         # check if current position is within middle boundary
         if x >= self.middle_x_min and x <= self.middle_x_max and y >= self.middle_y_min and y <= self.middle_y_max:
@@ -487,20 +526,21 @@ def clamp_angle(totalAngle, threshold=5):
 
 def main():
     """Main function to run odometry tracking simulation."""
-    from odometry_log1 import od
+    from odometry_log import od
 
     # Sample odometry data (ticks, gyro_angle)
     odometry_data = od
     lap_samples = {}
 
     # Initialize tracker and visualizer
-    tracker = OdometryTracker(wheel_radius=0.046, ticks_per_rev=2220, gear_ratio=1.0)
+    tracker = OdometryTracker(wheel_radius=0.046, ticks_per_rev=2220, gear_ratio=1.0, debug=True)
     visualizer = OdometryVisualizer(
         title="Odometry Path (Single Encoder + Gyro)",
         start_zone_rect=[0.55, 2],
         inner_margin=0.75,
+        debug=True,
     )
-    visualizer.set_dir("ccw")  # set direction for boundary lines
+    visualizer.set_dir("cw")  # set direction for boundary lines
 
     print("Starting odometry simulation...")
     time.sleep(1)
@@ -518,7 +558,7 @@ def main():
         count = 0
 
         for ticks, gyro_angle in odometry_data:
-            count += 1            
+            count += 1  
 
             # Update tracker with new data
             tracker.update(ticks, gyro_angle)
@@ -531,9 +571,11 @@ def main():
             # y -= offset_y
             # print(f"Position: x={x:.3f}m, y={y:.3f}m, θ={math.degrees(theta):.1f}°")
 
-            if count % 10 == 0:
-                print("close to inner" if visualizer.get_boundary_proximity(tracker.x, tracker.y) else "close to outer")
-                time.sleep(5)
+            if count > 81:
+                print(f"ticks: {ticks}, gyro: {gyro_angle}) index: {count}")
+                print(visualizer.get_boundary_proximity(tracker.positions[-2][0], tracker.positions[-2][1], tracker.x, tracker.y))
+                # print(f"heading {visualizer.heading_toward_rectangle(tracker.positions[-2][0], tracker.positions[-2][1], tracker.x, tracker.y)}")
+                # time.sleep(1)
 
             if lap > 0:
                 # skip correction for first few samples
