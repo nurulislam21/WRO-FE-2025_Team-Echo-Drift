@@ -1,4 +1,5 @@
 .pio
-.vscode/
+.vscode
 venv/
 .DS_Store
+odometry_debug_log.txt

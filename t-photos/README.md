@@ -1,4 +1,7 @@
 Team's photos
 ====
 
-This directory must contain 2 photos of the team (an official one and one funny photo with all team members)
+We, the members of this team, took this photo just before the national round of WRO.
+<br>
+
+![Team Photo](image.webp)

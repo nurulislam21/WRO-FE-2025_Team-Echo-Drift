@@ -10,7 +10,7 @@
 ---
 
 
-**Welcome** to the official GitHub repository of **Team Echo Drift**. This repository documents the journey of **Team Echo Drift** at the **World Robot Olympiad 2025 – Future Engineers category**.Here you’ll find the **complete documentation of our robot** — an innovation imagined, designed, and brought to life by three passionate students pushing the limits of creativity and engineering.  
+**Welcome** to the official GitHub repository of **Team Echo Drift**. This repository documents the journey of **Team Echo Drift** at the **World Robot Olympiad 2025 - Future Engineers category**.Here you’ll find the **complete documentation of our robot** - an innovation imagined, designed, and brought to life by three passionate students pushing the limits of creativity and engineering.  
 
 # Table of Contents  
 
@@ -36,31 +36,19 @@
 
 We’re three young innovators from across Bangladesh, brought together by our love for robotics and tech. We first met as solo competitors sharing ideas, dreams, and soon a vision. That’s how our team was born.
 
-Together, we’ve built trust, worked hard, and won multiple national robotics competitions. Our biggest achievement so far? Winning Silver at the World Robot Olympiad Bangladesh 2025, earning the chance to represent our country on the global stage.
-
-Now, we’re giving it our all to lift Bangladesh’s flag high at the World Robot Olympiad 2025 International Finals. With passion, teamwork, and belief - anything is possible!
- 
-<p align="center">
-  <img src="t-photos/WROGP.png" alt="Team Echo Drift" width="700"/>
-</p>
-
----
-
-## Meet the Team  
-
 <!-- Nurul Islam Noman -->
 <table>
   <tr>
     <td>
-<h2> Nurul Islam Noman – Mechanical Engineering </h2>
+<h2> Nurul Islam Noman - Mechanical Engineering </h2>
 
-Specialized in Mechanical Design with strong experience in SolidWorks, Fusion 360, and 3D modeling. Strong background in robotics and embedded systems, 
+Specialized in Mechanical Design with experience in SolidWorks, Fusion 360, for 3D modeling. Strong background in robotics and embedded systems, 
 supported by hands-on R&D work. Experience in robotics and embedded systems supports a well-rounded engineering approach, enabling the design of precise, reliable, and integrated mechanical solutions.
-<br/>
+<br/> <br/>
 _Github: [github.com/nurulislam21](https://github.com/nurulislam21/)_
     </td>
     <td>
-      <img src="t-photos/noman.jpg" alt="Nurul Islam Noman" width="600" style="object-fit: cover;"/>
+      <img src="t-photos/noman.jpg" alt="Nurul Islam Noman" width="650" style="object-fit: cover;"/>
     </td>
   </tr>
 </table>
@@ -69,14 +57,14 @@ _Github: [github.com/nurulislam21](https://github.com/nurulislam21/)_
 <table>
   <tr>
     <td>
-<h2> Tanim – Programming & Software Architecture </h2>
+<h2> Tanim - Programming & Software Architecture </h2>
 
-A versatile programmer with expertise in Python, C++, and JavaScript, specializing in robotics and embedded systems. Skilled in integrating Raspberry Pi and microcontrollers for automation and control. Proficient in image processing and computer vision with OpenCV, enabling advanced robotic perception. Experienced in real-time communication, lightweight AI models, and deploying reliable robotics applications.
-<br/>
+Skilled in Python, C++, JavaScript, OpenCV-based computer vision, MATLAB, Python Matplotlib and NumPy with experience in robotics, embedded systems, Raspberry Pi, microcontrollers, PlatformIO, and building user interfaces (web & tkinter).
+<br/> <br/>
 _Github: [github.com/tanimsk](https://github.com/tanimsk/)_
     </td>
     <td>
-      <img src="t-photos/Tanim.jpeg" alt="Tanim SK" width="700" style="object-fit: cover;"/>
+      <img src="t-photos/Tanim.jpeg" alt="Tanim SK" width="500" style="object-fit: cover;"/>
     </td>
   </tr>
 </table>
@@ -85,12 +73,10 @@ _Github: [github.com/tanimsk](https://github.com/tanimsk/)_
 <table>
   <tr>
     <td>
-<h2> Majedul Islam Naeem – Electronics & Circuit Design </h2>
+<h2> Majedul Islam Naeem - Electronics & Circuit Design </h2>
 
-Majedul Islam Naeem is a passionate Robotics and Embedded Systems innovator with strong expertise in Electronics & Circuit Design. He excels at transforming ideas into practical, intelligent solutions, designing efficient circuits, and integrating electronics seamlessly with robotics projects.
-
-Driven by curiosity and creativity, Naeem thrives in collaborative environments and is committed to pushing the boundaries of technology while inspiring others to innovate.
-<br/>
+Electronics and circuit design specialist with PCB experience in EasyEDA and Altium. Skilled in etching-based PCB fabrication, soldering, prototyping, troubleshooting, and hardware testing.
+<br/> <br/>
 _Github: [github.com/majednaeem](https://github.com/majednaeem/)_
     </td>
     <td>
@@ -118,11 +104,9 @@ _Github: [github.com/majednaeem](https://github.com/majednaeem/)_
 
 WRO **Future Engineers** challenges teams to design autonomous electric vehicles (EVs) that can:  
 
-- Navigate complex tracks  
-- Handle lane following, obstacle avoidance, and overtaking  
-- Optimize performance for efficiency and reliability
-
-> ![part1](https://img.shields.io/badge/For%202025-555555?style=flat) ![part2](https://img.shields.io/badge/the%20challenge%20emphasizes%20real--world%20autonomous%20driving%20concepts%20aligned%20with%20SDG%2011%20%E2%80%94%20Sustainable%20Cities%20and%20Communities.-f5f578?style=flat)
+- Navigate track autonomously
+- Avoid obstacles and maintain a safe distance from the boundaries
+- Parking out and parking out of a designated zone
 
 ---
 
@@ -135,8 +119,8 @@ The WRO Future Engineers 2025 competition is divided into **two progressive roun
 
 | Round | Description | Key Tasks | Track Layout |
 |:------|:-----------:|:----------|:-------------|
-| **Round 1 – Endurance Lap** | Focuses on **reliability and lap consistency**. The robot must complete **3 laps** without error while maintaining smooth navigation. Judges emphasize **stability, accuracy, and precise lane following**. | - Focus on **stability, accuracy, and smooth lane following**  <br> - Complete **3 full laps** without error | <img src="https://github.com/majednaeem/WRO/blob/main/Assets/Round%201.png" width="400" align="top" align="right">|
-| **Round 2 – Smart Navigation + Parking** | Introduces **real-time intelligence**. After completing laps, the robot must avoid **color-coded obstacles** and then park in a **designated zone**.| - 🟩 **Green obstacle → move left**  <br> - **🟥 Red obstacle → move right**  <br> -  Maintain speed while **avoiding collisions**   <br> - Finish with **precision parking** inside a marked box  |<img src="https://github.com/majednaeem/WRO/blob/main/Assets/Round%202.png" width="400" align="top" align="left">   |
+| **Round 1 - Open Challenge** | Focuses on **reliability and lap consistency**. The robot must complete **3 laps** maintaing safe distance from the boundary walls. Judges emphasize **stability, accuracy, and precise lane following**. | - Focus on **stability, accuracy, and smooth lane following**  <br> - Complete **3 full laps** without error | <img src="https://github.com/majednaeem/WRO/blob/main/Assets/Round%201.png" width="400" align="top" align="right">|
+| **Round 2 – Obstacle Challenge** |  The robot must avoid **color-coded obstacles** (from specific direction) and then park in a **designated zone** after **3 laps**.| - 🟩 **Green obstacle → move left**  <br> - **🟥 Red obstacle → move right**  <br> -  Maintain speed while **avoiding collisions**   <br> - Finish with **precision parking** inside a marked box  |<img src="https://github.com/majednaeem/WRO/blob/main/Assets/Round%202.png" width="400" align="top" align="left">   |
 
 
 > **Both rounds are aligned with the [official WRO 2025 Future Engineers Rules (PDF)](https://wro-association.org/wp-content/uploads/WRO-2025-Future-Engineers-Self-Driving-Cars-General-Rules.pdf).**
@@ -164,14 +148,13 @@ The WRO Future Engineers 2025 competition is divided into **two progressive roun
 | *Dimensions* | 17 cm (L) × 11 cm (W) × 18 cm (H) |
 | *Weight* | ~ 0.7 kg |
 | *Chassis* | Modular 3D-printed PLA with reinforced mounts |
-| *Motors* | N20 with encoder  |
+| *Motors* | N20 motor  |
 | *Motor Driver* | TB6612FNG dual-channel |
 | *Steering* | MG90S Servo |
-| *Sensors* | HC-SR04 Ultrasonic × 2, IMU, Camera |
+| *Sensors* | IMU, Encoder |
+| *Camera* | OV5647 Fish eye 160° wide angle Camera |
 | *Controller* | Raspberry Pi 5 (8GB) |
 | *Battery* | 3S 11.1V Li-Po, 2200mAh |
-| *Special Feature* | Custom herringbone gear differential for drift |
-
 ---
 
 
@@ -201,17 +184,19 @@ The **Echo Drift Autonomous EV** is designed with a **layered and modular archit
 
 ## System Flow Diagram
 
-<img src="https://github.com/majednaeem/WRO/blob/main/Assets/System_Architecture_Flow_Infographic.png">  
+<img src="schemes/architecture.svg">  
+
 ---
+
 ## Layered Architecture Overview 
 
 | *Layer*                | *Key Components*                                                                                                                                                    | *Role & Engineering Considerations*                                                                                                                                                                                                                                                           |
 | ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | *Hardware*             | - PLA + Aluminum Hybrid Chassis  <br> - 1× DC Geared Motors (12V, 600RPM, 1.2Nm)  <br> - High-Torque Servo (15kg·cm)  <br> - 65mm Rubberized Wheels                   | - Rigid but lightweight frame ensures stability and durability. <br> - Motor torque chosen with ~30% safety margin for acceleration under load. <br> - Servo provides precise steering with quick response. <br> - Wheel diameter selected for a balance between speed and traction.             |
 | *Power*                | - 3S LiPo (11.1V, 2200mAh)  <br> - Power Distribution Board (12V, 5V outputs)  <br> - XT60 Connectors                                                    | - LiPo selected for high discharge rate, lightweight, and compact size. <br> - Separate regulated lines prevent voltage drop issues. <br> - XT60 provides short-circuit and overload safety.                                                                                              |
-| *Perception*           | - Camera   <br> - 2× Ultrasonic Sensors (front)   <br> - Wheel                                             | - Camera handles *lane detection and vision-based markers*. <br> - Ultrasonic ensures reliable short-range obstacle sensing. <br> - IMU improves orientation and stability on turns. <br> - Encoders provide real-time speed & distance for closed-loop control.                              |
+| *Perception*           | - Camera <br> - Wheel                                             | - Camera handles *lane detection and vision-based markers*. <br> - IMU improves orientation and stability on turns. <br> - Encoders provide real-time speed & distance for closed-loop control.                              |
 | *Control & Processing* | - Raspberry Pi 5 (Python + OpenCV)  <br> - Arduino Nano (C++)  <br> - UART Serial Link                                                                                | - Pi processes camera input & makes high-level decisions. <br> - Arduino handles *PWM signals, interrupts, and motor control* with real-time precision. <br> - UART ensures fast, low-latency communication between subsystems.                                                               |
-| *Decision*             | - OpenCV Line Detection  <br> - Sensor Fusion (Camera + Ultrasonic)  <br> - PID Steering Control  <br> - Encoder-based Speed Feedback  <br> - Emergency Stop Failsafe | - Lane tracking optimized with *real-time vision algorithms*. <br> - Sensor fusion improves obstacle avoidance accuracy. <br> - PID ensures smooth steering corrections. <br> - Encoders maintain consistent velocity. <br> - Safety protocol: robot halts when conflicting data is detected. |
+| *Decision*             | - OpenCV Line Detection  <br> - Sensor Fusion (Camera)  <br> - PID Steering Control  <br> - Encoder-based Speed Feedback  <br> - Emergency Stop Failsafe | - Lane tracking optimized with *real-time vision algorithms*. <br> - Sensor fusion improves obstacle avoidance accuracy. <br> - PID ensures smooth steering corrections. <br> - Encoders maintain consistent velocity. <br> - Safety protocol: robot halts when conflicting data is detected. |
 | *Actuation*            | -  Motor Driver   <br> - PWM Servo Driver                                                                                                      | - H-Bridge supplies bidirectional control for drive motors. <br> - Servo driver ensures precise angle control. <br> - Final output: *smooth differential drive with adaptive steering*.                                                                                                       |
 ---
 
