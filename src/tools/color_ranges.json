@@ -5,7 +5,6 @@
     "MAGENTA_COLOR_SPACE": "HSV",
     "ORANGE_COLOR_SPACE": "HSV",
     "BLUE_COLOR_SPACE": "HSV",
-    
     "LOWER_BLACK": [
         0,
         108,
@@ -37,34 +36,34 @@
         193
     ],
     "LOWER_RED": [
-        41,
-        180,
-        10
+        38,
+        164,
+        25
     ],
     "UPPER_RED": [
-        101,
-        220,
-        50
+        98,
+        204,
+        65
     ],
     "LOWER_GREEN": [
-        22,
-        55,
-        126
+        65,
+        64,
+        151
     ],
     "UPPER_GREEN": [
-        63,
-        124,
-        166
+        125,
+        104,
+        191
     ],
     "LOWER_MAGENTA": [
-        138,
-        112,
-        56
+        155,
+        106,
+        66
     ],
     "UPPER_MAGENTA": [
-        198,
-        152,
-        96
+        215,
+        146,
+        106
     ],
     "LOWER_BLUE_HSV": [
         0,
@@ -98,32 +97,32 @@
     ],
     "LOWER_RED_HSV": [
         115,
-        208,
-        172
+        206,
+        144
     ],
     "UPPER_RED_HSV": [
-        122,
+        125,
         255,
-        249
+        235
     ],
     "LOWER_GREEN_HSV": [
-        58,
-        148,
-        35
+        45,
+        154,
+        70
     ],
     "UPPER_GREEN_HSV": [
-        73,
+        74,
         255,
-        75
+        173
     ],
     "LOWER_MAGENTA_HSV": [
-        96,
-        128,
-        213
+        101,
+        103,
+        189
     ],
     "UPPER_MAGENTA_HSV": [
-        110,
-        190,
+        115,
+        183,
         255
     ]
 }

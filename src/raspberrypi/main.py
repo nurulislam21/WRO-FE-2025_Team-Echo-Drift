@@ -41,18 +41,18 @@ print("DEBUG MODE" if DEBUG else "PRODUCTION")
 MODE = "OBSTACLE"  # "NO_OBSTACLE" or "OBSTACLE"
 CAM_WIDTH = 640
 CAM_HEIGHT = 480
-MAX_SPEED = 50 if MODE == "OBSTACLE" else 90
-MIN_SPEED = 40 if MODE == "OBSTACLE" else 50
+MAX_SPEED = 50 if MODE == "OBSTACLE" else 100
+MIN_SPEED = 40 if MODE == "OBSTACLE" else 70
 
 # Intersections
 TOTAL_INTERSECTIONS = 12
 
 # Region of Interest coordinates
 LEFT_REGION = (
-    [0, 190, 230, 240] if MODE == "NO_OBSTACLE" else [0, 190, 230, 240]
+    [0, 165, 230, 230] if MODE == "NO_OBSTACLE" else [0, 165, 230, 230]
 )  # left
 RIGHT_REGION = (
-    [410, 190, 640, 240] if MODE == "NO_OBSTACLE" else [410, 190, 640, 240]
+    [410, 165, 640, 230] if MODE == "NO_OBSTACLE" else [410, 165, 640, 230]
 )  # right
 LAP_REGION = [215, 260, 415, 305]  # lap detection
 OBS_REGION = [77, 110, 563, 315]  # obstacle detection
@@ -249,7 +249,7 @@ arduino.write(b"0,-1,95\n")
 
 # parking
 parking = Parking(
-    parking_speed=35,
+    parking_speed=20,
     arduino=arduino,
     camera_width=CAM_WIDTH,
     camera_height=CAM_HEIGHT,
@@ -579,7 +579,7 @@ def main():
                 print("Reverse trigger detected!")
                 trigger_reverse = True
                 reverse_start_time = time.time()
-                speed = 0  # stop before reversing
+                speed = -5  # stop before reversing
                 arduino.write(f"{speed},-1,{reverse_angle}\n".encode())
                 if DEBUG and cv2.waitKey(1) & 0xFF == ord("q"):
                     break
@@ -799,69 +799,64 @@ def main():
                         f"Norm: {normalized_angle_offset} | Ygain: {y_gain} | OBJ error: {obj_error}"
                     )
                 # print(f"Obj: {red_obj_x}, {red_obj_y} | Wall: {r_wall_x}, {r_wall_y}")
-            if contour_workers.mode == "OBSTACLE":
-                if (
-                    front_wall_area
-                    > 200
-                    # and (red_area == 0 and green_area == 0)
-                    # and (left_area > 800 and right_area > 800)
-                ):
-                    # if left_area - right_area > 1500:
-                    #     normalized_angle_offset = 1  # turn right hard
-                    #     print("left area too big")
-                    # elif right_area - left_area > 1500:
-                    #     normalized_angle_offset = -1  # turn left hard
-                    #     print("right area too big")
-                    # else:
-                    #     normalized_angle_offset = (
-                    #         -1 if parking.parking_lot_side == "left" else 1
-                    #     )
-                    #     print("only front wall")
-                    print("+" * 50)
-                    if visualizer.direction == "cw":
-                        if (
-                            visualizer.get_boundary_proximity(tracker.x, tracker.y)
-                            # visualizer.get_boundary_vector_proximity(tracker.positions[-4][0], tracker.positions[-4][1], tracker.x, tracker.y)
-                            == "close_outer"
-                        ):
-                            normalized_angle_offset = -1
-                            print("front wall + close to outer boundary CW + left")
-                        else:
-                            normalized_angle_offset = 1
-                            print("front wall + not close to outer boundary CW + right")
-                    elif visualizer.direction == "ccw":
-                        if (
-                            visualizer.get_boundary_proximity(tracker.x, tracker.y)
-                            # visualizer.get_boundary_vector_proximity(tracker.positions[-4][0], tracker.positions[-4][1], tracker.x, tracker.y)
-                            == "close_outer"
-                        ):
-                            normalized_angle_offset = 1
-                            print("front wall + close to outer boundary CCW + right")
-                        else:
-                            normalized_angle_offset = -1
-                            print("front wall + not close to outer boundary CCW + left")
-                    obstacle_wall_pivot = (None, None)
-
-                    if reverse_area > 1000:
-                        reverse_angle = STRAIGHT_CONST - (
-                            30 * normalized_angle_offset
-                        )  # turn left/right when reversing
-                        trigger_reverse = True
-                        reverse_start_time = time.time()
-
-                        speed = 0  # stop before reversing
-                        arduino.write(f"{speed},-1,{reverse_angle}\n".encode())
-                        if DEBUG and cv2.waitKey(1) & 0xFF == ord("q"):
-                            break
-
-                        print("continue")
-                        continue
-
-                #     show_front_wall = True
+            if contour_workers.mode == "OBSTACLE" and front_wall_area > 200:
+                # if left_area - right_area > 1500:
+                #     normalized_angle_offset = 1  # turn right hard
+                #     print("left area too big")
+                # elif right_area - left_area > 1500:
+                #     normalized_angle_offset = -1  # turn left hard
+                #     print("right area too big")
                 # else:
-                #     show_front_wall = False
+                #     normalized_angle_offset = (
+                #         -1 if parking.parking_lot_side == "left" else 1
+                #     )
+                #     print("only front wall")
+                print("+" * 50)
+                if visualizer.direction == "cw":
+                    if (
+                        visualizer.get_boundary_proximity(tracker.x, tracker.y)
+                        # visualizer.get_boundary_vector_proximity(tracker.positions[-4][0], tracker.positions[-4][1], tracker.x, tracker.y)
+                        == "close_outer"
+                    ):
+                        normalized_angle_offset = -1
+                        print("front wall + close to outer boundary CW + left")
+                    else:
+                        normalized_angle_offset = 1
+                        print("front wall + not close to outer boundary CW + right")
+                elif visualizer.direction == "ccw":
+                    if (
+                        visualizer.get_boundary_proximity(tracker.x, tracker.y)
+                        # visualizer.get_boundary_vector_proximity(tracker.positions[-4][0], tracker.positions[-4][1], tracker.x, tracker.y)
+                        == "close_outer"
+                    ):
+                        normalized_angle_offset = 1
+                        print("front wall + close to outer boundary CCW + right")
+                    else:
+                        normalized_angle_offset = -1
+                        print("front wall + not close to outer boundary CCW + left")
+                obstacle_wall_pivot = (None, None)
+
+                if reverse_area > 1000:
+                    reverse_angle = STRAIGHT_CONST - (
+                        30 * normalized_angle_offset
+                    )  # turn left/right when reversing
+                    trigger_reverse = True
+                    reverse_start_time = time.time()
+
+                    speed = 0  # stop before reversing
+                    arduino.write(f"{speed},-1,{reverse_angle}\n".encode())
+                    if DEBUG and cv2.waitKey(1) & 0xFF == ord("q"):
+                        break
+
+                    print("continue")
+                    continue
+
+                    #     show_front_wall = True
+                    # else:
+                    #     show_front_wall = False                    
                 # wall following logic
 
+            # Only wall following
             if (
                 # or if x or y coords are not assigned and front area is small
                 (
@@ -1010,7 +1005,8 @@ def main():
                 # aDiff = right_s - left_s
                 # aSum = left_s + right_s
                 # error = aDiff / (aSum + 1e-6)  # normalized between roughly [-1,1]
-                normalized_angle_offset = pid(error)
+                if not (contour_workers.mode == "OBSTACLE" and front_wall_area > 200):
+                    normalized_angle_offset = pid(error)
 
                 print(
                     f"Wall following | Norm: {normalized_angle_offset} | Error: {error}"

@@ -63,25 +63,25 @@ class Parking:
             # left -> exit to left
             # right -> exit to right
             "left": [
-                # speed, steps, angle
-                (15, 200, 95),
+                # speed, steps, angle                
                 (-self.parking_speed, 500, 160),
                 (self.parking_speed, 2000, 25),
-                # (-self.parking_speed, 500, 95),              
-                (self.parking_speed, 2700, 160),
-                (-self.parking_speed, 4000, 95),
-                # (-self.parking_speed, 2000, 95),
+                (self.parking_speed, 700, 95),
+                (self.parking_speed, 2600, 145),
+                (-self.parking_speed * 1.5, 3000, 65),                
+                (-self.parking_speed * 1.5, 3000, 135),         
+                # (-self.parking_speed, 700, 160),
+                # (self.parking_speed, 1500, 25),
             ],
             "right": [
                 # speed, steps, angle
-                (15, 200, 95),
                 (-self.parking_speed, 500, 25),
-                (self.parking_speed, 2000, 160),
-                # (-self.parking_speed, 500, 95),
-                (self.parking_speed, 2700, 25),
-                (-self.parking_speed, 4000, 95),
-                # (self.parking_speed, 2500, 20),
-                # (-self.parking_speed, 1000, 95),
+                (self.parking_speed, 1000, 95),                
+                (self.parking_speed, 2000, 145),  
+                (self.parking_speed, 2600, 25),
+                (-self.parking_speed, 6000, 95),   
+                # (-self.parking_speed, 700, 25),
+                # (self.parking_speed, 1500, 160),             
             ],
         }
         self.parking_out_odometry_history = []

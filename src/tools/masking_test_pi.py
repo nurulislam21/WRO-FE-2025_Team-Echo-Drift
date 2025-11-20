@@ -133,9 +133,8 @@ def main():
         print("No camera settings file found. Using default settings.")
         return
 
-    picam2.start()
-
-    roi = (100, 10, 540, 380)  # (x1, y1, x2, y2)
+    picam2.start()     
+    roi = [77, 110, 563, 315] # (x1, y1, x2, y2)
 
     while True:
         frame = picam2.capture_array()
