@@ -41,14 +41,11 @@ print("DEBUG MODE" if DEBUG else "PRODUCTION")
 MODE = "OBSTACLE"  # "NO_OBSTACLE" or "OBSTACLE"
 CAM_WIDTH = 640
 CAM_HEIGHT = 480
-# CAM_WIDTH = 800
-# CAM_HEIGHT = 600
 MAX_SPEED = 50 if MODE == "OBSTACLE" else 90
 MIN_SPEED = 40 if MODE == "OBSTACLE" else 50
 
 # Intersections
 TOTAL_INTERSECTIONS = 12
-
 
 # Region of Interest coordinates
 LEFT_REGION = (
@@ -97,34 +94,81 @@ try:
 except FileNotFoundError:
     print("Color ranges file not found. Using default values.")
 
-LOWER_BLACK = np.array(color_ranges["LOWER_BLACK"])
-UPPER_BLACK = np.array(color_ranges["UPPER_BLACK"])
+# Boundary
+LOWER_BLACK = (
+    np.array(color_ranges["LOWER_BLACK"])
+    if color_ranges["BLACK_COLOR_SPACE"] == "LAB"
+    else np.array(color_ranges["LOWER_BLACK_HSV"])
+)
+UPPER_BLACK = (
+    np.array(color_ranges["UPPER_BLACK"])
+    if color_ranges["BLACK_COLOR_SPACE"] == "LAB"
+    else np.array(color_ranges["UPPER_BLACK_HSV"])
+)
 
-LOWER_ORANGE = np.array(color_ranges["LOWER_ORANGE"])
-UPPER_ORANGE = np.array(color_ranges["UPPER_ORANGE"])
+# Lane color ranges
+LOWER_ORANGE = (
+    np.array(color_ranges["LOWER_ORANGE"])
+    if color_ranges["ORANGE_COLOR_SPACE"] == "LAB"
+    else np.array(color_ranges["LOWER_ORANGE_HSV"])
+)
+UPPER_ORANGE = (
+    np.array(color_ranges["UPPER_ORANGE"])
+    if color_ranges["ORANGE_COLOR_SPACE"] == "LAB"
+    else np.array(color_ranges["UPPER_ORANGE_HSV"])
+)
+LOWER_BLUE = (
+    np.array(color_ranges["LOWER_BLUE"])
+    if color_ranges["BLUE_COLOR_SPACE"] == "LAB"
+    else np.array(color_ranges["LOWER_BLUE_HSV"])
+)
+UPPER_BLUE = (
+    np.array(color_ranges["UPPER_BLUE"])
+    if color_ranges["BLUE_COLOR_SPACE"] == "LAB"
+    else np.array(color_ranges["UPPER_BLUE_HSV"])
+)
 
-LOWER_BLUE = np.array(color_ranges["LOWER_BLUE"])
-UPPER_BLUE = np.array(color_ranges["UPPER_BLUE"])
+# Obstacle color ranges
+LOWER_RED = (
+    np.array(color_ranges["LOWER_RED"])
+    if color_ranges["RED_COLOR_SPACE"] == "LAB"
+    else np.array(color_ranges["LOWER_RED_HSV"])
+)
+UPPER_RED = (
+    np.array(color_ranges["UPPER_RED"])
+    if color_ranges["RED_COLOR_SPACE"] == "LAB"
+    else np.array(color_ranges["UPPER_RED_HSV"])
+)
+LOWER_GREEN = (
+    np.array(color_ranges["LOWER_GREEN"])
+    if color_ranges["GREEN_COLOR_SPACE"] == "LAB"
+    else np.array(color_ranges["LOWER_GREEN_HSV"])
+)
+UPPER_GREEN = (
+    np.array(color_ranges["UPPER_GREEN"])
+    if color_ranges["GREEN_COLOR_SPACE"] == "LAB"
+    else np.array(color_ranges["UPPER_GREEN_HSV"])
+)
 
-# obstacle color ranges LAB
-LOWER_RED = np.array(color_ranges["LOWER_RED_HSV"])
-UPPER_RED = np.array(color_ranges["UPPER_RED_HSV"])
+# Parking color ranges
+LOWER_MAGENTA = (
+    np.array(color_ranges["LOWER_MAGENTA"])
+    if color_ranges["MAGENTA_COLOR_SPACE"] == "LAB"
+    else np.array(color_ranges["LOWER_MAGENTA_HSV"])
+)
+UPPER_MAGENTA = (
+    np.array(color_ranges["UPPER_MAGENTA"])
+    if color_ranges["MAGENTA_COLOR_SPACE"] == "LAB"
+    else np.array(color_ranges["UPPER_MAGENTA_HSV"])
+)
 
 # reverse_black
 LOWER_REVERSE_BLACK = LOWER_BLACK
 UPPER_REVERSE_BLACK = UPPER_BLACK
 
-# LAB
-LOWER_GREEN = np.array(color_ranges["LOWER_GREEN_HSV"])
-UPPER_GREEN = np.array(color_ranges["UPPER_GREEN_HSV"])
-
-# parking color ranges
-LOWER_MAGENTA = np.array(color_ranges["LOWER_MAGENTA_HSV"])
-UPPER_MAGENTA = np.array(color_ranges["UPPER_MAGENTA_HSV"])
-
-
 contour_workers = ContourWorkers(
     # mode="NO_OBSTACLE",
+    color_ranges=color_ranges,
     mode=MODE,
     has_parked_out=False,
     # color ranges
@@ -222,9 +266,13 @@ parking.has_parked_out = False
 # Odometry
 # init odometry tracker and visualizer
 start_zone_rect = [0.75, 1.5]  # meters x, y
-tracker = OdometryTracker(wheel_radius=0.046, ticks_per_rev=2220, gear_ratio=1.0, debug=DEBUG)
+tracker = OdometryTracker(
+    wheel_radius=0.046, ticks_per_rev=2220, gear_ratio=1.0, debug=DEBUG
+)
 visualizer = OdometryVisualizer(
-    title="Odometry Path (Single Encoder + Gyro)", start_zone_rect=start_zone_rect, debug=DEBUG
+    title="Odometry Path (Single Encoder + Gyro)",
+    start_zone_rect=start_zone_rect,
+    debug=DEBUG,
 )
 
 encoder_ticks = 0
@@ -392,7 +440,7 @@ def main():
                 visualizer.update_plot(tracker.get_position_history())
 
                 # current_intersections = round(abs(gyro_angle) / 90)
-                if abs(x) < start_zone_rect[0] and abs(y) < start_zone_rect[1]:                    
+                if abs(x) < start_zone_rect[0] and abs(y) < start_zone_rect[1]:
                     if (time.time() - last_lap_time) >= LAP_COUNT_INTERVAL:
                         current_lap += 1
                         current_intersections += 4
@@ -524,7 +572,9 @@ def main():
             elif reverse_area > 1000 and not (
                 # avoid triggering reverse when front wall is too close in obstacle mode
                 # cause we want to reverse out in angle
-                front_wall_area > 200 if MODE == "OBSTACLE" else False
+                front_wall_area > 200
+                if MODE == "OBSTACLE"
+                else False
             ):
                 print("Reverse trigger detected!")
                 trigger_reverse = True
@@ -755,7 +805,7 @@ def main():
                     > 200
                     # and (red_area == 0 and green_area == 0)
                     # and (left_area > 800 and right_area > 800)
-                ):                
+                ):
                     # if left_area - right_area > 1500:
                     #     normalized_angle_offset = 1  # turn right hard
                     #     print("left area too big")
@@ -766,7 +816,7 @@ def main():
                     #     normalized_angle_offset = (
                     #         -1 if parking.parking_lot_side == "left" else 1
                     #     )
-                    #     print("only front wall")                    
+                    #     print("only front wall")
                     print("+" * 50)
                     if visualizer.direction == "cw":
                         if (
@@ -775,7 +825,7 @@ def main():
                             == "close_outer"
                         ):
                             normalized_angle_offset = -1
-                            print("front wall + close to outer boundary CW + left")                                                        
+                            print("front wall + close to outer boundary CW + left")
                         else:
                             normalized_angle_offset = 1
                             print("front wall + not close to outer boundary CW + right")
@@ -791,9 +841,11 @@ def main():
                             normalized_angle_offset = -1
                             print("front wall + not close to outer boundary CCW + left")
                     obstacle_wall_pivot = (None, None)
-                    
+
                     if reverse_area > 1000:
-                        reverse_angle = STRAIGHT_CONST - (30 * normalized_angle_offset)  # turn left/right when reversing
+                        reverse_angle = STRAIGHT_CONST - (
+                            30 * normalized_angle_offset
+                        )  # turn left/right when reversing
                         trigger_reverse = True
                         reverse_start_time = time.time()
 
@@ -804,7 +856,6 @@ def main():
 
                         print("continue")
                         continue
-
 
                 #     show_front_wall = True
                 # else:
@@ -928,19 +979,27 @@ def main():
                 right_area_normalized = np.interp(
                     right_area,
                     [0, right_total_area / 2, right_total_area],
-                    [0, 0.7, 1] if MODE == "NO_OBSTACLE" else [0, 0.5, 0.7]
+                    [0, 0.7, 1] if MODE == "NO_OBSTACLE" else [0, 0.5, 0.7],
                 )
                 left_area_normalized = np.interp(
                     left_area,
                     [0, left_total_area / 2, left_total_area],
-                    [0, 0.7, 1] if MODE == "NO_OBSTACLE" else [0, 0.5, 0.7]
+                    [0, 0.7, 1] if MODE == "NO_OBSTACLE" else [0, 0.5, 0.7],
                 )
 
-                if right_area_normalized == 0 and not left_area_normalized == 0 and MODE == "OBSTACLE":
-                    # boost right side if left is detected but right is not                    
+                if (
+                    right_area_normalized == 0
+                    and not left_area_normalized == 0
+                    and MODE == "OBSTACLE"
+                ):
+                    # boost right side if left is detected but right is not
                     left_area_normalized = min(left_area_normalized * 2.1, 1)
-                elif left_area_normalized == 0 and not right_area_normalized == 0 and MODE == "OBSTACLE":
-                    # boost left side if right is detected but left is not                    
+                elif (
+                    left_area_normalized == 0
+                    and not right_area_normalized == 0
+                    and MODE == "OBSTACLE"
+                ):
+                    # boost left side if right is detected but left is not
                     right_area_normalized = min(right_area_normalized * 2.1, 1)
 
                 error = right_area_normalized - left_area_normalized

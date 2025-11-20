@@ -20,6 +20,7 @@ class ContourResult:
 class ContourWorkers:
     def __init__(
         self,
+        color_ranges: dict,
         mode: Literal["OBSTACLE", "NO_OBSTACLE"],
         has_parked_out: bool,
         # color ranges
@@ -46,6 +47,7 @@ class ContourWorkers:
         reverse_region: list,
         parking_lot_region: list,
     ):
+        self.color_ranges = color_ranges
         self.mode = mode
         self.parking_mode = False
         self.has_parked_out = has_parked_out
@@ -238,6 +240,7 @@ class ContourWorkers:
                     self.LEFT_REGION,
                     direction="left",
                     consider_area=800,
+                    method=self.color_ranges["BLACK_COLOR_SPACE"],
                 )
                 black_area, _ = max_contour_area(contours)
                 result = ContourResult(black_area, contours, "black_left")
@@ -251,8 +254,8 @@ class ContourWorkers:
                         self.LEFT_REGION,
                         direction="left",
                         use_convex_hull=False,
-                        consider_area=1000,
-                        method="HSV",
+                        consider_area=800,
+                        method=self.color_ranges["MAGENTA_COLOR_SPACE"],
                     )
                     magenta_area, _ = max_contour_area(contours)
 
@@ -287,6 +290,7 @@ class ContourWorkers:
                     self.RIGHT_REGION,
                     direction="right",
                     consider_area=800,
+                    method=self.color_ranges["BLACK_COLOR_SPACE"],
                 )
                 black_area, _ = max_contour_area(contours)
                 result = ContourResult(black_area, contours, "black_right")
@@ -300,8 +304,8 @@ class ContourWorkers:
                         self.RIGHT_REGION,
                         direction="right",
                         use_convex_hull=True,
-                        consider_area=1000,
-                        method="HSV",
+                        consider_area=800,
+                        method=self.color_ranges["MAGENTA_COLOR_SPACE"],
                     )
                     magenta_area, _ = max_contour_area(contours)
 
@@ -333,8 +337,8 @@ class ContourWorkers:
                     frame,
                     self.LOWER_ORANGE,
                     self.UPPER_ORANGE,
-                    self.LAP_REGION,
-                    use_convex_hull=True,
+                    self.LAP_REGION,                    
+                    method=self.color_ranges["ORANGE_COLOR_SPACE"],
                 )
                 area, _ = max_contour_area(contours)
                 result = ContourResult(area, contours)
@@ -365,6 +369,7 @@ class ContourWorkers:
                     self.LOWER_BLUE,
                     self.UPPER_BLUE,
                     self.LAP_REGION,
+                    method=self.color_ranges["BLUE_COLOR_SPACE"],
                 )
                 area, _ = max_contour_area(contours)
                 result = ContourResult(area, contours)
@@ -397,7 +402,7 @@ class ContourWorkers:
                     self.OBS_REGION,
                     consider_area=300,
                     blur=3,
-                    method="HSV",
+                    method=self.color_ranges["GREEN_COLOR_SPACE"],
                 )
                 area, _ = max_contour_area(contours)
                 result = ContourResult(area, contours, "green_pillar")
@@ -430,7 +435,7 @@ class ContourWorkers:
                     self.OBS_REGION,
                     consider_area=300,
                     blur=3,
-                    method="HSV",
+                    method=self.color_ranges["RED_COLOR_SPACE"],
                 )
                 area, _ = max_contour_area(contours)
                 result = ContourResult(area, contours, "red_pillar")
@@ -462,7 +467,8 @@ class ContourWorkers:
                     self.UPPER_MAGENTA,
                     self.PARKING_LOT_REGION,
                     use_convex_hull=True,
-                    consider_area=1000,
+                    consider_area=800,
+                    method=self.color_ranges["MAGENTA_COLOR_SPACE"],
                 )
                 area, _ = max_contour_area(contours)
                 result = ContourResult(area, contours, "magenta_parking_lot")
@@ -495,6 +501,7 @@ class ContourWorkers:
                     self.LOWER_REVERSE_BLACK,
                     self.UPPER_REVERSE_BLACK,
                     self.REVERSE_REGION,
+                    method=self.color_ranges["BLACK_COLOR_SPACE"],
                 )
                 area, _ = max_contour_area(contours)
                 result = ContourResult(area, contours, "reverse_trigger")
@@ -518,6 +525,7 @@ class ContourWorkers:
                     self.UPPER_BLACK,
                     self.FRONT_WALL_REGION,
                     use_convex_hull=True,
+                    method=self.color_ranges["BLACK_COLOR_SPACE"],
                 )
                 area_fw, _ = max_contour_area(contours_fw)
                 result_fw = ContourResult(area_fw, contours_fw, "front_wall_trigger")

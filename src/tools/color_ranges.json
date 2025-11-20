@@ -1,4 +1,11 @@
 {
+    "BLACK_COLOR_SPACE": "LAB",
+    "RED_COLOR_SPACE": "HSV",
+    "GREEN_COLOR_SPACE": "HSV",
+    "MAGENTA_COLOR_SPACE": "HSV",
+    "ORANGE_COLOR_SPACE": "HSV",
+    "BLUE_COLOR_SPACE": "HSV",
+    
     "LOWER_BLACK": [
         0,
         108,
