@@ -39,7 +39,7 @@ class Parking:
         self.MAX_OFFSET_DEGREE = MAX_OFFSET_DEGREE
 
         # states
-        # self.has_parked_out = False
+        self.has_parked_out = False
         # self.last_wall_count = 0
         # self.stop_tolerance = 5
 

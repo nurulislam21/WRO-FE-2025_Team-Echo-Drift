@@ -192,13 +192,13 @@ def display_debug_screen(
     DANGER_ZONE_POINTS,
     left_result,
     right_result,
-    orange_result,
-    blue_result,
+    # orange_result,
+    # blue_result,
     green_result,
     red_result,
     reverse_result,
     angle,
-    current_intersections,
+    current_lap,
     left_area,
     right_area,
     obstacle_wall_pivot,
@@ -345,7 +345,7 @@ def display_debug_screen(
             2,
         )
 
-    status = f"Angle: {angle} | Turns: {current_intersections/4} | L: {left_area} | R: {right_area} | Gyro: {gyro_angle}"
+    status = f"Angle: {angle} | Lap: {current_lap} | L: {left_area} | R: {right_area} | Gyro: {gyro_angle}"
     cv2.putText(
         debug_frame,
         status,

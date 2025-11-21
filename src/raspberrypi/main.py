@@ -22,7 +22,6 @@ from contour_workers import ContourWorkers
 from parking import Parking
 from simple_pid import PID
 import copy
-import RPi.GPIO as GPIO
 from odometry import OdometryTracker, OdometryVisualizer, clamp_angle
 import math
 
@@ -33,9 +32,8 @@ if debug_flag:
 else:
     DEBUG = False
 
-BUZZER_PIN = 4
 # DEBUG = True
-print("DEBUG MODE" if DEBUG else "PRODUCTION")
+print("-- DEBUG MODE --" if DEBUG else "-- PRODUCTION --")
 
 # Simulated camera settings
 MODE = "OBSTACLE"  # "NO_OBSTACLE" or "OBSTACLE"
@@ -45,7 +43,7 @@ MAX_SPEED = 50 if MODE == "OBSTACLE" else 100
 MIN_SPEED = 40 if MODE == "OBSTACLE" else 70
 
 # Intersections
-TOTAL_INTERSECTIONS = 12
+TOTAL_LAPS = 3
 
 # Region of Interest coordinates
 LEFT_REGION = (
@@ -78,8 +76,8 @@ DANGER_ZONE_POINTS = [
 BLACK_WALL_DETECTOR_AREA = (LEFT_REGION[2] - LEFT_REGION[0]) * (
     LEFT_REGION[3] - LEFT_REGION[1]
 )
-OBSTACLE_DETECTOR_X = OBS_REGION[2] - OBS_REGION[0]
-OBSTACLE_DETECTOR_Y = OBS_REGION[3] - OBS_REGION[1]
+# OBSTACLE_DETECTOR_X = OBS_REGION[2] - OBS_REGION[0]
+# OBSTACLE_DETECTOR_Y = OBS_REGION[3] - OBS_REGION[1]
 obstacle_wall_pivot = (None, None)
 
 # Color ranges
@@ -213,34 +211,29 @@ kd = 0.07
 pid = PID(Kp=kp, Ki=ki, Kd=kd, setpoint=0)
 pid.output_limits = (-1, 1)  # limit output to -1 to 1
 pid.sample_time = 0.02
-SMOOTH_WINDOW = 3
-left_buf = deque(maxlen=SMOOTH_WINDOW)
-right_buf = deque(maxlen=SMOOTH_WINDOW)
+# SMOOTH_WINDOW = 3
+# left_buf = deque(maxlen=SMOOTH_WINDOW)
+# right_buf = deque(maxlen=SMOOTH_WINDOW)
 
 # Start/reverse/Stopping logic
 speed = 0
-
+normalized_angle_offset = 0
 trigger_reverse = False
 reverse_start_time = 0
 reverse_duration = 0.6  # seconds
-stop_timer = 2.4
 reverse_angle = STRAIGHT_CONST
 reverse_pause_time = (
     1.3  # seconds to wait after reversing, will not initiate reverse during this period
 )
 last_reverse_end_time = 0
 
-startProcessing = False
-stopFlag = False
-stopTime = 0
+start_processing = False
+stop_flag = False
 
 # Intersection crossing
-current_intersections = 0
-intersection_crossing_duration = (
-    1.1 if MODE == "NO_OBSTACLE" else 1.5
-)  # longer for obstacle mode
-intersection_crossing_start = 0
-intersection_detected = False
+# current_intersections = 0
+# intersection_crossing_start = 0
+# intersection_detected = False
 
 # Serial communication
 arduino = serial.Serial(port="/dev/ttyUSB0", baudrate=115200, dsrdtr=True)
@@ -263,7 +256,7 @@ parking = Parking(
 parking.has_parked_out = False
 
 
-# Odometry
+# -- Odometry --
 # init odometry tracker and visualizer
 start_zone_rect = [0.75, 1.5]  # meters x, y
 tracker = OdometryTracker(
@@ -292,11 +285,10 @@ smoothed_drift_y = 0.0
 
 # Threading variables - separate queues for each detection task
 def main():
-    global stopFlag, stopTime, speed, trigger_reverse, reverse_angle, last_reverse_end_time
-    global current_intersections, intersection_detected, intersection_crossing_start
-    global startProcessing, obstacle_wall_pivot, reverse_start_time
-    global encoder_ticks, gyro_angle, prev_encoder_ticks, prev_gyro_angle
+    global stop_flag, speed, trigger_reverse, reverse_angle, last_reverse_end_time, normalized_angle_offset
     global last_odometry_time, last_lap_time, current_lap, odometry_lap_samples
+    global encoder_ticks, gyro_angle, prev_encoder_ticks, prev_gyro_angle
+    global start_processing, obstacle_wall_pivot, reverse_start_time
     global smoothed_drift_x, smoothed_drift_y
 
     # parking_walls = []
@@ -351,15 +343,6 @@ def main():
     print(f"Started {len(threads)} processing threads")
 
     time.sleep(2)  # Allow camera to warm up
-
-    # RPIO setup
-    GPIO.setmode(GPIO.BCM)
-    GPIO.setup(BUZZER_PIN, GPIO.OUT)
-
-    # buzz to indicate ready
-    GPIO.output(BUZZER_PIN, GPIO.HIGH)
-    time.sleep(0.3)
-    GPIO.output(BUZZER_PIN, GPIO.LOW)
     angle = STRAIGHT_CONST
 
     try:
@@ -368,26 +351,29 @@ def main():
             if arduino.in_waiting > 0:
                 line = arduino.readline().decode("utf-8").rstrip()
                 print(f"Arduino: {line}")
-                if not startProcessing and line == "START":
-                    startProcessing = True
+                if not start_processing and line == "START":
+                    start_processing = True
                     last_lap_time = time.time()
 
                 else:
                     # Get gyro data and encoder ticks
                     parts = line.split(",")
                     if len(parts) != 2:
+                        print(f"Invalid data from Arduino: {line}")
                         continue
                     try:
                         encoder_ticks = -int(parts[0])
                         gyro_angle = float(parts[1])
                         print(f"Ticks: {encoder_ticks}, Gyro Angle: {gyro_angle}")
                     except ValueError:
+                        print(f"Invalid number format from Arduino: {line}")
                         continue
 
-            # draw odometry
+            # ---- Draw odometry ----
             if (
-                (time.time() - last_odometry_time) >= 0.2
-                and (abs(encoder_ticks - prev_encoder_ticks) > 300)
+                # (time.time() - last_odometry_time) >= 0.2 and
+                start_processing and
+                (abs(encoder_ticks - prev_encoder_ticks) > 300)
                 # dont collect odometry data during parking maneuver
                 and (parking.has_parked_out if MODE == "OBSTACLE" else True)
             ):
@@ -442,14 +428,13 @@ def main():
                 # current_intersections = round(abs(gyro_angle) / 90)
                 if abs(x) < start_zone_rect[0] and abs(y) < start_zone_rect[1]:
                     if (time.time() - last_lap_time) >= LAP_COUNT_INTERVAL:
-                        current_lap += 1
-                        current_intersections += 4
+                        current_lap += 1                        
 
                     # keep resetting lap time only when inside start zone
                     last_lap_time = time.time()
 
                 print(
-                    f"Position: x={x:.3f}m, y={y:.3f}m, θ={math.degrees(theta):.1f}° | Intersections: {current_intersections}"
+                    f"Position: x={x:.3f}m, y={y:.3f}m, θ={math.degrees(theta):.1f}° | lap: {current_lap}"
                 )
 
             # Capture frame
@@ -461,6 +446,10 @@ def main():
 
             # default values
             speed_factor = 1.0
+            # reset obstacle positions            
+            red_obj_x, red_obj_y = None, None
+            green_obj_x, green_obj_y = None, None
+            obj_error = 0
 
             # Retrieve all results from queues (non-blocking)
             (
@@ -478,8 +467,8 @@ def main():
             # Use the latest processing results
             left_area = left_result.area
             right_area = right_result.area
-            orange_area = orange_result.area
-            blue_area = blue_result.area
+            # orange_area = orange_result.area
+            # blue_area = blue_result.area
             green_area = green_result.area
             red_area = red_result.area
             reverse_area = reverse_result.area
@@ -494,8 +483,8 @@ def main():
                     CAM_HEIGHT=CAM_HEIGHT,
                     left_result=left_result,
                     right_result=right_result,
-                    orange_result=orange_result,
-                    blue_result=blue_result,
+                    # orange_result=orange_result,
+                    # blue_result=blue_result,
                     green_result=green_result,
                     red_result=red_result,
                     reverse_result=reverse_result,
@@ -509,7 +498,7 @@ def main():
                     DANGER_ZONE_POINTS=DANGER_ZONE_POINTS,
                     front_wall_result=front_wall_result,
                     angle=angle,
-                    current_intersections=current_intersections,
+                    current_lap=current_lap,
                     left_area=left_area,
                     right_area=right_area,
                     obstacle_wall_pivot=obstacle_wall_pivot,
@@ -519,31 +508,26 @@ def main():
                     gyro_angle=gyro_angle,
                 )
 
-            if not startProcessing:
+            if not start_processing:
                 if DEBUG and cv2.waitKey(1) & 0xFF == ord("q"):
                     break
                 # Dont start moving until start signal received
                 continue
 
             # --- PARKING OUT LOGIC ---
-            if contour_workers.mode == "OBSTACLE":
-                # process parking out first if not yet done
-                if not parking.has_parked_out:
-                    parking.process_parking_out(
-                        left_result=left_result, right_result=right_result
-                    )
-                    parking.has_parked_out = contour_workers.has_parked_out = True
+            if contour_workers.mode == "OBSTACLE" and not parking.has_parked_out:
+                # process parking out first if not yet done                
+                parking.process_parking_out(
+                    left_result=left_result, right_result=right_result
+                )
+                parking.has_parked_out = contour_workers.has_parked_out = True
 
-                    # set dir to odometry visualizer
-                    visualizer.set_dir(
-                        "ccw" if parking.parking_lot_side == "left" else "cw"
-                    )
-                    # collect parking out odometry history and update tracker
-                    # for entry in parking.parking_out_odometry_history:
-                    #     tracker.update(entry[0], entry[1])
-                    # set the lap time to now to avoid lap count right after parking
-                    last_lap_time = time.time()
-                    continue
+                # set dir to odometry visualizer
+                visualizer.set_dir(
+                    "ccw" if parking.parking_lot_side == "left" else "cw"
+                )
+                last_lap_time = time.time()
+                continue
 
             # --- Reversing logic ---
             if (
@@ -560,21 +544,17 @@ def main():
                 arduino.write(f"{speed},-1,{reverse_angle}\n".encode())
                 print(f"Reversing... Speed: {speed}, Angle: {reverse_angle}")
 
-                # stop timer reset
-                if stopFlag:
-                    stopTime = int(time.time())
-
                 if DEBUG and cv2.waitKey(1) & 0xFF == ord("q"):
                     break
                 print("continue")
                 continue
 
-            elif reverse_area > 1000 and not (
-                # avoid triggering reverse when front wall is too close in obstacle mode
+            if reverse_area > 800 and (
+                # avoid triggering reverse when Front Wall ROI is too close in obstacle mode
                 # cause we want to reverse out in angle
-                front_wall_area > 200
+                front_wall_area < 200
                 if MODE == "OBSTACLE"
-                else False
+                else True
             ):
                 print("Reverse trigger detected!")
                 trigger_reverse = True
@@ -586,6 +566,55 @@ def main():
 
                 print("continue")
                 continue
+            
+            # Front wall detection (odometry guided turning)
+            if contour_workers.mode == "OBSTACLE" and front_wall_area > 200:
+                print("+" * 50)
+                if visualizer.direction == "cw":
+                    if (
+                        visualizer.get_boundary_proximity(tracker.x, tracker.y)
+                        # visualizer.get_boundary_vector_proximity(tracker.positions[-4][0], tracker.positions[-4][1], tracker.x, tracker.y)
+                        == "close_outer"
+                    ):
+                        normalized_angle_offset = -1
+                        print("front wall + close to outer boundary CW + left")
+                    else:
+                        normalized_angle_offset = 1
+                        print("front wall + not close to outer boundary CW + right")
+                elif visualizer.direction == "ccw":
+                    if (
+                        visualizer.get_boundary_proximity(tracker.x, tracker.y)
+                        # visualizer.get_boundary_vector_proximity(tracker.positions[-4][0], tracker.positions[-4][1], tracker.x, tracker.y)
+                        == "close_outer"
+                    ):
+                        normalized_angle_offset = 1
+                        print("front wall + close to outer boundary CCW + right")
+                    else:
+                        normalized_angle_offset = -1
+                        print("front wall + not close to outer boundary CCW + left")
+
+                obstacle_wall_pivot = (None, None)
+
+                if reverse_area > 500:
+                    reverse_angle = STRAIGHT_CONST - (
+                        30 * normalized_angle_offset
+                    )  # turn left/right when reversing
+                    trigger_reverse = True
+                    reverse_start_time = time.time()
+
+                    speed = -5  # stop before reversing
+                    arduino.write(f"{speed},-1,{reverse_angle}\n".encode())
+                    if DEBUG and cv2.waitKey(1) & 0xFF == ord("q"):
+                        break
+
+                    print("continue")
+                    continue
+
+                    #     show_front_wall = True
+                    # else:
+                    #     show_front_wall = False                    
+                # wall following logic
+
 
             # --- Parking logic ---
             # if contour_workers.parking_mode:
@@ -607,13 +636,7 @@ def main():
             #     continue
 
             # --- Obstacle avoidance ---
-            # reset obstacle positions
-            # obstacle position
-            red_obj_x, red_obj_y = None, None
-            green_obj_x, green_obj_y = None, None
-            obj_error = 0
-
-            if contour_workers.mode == "OBSTACLE" and (
+            elif contour_workers.mode == "OBSTACLE" and (
                 (red_result.contours and red_area > 300)
                 or (green_result.contours and green_area > 300)
             ):
@@ -635,14 +658,11 @@ def main():
                     red_obj_x = -1
                     red_obj_y = -1
 
-                # only proceed if both are not -1
+                # only proceed if both are not -1, atleast one obj detected
                 if not (
                     (green_obj_x == -1 and green_obj_y == -1)
                     and (red_obj_x == -1 and red_obj_y == -1)
-                ):
-                    # print(
-                    #     f"Red: {red_obj_x}, {red_obj_y} | Green: {green_obj_x}, {green_obj_y}"
-                    # )
+                ):                    
                     # if object is too close, back off (convert to global coords and compare)
                     if (
                         (red_obj_y + OBS_REGION[1]) > REVERSE_REGION[1]
@@ -653,6 +673,8 @@ def main():
                         reverse_angle = STRAIGHT_CONST - 25  # turn left when reversing
                         trigger_reverse = True
                         reverse_start_time = time.time()
+                        print("continue")
+                        continue
 
                     elif (
                         (green_obj_y + OBS_REGION[1]) > REVERSE_REGION[1]
@@ -663,8 +685,10 @@ def main():
                         reverse_angle = STRAIGHT_CONST + 25  # turn right when reversing
                         trigger_reverse = True
                         reverse_start_time = time.time()
+                        print("continue")
+                        continue
 
-                    direction_turing = ""
+                    direction_turning = ""
 
                     # if red obj is closer & right to the left danger zone
                     if (
@@ -692,12 +716,12 @@ def main():
                         #         + (FRONT_WALL_REGION[3] - FRONT_WALL_REGION[1]) // 2
                         #     )
                         # else:
-                        r_wall_x, r_wall_y = get_overall_centroid(right_result.contours)
+                        r_wall_x, _ = get_overall_centroid(right_result.contours)
 
                         if r_wall_x is None:
                             print("No wall detected!")
                             # set default wall position if none detected
-                            r_wall_x = CAM_WIDTH
+                            r_wall_x = CAM_WIDTH                            
                         else:
                             # transform to global coordinates
                             r_wall_x += RIGHT_REGION[0]
@@ -718,7 +742,7 @@ def main():
                         )
 
                         obj_error = offset_x / (CAM_WIDTH // 2)  # normalized [-1, 1]
-                        direction_turing = "right"
+                        direction_turning = "right"
 
                     # if green obj is closer & left to the right danger zone
                     elif (
@@ -772,89 +796,37 @@ def main():
                         )
 
                         obj_error = offset_x / (CAM_WIDTH // 2)  # normalized [-1, 1]
-                        direction_turing = "left"
+                        direction_turning = "left"
 
-                    # amplify to make it more responsive
-                    obj_error = -np.clip(obj_error * 7.5, -1, 1)
-                    normalized_angle_offset = pid(obj_error)
 
-                    # steer more aggressively when closer to object
-                    y_gain = np.interp(
-                        (
-                            red_obj_y
-                            if direction_turing == "right"
-                            else (green_obj_y if direction_turing == "left" else 0)
-                        ),
-                        [
-                            0,
-                            (CAM_HEIGHT // 2) - 50,
-                            (CAM_HEIGHT // 2) - 20,
-                            OBS_REGION[3],
-                        ],
-                        [0, 0.45, 0.7, 1],
-                    )
-                    normalized_angle_offset *= y_gain
-                    speed_factor = 1 - (0.3 * y_gain)  # slow down when closer to object
-                    print(
-                        f"Norm: {normalized_angle_offset} | Ygain: {y_gain} | OBJ error: {obj_error}"
-                    )
+                    # turn ONLY when obj is detected and within danger-zone
+                    if not direction_turning == "":
+                        # amplify to make it more responsive
+                        obj_error = -np.clip(obj_error * 7.5, -1, 1)
+                        normalized_angle_offset = pid(obj_error)
+
+                        # steer more aggressively when closer to object
+                        y_gain = np.interp(
+                            (
+                                red_obj_y
+                                if direction_turning == "right"
+                                else (green_obj_y if direction_turning == "left" else 0)
+                            ),
+                            [
+                                0,
+                                (CAM_HEIGHT // 2) - 50,
+                                (CAM_HEIGHT // 2) - 20,
+                                OBS_REGION[3],
+                            ],
+                            [0, 0.45, 0.7, 1],
+                        )
+                        normalized_angle_offset *= y_gain
+                        speed_factor = 1 - (0.3 * y_gain)  # slow down when closer to object
+                        print(
+                            f"Obj follow | Norm: {normalized_angle_offset} | Ygain: {y_gain} | OBJ error: {obj_error}"
+                        )
                 # print(f"Obj: {red_obj_x}, {red_obj_y} | Wall: {r_wall_x}, {r_wall_y}")
-            if contour_workers.mode == "OBSTACLE" and front_wall_area > 200:
-                # if left_area - right_area > 1500:
-                #     normalized_angle_offset = 1  # turn right hard
-                #     print("left area too big")
-                # elif right_area - left_area > 1500:
-                #     normalized_angle_offset = -1  # turn left hard
-                #     print("right area too big")
-                # else:
-                #     normalized_angle_offset = (
-                #         -1 if parking.parking_lot_side == "left" else 1
-                #     )
-                #     print("only front wall")
-                print("+" * 50)
-                if visualizer.direction == "cw":
-                    if (
-                        visualizer.get_boundary_proximity(tracker.x, tracker.y)
-                        # visualizer.get_boundary_vector_proximity(tracker.positions[-4][0], tracker.positions[-4][1], tracker.x, tracker.y)
-                        == "close_outer"
-                    ):
-                        normalized_angle_offset = -1
-                        print("front wall + close to outer boundary CW + left")
-                    else:
-                        normalized_angle_offset = 1
-                        print("front wall + not close to outer boundary CW + right")
-                elif visualizer.direction == "ccw":
-                    if (
-                        visualizer.get_boundary_proximity(tracker.x, tracker.y)
-                        # visualizer.get_boundary_vector_proximity(tracker.positions[-4][0], tracker.positions[-4][1], tracker.x, tracker.y)
-                        == "close_outer"
-                    ):
-                        normalized_angle_offset = 1
-                        print("front wall + close to outer boundary CCW + right")
-                    else:
-                        normalized_angle_offset = -1
-                        print("front wall + not close to outer boundary CCW + left")
-                obstacle_wall_pivot = (None, None)
 
-                if reverse_area > 1000:
-                    reverse_angle = STRAIGHT_CONST - (
-                        30 * normalized_angle_offset
-                    )  # turn left/right when reversing
-                    trigger_reverse = True
-                    reverse_start_time = time.time()
-
-                    speed = 0  # stop before reversing
-                    arduino.write(f"{speed},-1,{reverse_angle}\n".encode())
-                    if DEBUG and cv2.waitKey(1) & 0xFF == ord("q"):
-                        break
-
-                    print("continue")
-                    continue
-
-                    #     show_front_wall = True
-                    # else:
-                    #     show_front_wall = False                    
-                # wall following logic
 
             # Only wall following
             if (
@@ -903,8 +875,14 @@ def main():
                         )
                     )
                 )
+            ) and (
+                # make sure front wall is not too close in obstacle mode
+                front_wall_area < 200
+                if MODE == "OBSTACLE"
+                else True
             ):
                 print(
+                    # if x or y coords are not assigned and front area is small
                     "1st:",
                     bool(
                         (
@@ -919,11 +897,14 @@ def main():
                     ),
                 )
                 print(
+                    # if both obstacles are outside the danger zone
                     "2nd: 1",
                     bool(
                         (
                             red_obj_x is not None
                             and red_obj_y is not None
+                            and red_obj_x != -1
+                            and red_obj_y != -1
                             and point_position(
                                 DANGER_ZONE_POINTS[0]["x1"],
                                 DANGER_ZONE_POINTS[0]["y1"],
@@ -940,11 +921,14 @@ def main():
                 print(red_obj_x, red_obj_y)
 
                 print(
+                    # if both obstacles are outside the danger zone
                     "2nd: 2",
                     bool(
                         (
                             green_obj_x is not None
                             and green_obj_y is not None
+                            and green_obj_x != -1
+                            and green_obj_y != -1
                             and point_position(
                                 DANGER_ZONE_POINTS[1]["x1"],
                                 DANGER_ZONE_POINTS[1]["y1"],
@@ -959,52 +943,41 @@ def main():
                 )
 
                 print(green_obj_x, green_obj_y)
+                print(red_obj_x, red_obj_y)
 
                 obstacle_wall_pivot = (None, None)
                 # PID controller
-                right_total_area = (RIGHT_REGION[2] - RIGHT_REGION[0]) * (
-                    RIGHT_REGION[3] - RIGHT_REGION[1]
-                )
-                left_total_area = (LEFT_REGION[2] - LEFT_REGION[0]) * (
-                    LEFT_REGION[3] - LEFT_REGION[1]
-                )
                 # left_area_normalized = left_area / ((LEFT_REGION[2] - LEFT_REGION[0]) * (LEFT_REGION[3] - LEFT_REGION[1]))
 
                 # interpolate
                 right_area_normalized = np.interp(
                     right_area,
-                    [0, right_total_area / 2, right_total_area],
+                    [0, BLACK_WALL_DETECTOR_AREA / 2, BLACK_WALL_DETECTOR_AREA],
                     [0, 0.7, 1] if MODE == "NO_OBSTACLE" else [0, 0.5, 0.7],
                 )
                 left_area_normalized = np.interp(
                     left_area,
-                    [0, left_total_area / 2, left_total_area],
+                    [0, BLACK_WALL_DETECTOR_AREA / 2, BLACK_WALL_DETECTOR_AREA],
                     [0, 0.7, 1] if MODE == "NO_OBSTACLE" else [0, 0.5, 0.7],
                 )
 
                 if (
-                    right_area_normalized == 0
-                    and not left_area_normalized == 0
-                    and MODE == "OBSTACLE"
+                    MODE == "OBSTACLE"
+                    and right_area_normalized == 0
+                    and not left_area_normalized == 0                    
                 ):
                     # boost right side if left is detected but right is not
                     left_area_normalized = min(left_area_normalized * 2.1, 1)
                 elif (
-                    left_area_normalized == 0
-                    and not right_area_normalized == 0
-                    and MODE == "OBSTACLE"
+                    MODE == "OBSTACLE"
+                    and left_area_normalized == 0
+                    and not right_area_normalized == 0                    
                 ):
                     # boost left side if right is detected but left is not
                     right_area_normalized = min(right_area_normalized * 2.1, 1)
 
                 error = right_area_normalized - left_area_normalized
-                # left_buf.append(left_area)
-                # right_buf.append(right_area)
-                # left_s = sum(left_buf) / len(left_buf)
-                # right_s = sum(right_buf) / len(right_buf)
-                # aDiff = right_s - left_s
-                # aSum = left_s + right_s
-                # error = aDiff / (aSum + 1e-6)  # normalized between roughly [-1,1]
+
                 if not (contour_workers.mode == "OBSTACLE" and front_wall_area > 200):
                     normalized_angle_offset = pid(error)
 
@@ -1032,55 +1005,13 @@ def main():
             # speed = 0
 
             # Send to Arduino
-            arduino.write(f"{speed},-1,{angle}\n".encode())
-
-            # intersection detection
-            # work here
-            # if not intersection_detected:
-            #     if (
-            #         (orange_result.contours and orange_area > 80)
-            #         or (blue_result.contours and blue_area > 80)
-            #     ) and (
-            #         # ignore laps if just reversed recently for 1.4 second
-            #         reverse_start_time + reverse_duration + 1.4
-            #         < time.time()
-            #     ):
-            #         intersection_detected = True
-            #         intersection_crossing_start = int(time.time())
-            #         current_intersections += 1
-
-            #         # start a thread to buzz for 0.3s
-            #         threading.Thread(
-            #             target=lambda: (
-            #                 GPIO.output(BUZZER_PIN, GPIO.HIGH),
-            #                 time.sleep(0.3),
-            #                 GPIO.output(BUZZER_PIN, GPIO.LOW),
-            #             ),
-            #             daemon=True,
-            #         ).start()
-
-            #         print(
-            #             f"Intersection detected! Count: {current_intersections}/{TOTAL_INTERSECTIONS}"
-            #         )
-            # else:
-            #     if (
-            #         int(time.time()) - intersection_crossing_start
-            #         > intersection_crossing_duration
-            #     ):
-            #         intersection_detected = False
-            #         print("Intersection crossing ended.")
-            #     else:
-            #         if (orange_result.contours and orange_area > 80) or (
-            #             blue_result.contours and blue_area > 80
-            #         ):
-            #             # keep latest time to avoid multiple increments
-            #             intersection_crossing_start = int(time.time())
+            arduino.write(f"{speed},-1,{angle}\n".encode())            
 
             # Stopping logic
             if (
                 # contour_workers.mode == "NO_OBSTACLE"
                 # and
-                stopFlag
+                stop_flag
                 and (clamp_angle(gyro_angle, threshold=50) % 360 == 0)
                 # and (int(time.time()) - stopTime) > stop_timer
             ):
@@ -1089,11 +1020,10 @@ def main():
                 print(angle)
                 break
 
-            if current_intersections >= TOTAL_INTERSECTIONS and not stopFlag:
-                stopFlag = True
+            if current_lap >= TOTAL_LAPS and not stop_flag:
+                stop_flag = True
                 # Enable parking mode if in obstacle mode
-                contour_workers.parking_mode = True if MODE == "OBSTACLE" else False
-                stopTime = int(time.time())
+                contour_workers.parking_mode = True if MODE == "OBSTACLE" else False                
                 print("Preparing to stop...")
 
             if DEBUG and cv2.waitKey(1) & 0xFF == ord("q"):

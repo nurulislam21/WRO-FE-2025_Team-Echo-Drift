@@ -59,7 +59,7 @@ _Github: [github.com/nurulislam21](https://github.com/nurulislam21/)_
     <td>
 <h2> Tanim - Programming & Software Architecture </h2>
 
-Skilled in Python, C++, JavaScript, OpenCV-based computer vision, MATLAB, Python Matplotlib and NumPy with experience in robotics, embedded systems, Raspberry Pi, microcontrollers, PlatformIO, and building user interfaces (web & tkinter).
+Skilled in Python, C++, JavaScript, OpenCV-based computer vision, Python Matplotlib and NumPy with experience in robotics, embedded systems, Raspberry Pi, microcontrollers, PlatformIO, and building user interfaces (web & tkinter).
 <br/> <br/>
 _Github: [github.com/tanimsk](https://github.com/tanimsk/)_
     </td>
@@ -336,9 +336,9 @@ python raspberrypi/main.py --debug
 
 ```
 
-We have divided the whole into 8 segments, each segment runs a seperate image processing thread.
+We have divided the whole into 6 segments, each segment runs a seperate image processing thread.
 
-<img width="500" height="736" alt="image" src="https://github.com/user-attachments/assets/ffdb6ecb-f719-429e-8884-5655da6b346c" />
+<img width="500" height="736" alt="image" src="v-photos/ROI-POV.png" />
 
 
 The frame regions are assigned here:
@@ -466,13 +466,17 @@ We are comparing the area of left region and right region, and normalizing the e
 
 
 ```py
-left_buf.append(left_area)
-right_buf.append(right_area)
-left_s = sum(left_buf) / len(left_buf)
-right_s = sum(right_buf) / len(right_buf)
-aDiff = right_s - left_s
-aSum = left_s + right_s
-error = aDiff / (aSum + 1e-6)  # normalized between roughly [-1,1]
+right_area_normalized = np.interp(
+    right_area,
+    [0, BLACK_WALL_DETECTOR_AREA / 2, BLACK_WALL_DETECTOR_AREA],
+    [0, 0.7, 1],
+)
+left_area_normalized = np.interp(
+    left_area,
+    [0, BLACK_WALL_DETECTOR_AREA / 2, BLACK_WALL_DETECTOR_AREA],
+    [0, 0.7, 1],
+)
+error = right_area_normalized - left_area_normalized
 normalized_angle_offset = pid(error)
 ```
 
