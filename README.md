@@ -1,4 +1,4 @@
-# Team Echo Drift — WRO Future Engineers 2025
+# Team Echo Drift - WRO Future Engineers 2025
 <img src="https://github.com/majednaeem/WRO/blob/main/Assets/github%20cover.gif" alt="Loading Echo Drift Cover Banner..." height="300">
 
 
@@ -10,7 +10,11 @@
 ---
 
 
-**Welcome** to the official GitHub repository of **Team Echo Drift**. This repository documents the journey of **Team Echo Drift** at the **World Robot Olympiad 2025 - Future Engineers category**.Here you’ll find the **complete documentation of our robot** - an innovation imagined, designed, and brought to life by three passionate students pushing the limits of creativity and engineering.  
+**Welcome** to the official GitHub repository of **Team Echo Drift**!
+
+This project showcases our autonomous robot for **WRO Future Engineers 2025**, built to navigate using only **camera**, **gyro**, and **encoder** data. We implement computer vision with **OpenCV**, **PID control**, and sensor data analysis in **MATLAB** to achieve precise and reliable navigation.
+
+Explore the repository to learn more about our system design, documentation, and code!
 
 # Table of Contents  
 
@@ -119,7 +123,7 @@ The WRO Future Engineers 2025 competition is divided into **two progressive roun
 
 | Round | Description | Key Tasks | Track Layout |
 |:------|:-----------:|:----------|:-------------|
-| **Round 1 - Open Challenge** | Focuses on **reliability and lap consistency**. The robot must complete **3 laps** maintaing safe distance from the boundary walls. Judges emphasize **stability, accuracy, and precise lane following**. | - Focus on **stability, accuracy, and smooth lane following**  <br> - Complete **3 full laps** without error | <img src="https://github.com/majednaeem/WRO/blob/main/Assets/Round%201.png" width="400" align="top" align="right">|
+| **Round 1 - Open Challenge** | Focuses on **precise navigation and lap consistency**. The robot must complete **3 laps** maintaing safe distance from the boundary walls. Judges emphasize **stability, accuracy, and precise lane following**. | - Focus on **stability, accuracy, and smooth lane following**  <br> - Complete **3 full laps** without error | <img src="https://github.com/majednaeem/WRO/blob/main/Assets/Round%201.png" width="400" align="top" align="right">|
 | **Round 2 – Obstacle Challenge** |  The robot must avoid **color-coded obstacles** (from specific direction) and then park in a **designated zone** after **3 laps**.| - 🟩 **Green obstacle → move left**  <br> - **🟥 Red obstacle → move right**  <br> -  Maintain speed while **avoiding collisions**   <br> - Finish with **precision parking** inside a marked box  |<img src="https://github.com/majednaeem/WRO/blob/main/Assets/Round%202.png" width="400" align="top" align="left">   |
 
 
@@ -145,7 +149,7 @@ The WRO Future Engineers 2025 competition is divided into **two progressive roun
 
 | Parameter | Value |
 |-----------|-------|
-| *Dimensions* | 17 cm (L) × 11 cm (W) × 18 cm (H) |
+| *Dimensions* | 20 cm (L) × 11 cm (W) × 18 cm (H) |
 | *Weight* | ~ 0.7 kg |
 | *Chassis* | Modular 3D-printed PLA with reinforced mounts |
 | *Motors* | N20 motor  |
@@ -283,17 +287,11 @@ The hardware design balances **mechanical precision** with **reliable electronic
 
 ## Software Architecture
 
-Our software is modular, optimized for **real-time autonomous control**.
 
-- **Sensor Module:** Collects & processes sensor data  
-- **Control Module:** PID motor & steering control  
-- **Navigation Module:** Path planning, obstacle avoidance  
-- **Vision Module:** (optional) Image processing with OpenCV  
-- **Main Loop:** Integrates all modules in real time  
 
-<!-- <p align="center">
-  <img src="other/software_flowchart.png" alt="Software Flowchart" width="600"/>
-</p> -->
+<p align="center">
+  <img src="schemes/architecture-software.svg" alt="Software Flowchart" width="600"/>
+</p>
 
 ---
 
@@ -340,6 +338,16 @@ We have divided the whole into 6 segments, each segment runs a seperate image pr
 
 <img width="500" height="736" alt="image" src="v-photos/ROI-POV.png" />
 
+ROI Partition Explanation:
+```
+1. Left Wall Region: Detects the left boundary wall for lane-keeping.
+2. Right Wall Region: Detects the right boundary wall for lane-keeping.
+3. Reverse Region: Detects if obstacles/walls are too close.
+4. Front wall Region: Detects frontal wall.
+5. Left Danger Zone: Monitors for red obstacles on the right side.
+6. Right Danger Zone: Monitors for green obstacles on the left side.
+```
+
 
 The frame regions are assigned here:
 
@@ -348,7 +356,6 @@ The frame regions are assigned here:
 # Region of Interest coordinates
 LEFT_REGION = [20, 220, 270, 280]
 RIGHT_REGION = [370, 220, 620, 280]
-LAP_REGION = [225, 295, 415, 350]
 OBS_REGION = [85, 140, 555, 320]
 REVERSE_REGION = [233, 300, 407, 320]
 FRONT_WALL_REGION = [300, 195, 340, 215]
