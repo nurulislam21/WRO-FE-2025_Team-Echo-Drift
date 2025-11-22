@@ -1,4 +1,7 @@
-Vehicle's photos
-====
+| Front | Right | Back |
+|-------|-------|------|
+| <img src="front.jpg" width="250"> | <img src="right.jpg" width="250"> | <img src="back.jpg" width="250"> |
 
-This directory must contain 6 photos of the vehicle (from every side, from top and bottom)
+| Left | Top | Bottom |
+|------|-----|--------|
+| <img src="left.jpg" width="250"> | <img src="top.jpg" width="250"> | <img src="bottom.jpg" width="250"> |

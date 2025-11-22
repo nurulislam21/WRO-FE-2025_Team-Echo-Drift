@@ -455,8 +455,8 @@ def main():
             (
                 left_result,
                 right_result,
-                orange_result,
-                blue_result,
+                # orange_result,
+                # blue_result,
                 green_result,
                 red_result,
                 reverse_result,

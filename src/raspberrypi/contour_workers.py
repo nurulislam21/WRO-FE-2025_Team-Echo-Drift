@@ -219,8 +219,8 @@ class ContourWorkers:
         return (
             self.left_result,
             self.right_result,
-            self.orange_result,
-            self.blue_result,
+            # self.orange_result,
+            # self.blue_result,
             self.green_result,
             self.red_result,
             self.reverse_result,

@@ -184,10 +184,6 @@ The WRO Future Engineers 2025 competition is divided into **two progressive roun
 
 ## System Architecture  
 
-The **Echo Drift Autonomous EV** is designed with a **layered and modular architecture** to ensure clarity, testability, and compliance with WRO 2025 Future Engineers standards.  
-
-## System Flow Diagram
-
 <img src="schemes/architecture.svg">  
 
 ---
@@ -297,12 +293,15 @@ The hardware design balances **mechanical precision** with **reliable electronic
 
 ## Setup & Dependencies
 
-**Environment:**
-- OS: Raspberry Pi OS / Ubuntu 20.04  
-- Languages: C, C++, Python  
-- Compiler: GCC  
-- Libraries: WiringPi, bcm2835  
-- Tools: Make, GCC toolchain  
+| Category | Details |
+|---------|---------|
+| **Operating System** | Raspberry Pi OS, Ubuntu 20.04 |
+| **Programming Languages** | C, C++, Python |
+| **Compiler** | GCC |
+| **Libraries (C/C++)** | WiringPi, bcm2835 |
+| **Build Tools** | Make, GCC toolchain |
+| **Python Packages** | simple-pid, opencv-python, numpy, matplotlib, pillow, pyserial |
+| **Arduino Development Platform** | PlatformIO |
 
 **Install Dependencies:**
 ```bash
