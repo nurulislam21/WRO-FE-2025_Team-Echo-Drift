@@ -53,22 +53,22 @@ RIGHT_REGION = (
     [410, 165, 640, 230] if MODE == "NO_OBSTACLE" else [410, 165, 640, 230]
 )  # right
 LAP_REGION = [215, 260, 415, 305]  # lap detection
-OBS_REGION = [77, 110, 563, 315]  # obstacle detection
-REVERSE_REGION = [213, 240, 427, 268]  # reverse trigger area
-FRONT_WALL_REGION = [300, 155, 340, 175]  # front wall detection
+OBS_REGION = [77, 110, 563, 355]  # obstacle detection
+REVERSE_REGION = [223, 255, 427, 273]  # reverse trigger area
+FRONT_WALL_REGION = [300, 160, 340, 180]  # front wall detection
 PARKING_LOT_REGION = [0, 185, CAM_WIDTH, 400]  # parking lot detection
 # DANGER_ZONE_POINTS = [175, OBS_REGION[1], 465, OBS_REGION[3]]  # area to check for obstacles
 DANGER_ZONE_POINTS = [
     {
-        "x1": 267,
+        "x1": 207,
         "y1": OBS_REGION[1],
-        "x2": 182,
+        "x2": 77,
         "y2": OBS_REGION[3],
     },
     {
-        "x1": 373,
+        "x1": 423,
         "y1": OBS_REGION[1],
-        "x2": 458,
+        "x2": 563,
         "y2": OBS_REGION[3],
     },
 ]
@@ -205,7 +205,7 @@ maxRight = STRAIGHT_CONST + MAX_OFFSET_DEGREE
 maxLeft = STRAIGHT_CONST - MAX_OFFSET_DEGREE
 
 # PID controller constants
-kp = 1.75 if MODE == "OBSTACLE" else 1.6
+kp = 1.6 if MODE == "OBSTACLE" else 1.6
 ki = 0.0
 kd = 0.07
 pid = PID(Kp=kp, Ki=ki, Kd=kd, setpoint=0)
@@ -552,7 +552,7 @@ def main():
             if reverse_area > 800 and (
                 # avoid triggering reverse when Front Wall ROI is too close in obstacle mode
                 # cause we want to reverse out in angle
-                front_wall_area < 200
+                front_wall_area < 300
                 if MODE == "OBSTACLE"
                 else True
             ):
@@ -568,7 +568,7 @@ def main():
                 continue
             
             # Front wall detection (odometry guided turning)
-            if contour_workers.mode == "OBSTACLE" and front_wall_area > 200:
+            if contour_workers.mode == "OBSTACLE" and front_wall_area > 300:
                 print("+" * 50)
                 if visualizer.direction == "cw":
                     if (
@@ -838,7 +838,7 @@ def main():
                         and red_obj_y is None
                         and green_obj_y is None
                     )
-                    and front_wall_area < 200
+                    and front_wall_area < 300
                 )
                 or (
                     # or if both obstacles are outside the danger zone
@@ -877,7 +877,7 @@ def main():
                 )
             ) and (
                 # make sure front wall is not too close in obstacle mode
-                front_wall_area < 200
+                front_wall_area < 300
                 if MODE == "OBSTACLE"
                 else True
             ):
@@ -892,7 +892,7 @@ def main():
                                 and red_obj_y is None
                                 and green_obj_y is None
                             )
-                            and front_wall_area < 200
+                            and front_wall_area < 300
                         )
                     ),
                 )
@@ -950,13 +950,13 @@ def main():
                 # left_area_normalized = left_area / ((LEFT_REGION[2] - LEFT_REGION[0]) * (LEFT_REGION[3] - LEFT_REGION[1]))
 
                 # interpolate
-                right_area_normalized = np.interp(
-                    right_area,
-                    [0, BLACK_WALL_DETECTOR_AREA / 2, BLACK_WALL_DETECTOR_AREA],
-                    [0, 0.7, 1] if MODE == "NO_OBSTACLE" else [0, 0.5, 0.7],
-                )
                 left_area_normalized = np.interp(
                     left_area,
+                    [0, BLACK_WALL_DETECTOR_AREA / 2, BLACK_WALL_DETECTOR_AREA],
+                    [0, 0.7, 1] if MODE == "NO_OBSTACLE" else [0, 0.5, 0.7],
+                )                
+                right_area_normalized = np.interp(
+                    right_area,
                     [0, BLACK_WALL_DETECTOR_AREA / 2, BLACK_WALL_DETECTOR_AREA],
                     [0, 0.7, 1] if MODE == "NO_OBSTACLE" else [0, 0.5, 0.7],
                 )
@@ -978,12 +978,12 @@ def main():
 
                 error = right_area_normalized - left_area_normalized
 
-                if not (contour_workers.mode == "OBSTACLE" and front_wall_area > 200):
+                # only wall follow when front wall is not too close
+                if (front_wall_area < 300 if contour_workers.mode == "OBSTACLE" else True):
                     normalized_angle_offset = pid(error)
-
-                print(
-                    f"Wall following | Norm: {normalized_angle_offset} | Error: {error}"
-                )
+                    print(
+                        f"Wall following | Norm: {normalized_angle_offset} | Error: {error}"
+                    )
 
             # --- Map normalized control to servo angle ---
             angle = int(
@@ -1018,6 +1018,9 @@ def main():
                 print("Lap completed!")
                 arduino.write(f"-5,-1,{angle}\n".encode())
                 print(angle)
+                parking.process_parking(
+                    dir="right"
+                )
                 break
 
             if current_lap >= TOTAL_LAPS and not stop_flag:

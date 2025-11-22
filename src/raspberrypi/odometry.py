@@ -188,14 +188,14 @@ class OdometryVisualizer:
         """
         self.direction = dir
         if dir == "cw":
-            self.x_min = -1
-            self.x_max = 1
+            self.x_min = -2
+            self.x_max = 2
             self.y_min = -3
             self.y_max = 0
 
         elif dir == "ccw":
-            self.x_min = -1
-            self.x_max = 1
+            self.x_min = -2
+            self.x_max = 2
             self.y_min = 0
             self.y_max = 3
         else:
@@ -228,8 +228,8 @@ class OdometryVisualizer:
             # always set inner boundary to be 1/3 of outer boundary size
             width = self.x_max - self.x_min
             height = self.y_max - self.y_min            
-            margin_x = (width) / 3
-            margin_y = (height) / 3
+            margin_x = ((width) / 3) - 0.2
+            margin_y = ((height) / 3) - 0.2
             
             self.inner_x_min = self.x_min + margin_x
             self.inner_x_max = self.x_max - margin_x

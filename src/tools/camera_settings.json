@@ -1,6 +1,6 @@
 {
-    "ExposureTime": 36000,
-    "AnalogueGain": 5.0,
+    "ExposureTime": 38000,
+    "AnalogueGain": 15.7,
     "AeEnable": false,
     "AwbEnable": false,
     "FrameDurationLimits": [
@@ -9,9 +9,9 @@
     ],
     "ColourGains": [
         0.8,
-        1.1
+        1.2
     ],
-    "Contrast": 1.6,
-    "Saturation": 1.0,
-    "Brightness": -0.27
+    "Contrast": 1.2,
+    "Saturation": 0.9,
+    "Brightness": -0.25
 }

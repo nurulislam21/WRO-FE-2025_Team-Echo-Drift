@@ -76,10 +76,10 @@ class Parking:
             "right": [
                 # speed, steps, angle
                 (-self.parking_speed, 500, 25),
-                (self.parking_speed, 1000, 95),                
-                (self.parking_speed, 2000, 145),  
+                (self.parking_speed, 1000, 95),
+                (self.parking_speed, 2000, 145),
                 (self.parking_speed, 2600, 25),
-                (-self.parking_speed, 6000, 95),   
+                (-self.parking_speed, 6000, 95),
                 # (-self.parking_speed, 700, 25),
                 # (self.parking_speed, 1500, 160),             
             ],
@@ -101,12 +101,8 @@ class Parking:
             ],
             "right": [
                 # speed, steps, angle
-                (self.parking_speed, 1200, 95),
-                (-self.parking_speed, 3500, 170),
-                (-self.parking_speed, 1250, 95),
-                (-self.parking_speed, 2300, 20),
-                # (self.parking_speed, 800, 170),
-                (self.parking_speed, 800, 95),
+                (self.parking_speed, 2200, 150),
+                (self.parking_speed, 1000, 95),                
             ],
         }
 
@@ -171,77 +167,67 @@ class Parking:
 
     def process_parking(
         self,
-        parking_result: ContourResult,
-        left_result: ContourResult,
-        right_result: ContourResult,        
-        pid: PID,
+        dir: str,
+        # parking_result: ContourResult,
+        # left_result: ContourResult,
+        # right_result: ContourResult,        
+        # pid: PID,
     ):
-        print(left_result.metadata)
-        print(right_result.metadata)
+        # print(left_result.metadata)
+        # print(right_result.metadata)
 
-        self.left_buf.append(left_result.area)
-        self.right_buf.append(right_result.area)
-        left_s = sum(self.left_buf) / len(self.left_buf)
-        right_s = sum(self.right_buf) / len(self.right_buf)
-        aDiff = right_s - left_s
-        aSum = left_s + right_s
-        error = aDiff / (aSum + 1e-6)  # normalized between roughly [-1,1]
-        normalized_angle_offset = pid(error)
+        # self.left_buf.append(left_result.area)
+        # self.right_buf.append(right_result.area)
+        # left_s = sum(self.left_buf) / len(self.left_buf)
+        # right_s = sum(self.right_buf) / len(self.right_buf)
+        # aDiff = right_s - left_s
+        # aSum = left_s + right_s
+        # error = aDiff / (aSum + 1e-6)  # normalized between roughly [-1,1]
+        # normalized_angle_offset = pid(error)
 
-        angle = int(
-            max(
-                min(
-                    self.STRAIGHT_CONST
-                    + normalized_angle_offset * self.MAX_OFFSET_DEGREE,
-                    self.maxRight,
-                ),
-                self.maxLeft,
-            )
-        )
+        # angle = int(
+        #     max(
+        #         min(
+        #             self.STRAIGHT_CONST
+        #             + normalized_angle_offset * self.MAX_OFFSET_DEGREE,
+        #             self.maxRight,
+        #         ),
+        #         self.maxLeft,
+        #     )
+        # )
 
-        self.arduino.write(f"{self.parking_speed},-1,{angle}\n".encode())
+        # self.arduino.write(f"{self.parking_speed},-1,{angle}\n".encode())
 
-        # # step 01
-        if parking_result and parking_result.area > 800:
-            self.seen_parking_lot = "SEEN"
-            self.last_seen_time = time.time()
+        # # # step 01
+        # if parking_result and parking_result.area > 800:
+        #     self.seen_parking_lot = "SEEN"
+        #     self.last_seen_time = time.time()
 
-            # determine which side the parking lot is on
-            parking_x, _ = get_overall_centroid(parking_result.contours)
-            if parking_x is not None:
-                if parking_x < (self.camera_width // 2):
-                    self.parking_lot_side = "left"
-                else:
-                    self.parking_lot_side = "right"
+        #     # determine which side the parking lot is on
+        #     parking_x, _ = get_overall_centroid(parking_result.contours)
+        #     if parking_x is not None:
+        #         if parking_x < (self.camera_width // 2):
+        #             self.parking_lot_side = "left"
+        #         else:
+        #             self.parking_lot_side = "right"
 
-            print("seen parking lot")
-            return angle
+        #     print("seen parking lot")
+        #     return angle
 
         # # step 02
-        elif self.seen_parking_lot == "SEEN" and (
-            (time.time() - self.last_seen_time) < self.wait_after_seen
-        ):
-            print("Parking | Last seen parking lot, STOP")
-            self.arduino.write(f"-10,-1,{self.STRAIGHT_CONST}\n".encode())
-            time.sleep(0.8)
+        for speed, steps, angle in self.parking_in_instructions[dir]:
+            self.arduino.write(f"{speed},{steps},{angle}\n".encode())
+            time.sleep(0.1)
+            print(f"Parking In | Speed: {speed}, Steps: {steps}, Angle: {angle}")
 
-            for speed, steps, angle in self.parking_in_instructions[self.parking_lot_side]:
-                self.arduino.write(f"{speed},{steps},{angle}\n".encode())
-                time.sleep(0.1)
-                print(f"Parking In | Speed: {speed}, Steps: {steps}, Angle: {angle}")
-
-                # wait for arduino to respond
-                while True:
-                    if self.arduino.in_waiting > 0:
-                        line = self.arduino.readline().decode("utf-8").rstrip()
-                        print(f"Arduino: {line}")
-                        if "DONE" in line:
-                            print("found DONE")
-                            break
-
+            # wait for arduino to respond
             while True:
-                self.arduino.write(f"0,-1,{self.STRAIGHT_CONST}\n".encode())
-                time.sleep(0.5)
+                if self.arduino.in_waiting > 0:
+                    line = self.arduino.readline().decode("utf-8").rstrip()
+                    print(f"Arduino: {line}")
+                    if "DONE" in line:
+                        print("found DONE")
+                        break
 
         #     return (None, None)
         #     print("Parking | No longer see parking lot, stopping")
