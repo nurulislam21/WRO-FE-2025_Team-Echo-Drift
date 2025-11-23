@@ -372,8 +372,8 @@ def main():
             # ---- Draw odometry ----
             if (
                 # (time.time() - last_odometry_time) >= 0.2 and
-                start_processing and
-                (abs(encoder_ticks - prev_encoder_ticks) > 300)
+                start_processing
+                and (abs(encoder_ticks - prev_encoder_ticks) > 300)
                 # dont collect odometry data during parking maneuver
                 and (parking.has_parked_out if MODE == "OBSTACLE" else True)
             ):
@@ -428,7 +428,7 @@ def main():
                 # current_intersections = round(abs(gyro_angle) / 90)
                 if abs(x) < start_zone_rect[0] and abs(y) < start_zone_rect[1]:
                     if (time.time() - last_lap_time) >= LAP_COUNT_INTERVAL:
-                        current_lap += 1                        
+                        current_lap += 1
 
                     # keep resetting lap time only when inside start zone
                     last_lap_time = time.time()
@@ -446,7 +446,7 @@ def main():
 
             # default values
             speed_factor = 1.0
-            # reset obstacle positions            
+            # reset obstacle positions
             red_obj_x, red_obj_y = None, None
             green_obj_x, green_obj_y = None, None
             obj_error = 0
@@ -516,7 +516,7 @@ def main():
 
             # --- PARKING OUT LOGIC ---
             if contour_workers.mode == "OBSTACLE" and not parking.has_parked_out:
-                # process parking out first if not yet done                
+                # process parking out first if not yet done
                 parking.process_parking_out(
                     left_result=left_result, right_result=right_result
                 )
@@ -566,7 +566,7 @@ def main():
 
                 print("continue")
                 continue
-            
+
             # Front wall detection (odometry guided turning)
             if contour_workers.mode == "OBSTACLE" and front_wall_area > 300:
                 print("+" * 50)
@@ -612,9 +612,8 @@ def main():
 
                     #     show_front_wall = True
                     # else:
-                    #     show_front_wall = False                    
+                    #     show_front_wall = False
                 # wall following logic
-
 
             # --- Parking logic ---
             # if contour_workers.parking_mode:
@@ -662,7 +661,7 @@ def main():
                 if not (
                     (green_obj_x == -1 and green_obj_y == -1)
                     and (red_obj_x == -1 and red_obj_y == -1)
-                ):                    
+                ):
                     # if object is too close, back off (convert to global coords and compare)
                     if (
                         (red_obj_y + OBS_REGION[1]) > REVERSE_REGION[1]
@@ -692,16 +691,17 @@ def main():
 
                     # if red obj is closer & right to the left danger zone
                     if (
-                        red_obj_y > green_obj_y
-                        and point_position(
-                            DANGER_ZONE_POINTS[0]["x1"],
-                            DANGER_ZONE_POINTS[0]["y1"],
-                            DANGER_ZONE_POINTS[0]["x2"],
-                            DANGER_ZONE_POINTS[0]["y2"],
-                            red_obj_x + OBS_REGION[0],
-                            red_obj_y + OBS_REGION[1],
-                        )
-                        == "RIGHT"
+                        red_obj_y
+                        > green_obj_y
+                        # and point_position(
+                        #     DANGER_ZONE_POINTS[0]["x1"],
+                        #     DANGER_ZONE_POINTS[0]["y1"],
+                        #     DANGER_ZONE_POINTS[0]["x2"],
+                        #     DANGER_ZONE_POINTS[0]["y2"],
+                        #     red_obj_x + OBS_REGION[0],
+                        #     red_obj_y + OBS_REGION[1],
+                        # )
+                        # == "RIGHT"
                     ):
                         print("Red")
 
@@ -721,7 +721,7 @@ def main():
                         if r_wall_x is None:
                             print("No wall detected!")
                             # set default wall position if none detected
-                            r_wall_x = CAM_WIDTH                            
+                            r_wall_x = CAM_WIDTH
                         else:
                             # transform to global coordinates
                             r_wall_x += RIGHT_REGION[0]
@@ -742,21 +742,21 @@ def main():
                         )
 
                         obj_error = offset_x / (CAM_WIDTH // 2)  # normalized [-1, 1]
-                        direction_turning = "right"
+
+                        if point_position(
+                            DANGER_ZONE_POINTS[0]["x1"],
+                            DANGER_ZONE_POINTS[0]["y1"],
+                            DANGER_ZONE_POINTS[0]["x2"],
+                            DANGER_ZONE_POINTS[0]["y2"],
+                            red_obj_x + OBS_REGION[0],
+                            red_obj_y + OBS_REGION[1],
+                        ):
+                            direction_turning = "hard_right"
+                        else:
+                            direction_turning = "soft_right"
 
                     # if green obj is closer & left to the right danger zone
-                    elif (
-                        green_obj_y > red_obj_y
-                        and point_position(
-                            DANGER_ZONE_POINTS[1]["x1"],
-                            DANGER_ZONE_POINTS[1]["y1"],
-                            DANGER_ZONE_POINTS[1]["x2"],
-                            DANGER_ZONE_POINTS[1]["y2"],
-                            green_obj_x + OBS_REGION[0],
-                            green_obj_y + OBS_REGION[1],
-                        )
-                        == "LEFT"
-                    ):
+                    elif green_obj_y > red_obj_y:
                         print("Green")
 
                         # if front_wall_area > 350:
@@ -796,74 +796,9 @@ def main():
                         )
 
                         obj_error = offset_x / (CAM_WIDTH // 2)  # normalized [-1, 1]
-                        direction_turning = "left"
 
-
-                    # turn ONLY when obj is detected and within danger-zone
-                    if not direction_turning == "":
-                        # amplify to make it more responsive
-                        obj_error = -np.clip(obj_error * 7.5, -1, 1)
-                        normalized_angle_offset = pid(obj_error)
-
-                        # steer more aggressively when closer to object
-                        y_gain = np.interp(
-                            (
-                                red_obj_y
-                                if direction_turning == "right"
-                                else (green_obj_y if direction_turning == "left" else 0)
-                            ),
-                            [
-                                0,
-                                (CAM_HEIGHT // 2) - 50,
-                                (CAM_HEIGHT // 2) - 20,
-                                OBS_REGION[3],
-                            ],
-                            [0, 0.45, 0.7, 1],
-                        )
-                        normalized_angle_offset *= y_gain
-                        speed_factor = 1 - (0.3 * y_gain)  # slow down when closer to object
-                        print(
-                            f"Obj follow | Norm: {normalized_angle_offset} | Ygain: {y_gain} | OBJ error: {obj_error}"
-                        )
-                # print(f"Obj: {red_obj_x}, {red_obj_y} | Wall: {r_wall_x}, {r_wall_y}")
-
-
-            # Only wall following
-            if (
-                # or if x or y coords are not assigned and front area is small
-                (
-                    (
-                        red_obj_x is None
-                        and green_obj_x is None
-                        and red_obj_y is None
-                        and green_obj_y is None
-                    )
-                    and front_wall_area < 300
-                )
-                or (
-                    # or if both obstacles are outside the danger zone
-                    (
-                        (
-                            red_obj_x is not None
-                            and red_obj_y is not None
-                            and red_obj_x != -1
-                            and red_obj_y != -1
-                            and point_position(
-                                DANGER_ZONE_POINTS[0]["x1"],
-                                DANGER_ZONE_POINTS[0]["y1"],
-                                DANGER_ZONE_POINTS[0]["x2"],
-                                DANGER_ZONE_POINTS[0]["y2"],
-                                red_obj_x + OBS_REGION[0],
-                                red_obj_y + OBS_REGION[1],
-                            )
-                            == "LEFT"
-                        )
-                        or (
-                            green_obj_x is not None
-                            and green_obj_y is not None
-                            and green_obj_x != -1
-                            and green_obj_y != -1
-                            and point_position(
+                        if (
+                            point_position(
                                 DANGER_ZONE_POINTS[1]["x1"],
                                 DANGER_ZONE_POINTS[1]["y1"],
                                 DANGER_ZONE_POINTS[1]["x2"],
@@ -871,15 +806,93 @@ def main():
                                 green_obj_x + OBS_REGION[0],
                                 green_obj_y + OBS_REGION[1],
                             )
-                            == "RIGHT"
+                            == "LEFT"
+                        ):
+                            direction_turning = "hard_left"
+                        else:
+                            direction_turning = "soft_left"
+
+                    # turn ONLY when obj is detected and within danger-zone
+                    if not direction_turning == "":
+                        # amplify to make it more responsive
+                        obj_error = -np.clip(obj_error * (7.5 if "hard" in direction_turning else 3), -1, 1)                        
+
+                        # steer more aggressively when closer to object
+                        y_gain = np.interp(
+                            (
+                                red_obj_y
+                                if "right" in direction_turning
+                                else (green_obj_y if "left" in direction_turning else 0)
+                            ),
+                            [
+                                0,
+                                OBS_REGION[1] + (0.5 * (OBS_REGION[3] - OBS_REGION[1])),
+                                OBS_REGION[3],
+                            ],
+                            [0, 0.7, 1],
                         )
-                    )
+                        normalized_angle_offset = pid(obj_error * y_gain)
+                        # normalized_angle_offset *= y_gain
+                        speed_factor = 1 - (
+                            0.3 * y_gain
+                        )  # slow down when closer to object
+                        print(
+                            f"Obj follow | Norm: {normalized_angle_offset} | Ygain: {y_gain} | OBJ error: {obj_error}"
+                        )
+                # print(f"Obj: {red_obj_x}, {red_obj_y} | Wall: {r_wall_x}, {r_wall_y}")
+
+            # Only wall following
+            if (
+                # or if x or y coords are not assigned and front area is small
+                (
+                    red_obj_x is None
+                    and green_obj_x is None
+                    and red_obj_y is None
+                    and green_obj_y is None
                 )
-            ) and (
-                # make sure front wall is not too close in obstacle mode
-                front_wall_area < 300
-                if MODE == "OBSTACLE"
-                else True
+                and front_wall_area < 300
+                #     or (
+                #         # or if both obstacles are outside the danger zone
+                #         (
+                #             (
+                #                 red_obj_x is not None
+                #                 and red_obj_y is not None
+                #                 and red_obj_x != -1
+                #                 and red_obj_y != -1
+                #                 and point_position(
+                #                     DANGER_ZONE_POINTS[0]["x1"],
+                #                     DANGER_ZONE_POINTS[0]["y1"],
+                #                     DANGER_ZONE_POINTS[0]["x2"],
+                #                     DANGER_ZONE_POINTS[0]["y2"],
+                #                     red_obj_x + OBS_REGION[0],
+                #                     red_obj_y + OBS_REGION[1],
+                #                 )
+                #                 == "LEFT"
+                #             )
+                #             or (
+                #                 green_obj_x is not None
+                #                 and green_obj_y is not None
+                #                 and green_obj_x != -1
+                #                 and green_obj_y != -1
+                #                 and point_position(
+                #                     DANGER_ZONE_POINTS[1]["x1"],
+                #                     DANGER_ZONE_POINTS[1]["y1"],
+                #                     DANGER_ZONE_POINTS[1]["x2"],
+                #                     DANGER_ZONE_POINTS[1]["y2"],
+                #                     green_obj_x + OBS_REGION[0],
+                #                     green_obj_y + OBS_REGION[1],
+                #                 )
+                #                 == "RIGHT"
+                #             )
+                #         )
+                #     )
+                # )
+                # and (
+                #     # make sure front wall is not too close in obstacle mode
+                #     front_wall_area < 300
+                #     if MODE == "OBSTACLE"
+                #     else True
+                # ))
             ):
                 print(
                     # if x or y coords are not assigned and front area is small
@@ -954,7 +967,7 @@ def main():
                     left_area,
                     [0, BLACK_WALL_DETECTOR_AREA / 2, BLACK_WALL_DETECTOR_AREA],
                     [0, 0.7, 1] if MODE == "NO_OBSTACLE" else [0, 0.5, 0.7],
-                )                
+                )
                 right_area_normalized = np.interp(
                     right_area,
                     [0, BLACK_WALL_DETECTOR_AREA / 2, BLACK_WALL_DETECTOR_AREA],
@@ -964,14 +977,14 @@ def main():
                 if (
                     MODE == "OBSTACLE"
                     and right_area_normalized == 0
-                    and not left_area_normalized == 0                    
+                    and not left_area_normalized == 0
                 ):
                     # boost right side if left is detected but right is not
                     left_area_normalized = min(left_area_normalized * 2.1, 1)
                 elif (
                     MODE == "OBSTACLE"
                     and left_area_normalized == 0
-                    and not right_area_normalized == 0                    
+                    and not right_area_normalized == 0
                 ):
                     # boost left side if right is detected but left is not
                     right_area_normalized = min(right_area_normalized * 2.1, 1)
@@ -979,7 +992,11 @@ def main():
                 error = right_area_normalized - left_area_normalized
 
                 # only wall follow when front wall is not too close
-                if (front_wall_area < 300 if contour_workers.mode == "OBSTACLE" else True):
+                if (
+                    front_wall_area < 300
+                    if contour_workers.mode == "OBSTACLE"
+                    else True
+                ):
                     normalized_angle_offset = pid(error)
                     print(
                         f"Wall following | Norm: {normalized_angle_offset} | Error: {error}"
@@ -1005,7 +1022,7 @@ def main():
             # speed = 0
 
             # Send to Arduino
-            arduino.write(f"{speed},-1,{angle}\n".encode())            
+            arduino.write(f"{speed},-1,{angle}\n".encode())
 
             # Stopping logic
             if (
@@ -1018,15 +1035,13 @@ def main():
                 print("Lap completed!")
                 arduino.write(f"-5,-1,{angle}\n".encode())
                 print(angle)
-                parking.process_parking(
-                    dir="right"
-                )
+                parking.process_parking(dir="right")
                 break
 
             if current_lap >= TOTAL_LAPS and not stop_flag:
                 stop_flag = True
                 # Enable parking mode if in obstacle mode
-                contour_workers.parking_mode = True if MODE == "OBSTACLE" else False                
+                contour_workers.parking_mode = True if MODE == "OBSTACLE" else False
                 print("Preparing to stop...")
 
             if DEBUG and cv2.waitKey(1) & 0xFF == ord("q"):
