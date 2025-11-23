@@ -40,22 +40,22 @@ MODE = "OBSTACLE"  # "NO_OBSTACLE" or "OBSTACLE"
 CAM_WIDTH = 640
 CAM_HEIGHT = 480
 MAX_SPEED = 50 if MODE == "OBSTACLE" else 100
-MIN_SPEED = 40 if MODE == "OBSTACLE" else 70
+MIN_SPEED = 40 if MODE == "OBSTACLE" else 80
 
 # Intersections
 TOTAL_LAPS = 3
 
 # Region of Interest coordinates
 LEFT_REGION = (
-    [0, 165, 230, 230] if MODE == "NO_OBSTACLE" else [0, 185, 230, 250]
+    [0, 165, 230, 230] if MODE == "NO_OBSTACLE" else [0, 175, 230, 240]
 )  # left
 RIGHT_REGION = (
-    [410, 165, 640, 230] if MODE == "NO_OBSTACLE" else [410, 185, 640, 250]
+    [410, 165, 640, 230] if MODE == "NO_OBSTACLE" else [410, 175, 640, 240]
 )  # right
 LAP_REGION = [215, 260, 415, 305]  # lap detection
 OBS_REGION = [57, 117, 583, 400]  # obstacle detection
 REVERSE_REGION = [223, 255, 427, 273]  # reverse trigger area
-FRONT_WALL_REGION = [300, 125, 340, 180]  # front wall detection
+FRONT_WALL_REGION = [300, 135, 340, 180]  # front wall detection
 PARKING_LOT_REGION = [0, 185, CAM_WIDTH, 400]  # parking lot detection
 # DANGER_ZONE_POINTS = [175, OBS_REGION[1], 465, OBS_REGION[3]]  # area to check for obstacles
 DANGER_ZONE_POINTS = [
@@ -304,6 +304,10 @@ def main():
     global encoder_ticks, gyro_angle, prev_encoder_ticks, prev_gyro_angle
     global start_processing, obstacle_wall_pivot, reverse_start_time
     global smoothed_drift_x, smoothed_drift_y
+
+    # steering smoothing time
+    smoothing_time = 0.3  # seconds
+    smoothing_starts = 0
     
     current_mode = "wall_follow"
     normalized_angle = 0.0
@@ -365,18 +369,6 @@ def main():
 
     try:
         while True:
-            if current_mode != prev_mode:
-                # Reset only the mode PID
-                if current_mode == "obstacle_follow":
-                    pid_obj.auto_mode = False
-                    pid_obj.set_auto_mode(True, last_output=0)
-                else:
-                    pid_wall.auto_mode = False
-                    pid_wall.set_auto_mode(True, last_output=0)
-
-                # Smooth PID continues → smoothing preserved
-                prev_mode = current_mode
-
             # dont start until start button pressed
             if arduino.in_waiting > 0:
                 line = arduino.readline().decode("utf-8").rstrip()
@@ -403,7 +395,7 @@ def main():
             if (
                 # (time.time() - last_odometry_time) >= 0.2 and
                 start_processing
-                and (abs(encoder_ticks - prev_encoder_ticks) > 300)
+                # and (abs(encoder_ticks - prev_encoder_ticks) > 300)
                 # dont collect odometry data during parking maneuver
                 and (parking.has_parked_out if MODE == "OBSTACLE" else True)
             ):
@@ -422,38 +414,38 @@ def main():
                 odometry_lap_samples[current_lap].append((x, y))
 
                 # Drift correction using previous lap data
-                if current_lap > 0:
-                    # skip correction for first few samples
-                    if len(odometry_lap_samples[current_lap]) > 6:
-                        # get closest point to (x, y) from previous lap, because robot starts from a different position
-                        prev_lap_points = odometry_lap_samples[current_lap - 1]
-                        closest_point = min(
-                            prev_lap_points,
-                            key=lambda p: math.sqrt((p[0] - x) ** 2 + (p[1] - y) ** 2),
-                        )
-                        # Raw drift measurement
-                        new_drift_x = x - closest_point[0]
-                        new_drift_y = y - closest_point[1]
-                        drift_mag = math.sqrt(new_drift_x**2 + new_drift_y**2)
-                        if drift_mag < MAX_DRIFT_THRESHOLD:
+                # if current_lap > 0:
+                #     # skip correction for first few samples
+                #     if len(odometry_lap_samples[current_lap]) > 6:
+                #         # get closest point to (x, y) from previous lap, because robot starts from a different position
+                #         prev_lap_points = odometry_lap_samples[current_lap - 1]
+                #         closest_point = min(
+                #             prev_lap_points,
+                #             key=lambda p: math.sqrt((p[0] - x) ** 2 + (p[1] - y) ** 2),
+                #         )
+                #         # Raw drift measurement
+                #         new_drift_x = x - closest_point[0]
+                #         new_drift_y = y - closest_point[1]
+                #         drift_mag = math.sqrt(new_drift_x**2 + new_drift_y**2)
+                #         if drift_mag < MAX_DRIFT_THRESHOLD:
 
-                            # Smoothed drift (exponential moving average)
-                            smoothed_drift_x = (
-                                DRIFT_ALPHA * new_drift_x
-                                + (1 - DRIFT_ALPHA) * smoothed_drift_x
-                            )
-                            smoothed_drift_y = (
-                                DRIFT_ALPHA * new_drift_y
-                                + (1 - DRIFT_ALPHA) * smoothed_drift_y
-                            )
+                #             # Smoothed drift (exponential moving average)
+                #             smoothed_drift_x = (
+                #                 DRIFT_ALPHA * new_drift_x
+                #                 + (1 - DRIFT_ALPHA) * smoothed_drift_x
+                #             )
+                #             smoothed_drift_y = (
+                #                 DRIFT_ALPHA * new_drift_y
+                #                 + (1 - DRIFT_ALPHA) * smoothed_drift_y
+                #             )
 
-                            # Apply partial correction
-                            correction_rate = 0.25
-                            tracker.x -= smoothed_drift_x * correction_rate
-                            tracker.y -= smoothed_drift_y * correction_rate
+                #             # Apply partial correction
+                #             correction_rate = 0.25
+                #             tracker.x -= smoothed_drift_x * correction_rate
+                #             tracker.y -= smoothed_drift_y * correction_rate
 
                 # Update visualization
-                visualizer.update_plot(tracker.get_position_history(), auto_fit=False, current_angle=gyro_angle)
+                visualizer.update_plot(tracker.get_position_history(), auto_fit=False, current_angle=gyro_angle + 180)
 
                 # current_intersections = round(abs(gyro_angle) / 90)
                 if abs(x) < start_zone_rect[0] and abs(y) < start_zone_rect[1]:
@@ -469,7 +461,6 @@ def main():
 
             # Capture frame
             frame = picam2.capture_array()
-
             # POST PROCESSING, Draw filled shapes to mask out unwanted areas in OBS region
             triangle_height = 48
             triangle_width  = 100
@@ -533,7 +524,7 @@ def main():
                 reverse_result,
                 front_wall_result,
                 parking_result,
-            ) = contour_workers.collect_results()
+            ) = contour_workers.collect_results()            
 
             # Use the latest processing results
             left_area = left_result.area
@@ -544,6 +535,26 @@ def main():
             red_area = red_result.area
             reverse_area = reverse_result.area
             front_wall_area = front_wall_result.area
+
+
+            if front_wall_area > 300:
+                # draw a mask on top middle of front wall region to block out unwanted areas
+                rect_width  = 400
+                rect_height = 20
+
+                cv2.rectangle(
+                    frame,
+                    (
+                        OBS_REGION[0] + ((OBS_REGION[2] - OBS_REGION[0]) // 2) - (rect_width // 2),
+                        OBS_REGION[1]
+                    ),
+                    (
+                        OBS_REGION[0] + ((OBS_REGION[2] - OBS_REGION[0]) // 2) + (rect_width // 2),
+                        OBS_REGION[1] + rect_height
+                    ),
+                    (255, 255, 255),
+                    -1
+                )
 
             # Debug view
             if DEBUG:
@@ -614,13 +625,13 @@ def main():
                     reverse_angle = STRAIGHT_CONST
                 arduino.write(f"{speed},-1,{reverse_angle}\n".encode())
                 print(f"Reversing... Speed: {speed}, Angle: {reverse_angle}")
-
+                time.sleep(0.1)
                 if DEBUG and cv2.waitKey(1) & 0xFF == ord("q"):
                     break
                 print("continue")
                 continue
 
-            if reverse_area > 800 and (
+            if reverse_area > 300 and (
                 # avoid triggering reverse when Front Wall ROI is too close in obstacle mode
                 # cause we want to reverse out in angle
                 front_wall_area < 300
@@ -630,8 +641,10 @@ def main():
                 print("Reverse trigger detected!")
                 trigger_reverse = True
                 reverse_start_time = time.time()
-                speed = -5  # stop before reversing
+                speed = -MIN_SPEED  # stop before reversing
                 arduino.write(f"{speed},-1,{reverse_angle}\n".encode())
+                time.sleep(0.1)
+
                 if DEBUG and cv2.waitKey(1) & 0xFF == ord("q"):
                     break
 
@@ -639,7 +652,7 @@ def main():
                 continue
 
             # Front wall detection (odometry guided turning), activate this if in OBSTACLE and no obj detected
-            if contour_workers.mode == "OBSTACLE" and front_wall_area > 300 and not ((red_result.contours and red_area > 300) or (green_result.contours and green_area > 300)):
+            if MODE == "OBSTACLE" and front_wall_area > 300 and not ((red_result.contours and red_area > 300) or (green_result.contours and green_area > 300)):
                 print("+" * 50)
                 current_mode = "odometry_wall_follow"
                 if visualizer.direction == "cw":
@@ -659,15 +672,16 @@ def main():
 
                 obstacle_wall_pivot = (None, None)
 
-                if reverse_area > 500:
+                if reverse_area > 200:
                     reverse_angle = STRAIGHT_CONST - (
                         30 * normalized_angle_offset
                     )  # turn left/right when reversing
                     trigger_reverse = True
                     reverse_start_time = time.time()
 
-                    speed = -5  # stop before reversing
+                    speed = -MIN_SPEED  # stop before reversing
                     arduino.write(f"{speed},-1,{reverse_angle}\n".encode())
+                    time.sleep(0.1)
                     if DEBUG and cv2.waitKey(1) & 0xFF == ord("q"):
                         break
 
@@ -1067,13 +1081,31 @@ def main():
                     )
 
             # -- smoothing logic ---
-            if not current_mode == "odometry_wall_follow":
-                MAX_CHANGE = 0.1
-                delta = normalized_angle_offset - normalized_angle
-                delta = max(min(delta, MAX_CHANGE), -MAX_CHANGE)
-                normalized_angle += delta
-            else:
-                normalized_angle = normalized_angle_offset
+            # trigger if in OBSTACLE mode and if switching between obstacle and wall follow
+            # or if smoothing time not yet elapsed
+            # and not in odometry wall follow
+            # if (MODE == "OBSTACLE" and not current_mode == "odometry_wall_follow") and ((red_obj_x != -1 or green_obj_x != -1) or (smoothing_starts + smoothing_time > time.time())):
+            #     MAX_CHANGE = 0.1
+            #     delta = normalized_angle_offset - normalized_angle
+            #     delta = max(min(delta, MAX_CHANGE), -MAX_CHANGE)
+            #     normalized_angle += delta
+            #     print(f"Smoothing applied. Delta: {delta}")
+            #     smoothing_starts = time.time()
+            # else:
+            normalized_angle = normalized_angle_offset
+            
+
+            if current_mode != prev_mode:
+                # Reset only the mode PID
+                if current_mode == "obstacle_follow":
+                    pid_obj.auto_mode = False
+                    pid_obj.set_auto_mode(True, last_output=0)
+                elif current_mode == "wall_follow":
+                    pid_wall.auto_mode = False
+                    pid_wall.set_auto_mode(True, last_output=0)
+
+                # Smooth PID continues → smoothing preserved
+                prev_mode = current_mode
 
             # --- Map normalized control to servo angle ---
             angle = int(
