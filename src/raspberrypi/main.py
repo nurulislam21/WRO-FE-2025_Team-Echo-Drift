@@ -47,28 +47,28 @@ TOTAL_LAPS = 3
 
 # Region of Interest coordinates
 LEFT_REGION = (
-    [0, 165, 230, 230] if MODE == "NO_OBSTACLE" else [0, 165, 230, 230]
+    [0, 165, 230, 230] if MODE == "NO_OBSTACLE" else [0, 185, 230, 250]
 )  # left
 RIGHT_REGION = (
-    [410, 165, 640, 230] if MODE == "NO_OBSTACLE" else [410, 165, 640, 230]
+    [410, 165, 640, 230] if MODE == "NO_OBSTACLE" else [410, 185, 640, 250]
 )  # right
 LAP_REGION = [215, 260, 415, 305]  # lap detection
-OBS_REGION = [77, 110, 563, 355]  # obstacle detection
+OBS_REGION = [57, 117, 583, 400]  # obstacle detection
 REVERSE_REGION = [223, 255, 427, 273]  # reverse trigger area
-FRONT_WALL_REGION = [300, 160, 340, 180]  # front wall detection
+FRONT_WALL_REGION = [300, 125, 340, 180]  # front wall detection
 PARKING_LOT_REGION = [0, 185, CAM_WIDTH, 400]  # parking lot detection
 # DANGER_ZONE_POINTS = [175, OBS_REGION[1], 465, OBS_REGION[3]]  # area to check for obstacles
 DANGER_ZONE_POINTS = [
     {
-        "x1": 207,
+        "x1": 239,
         "y1": OBS_REGION[1],
-        "x2": 77,
+        "x2": 104,
         "y2": OBS_REGION[3],
     },
     {
-        "x1": 423,
+        "x1": 391,
         "y1": OBS_REGION[1],
-        "x2": 563,
+        "x2": 536,
         "y2": OBS_REGION[3],
     },
 ]
@@ -205,12 +205,26 @@ maxRight = STRAIGHT_CONST + MAX_OFFSET_DEGREE
 maxLeft = STRAIGHT_CONST - MAX_OFFSET_DEGREE
 
 # PID controller constants
-kp = 1.6 if MODE == "OBSTACLE" else 1.6
-ki = 0.0
-kd = 0.07
-pid = PID(Kp=kp, Ki=ki, Kd=kd, setpoint=0)
-pid.output_limits = (-1, 1)  # limit output to -1 to 1
-pid.sample_time = 0.02
+# Higher KP → faster response
+# Higher KI → eliminates steady-state error
+# Higher KD → reduces overshoot and oscillations
+
+# for obj
+kp_obj = 1.65
+ki_obj = 0.0
+kd_obj = 0.07
+pid_obj = PID(Kp=kp_obj, Ki=ki_obj, Kd=kd_obj, setpoint=0)
+pid_obj.output_limits = (-1, 1)  # limit output to -1 to 1
+pid_obj.sample_time = 0.02
+
+# for wall
+kp_wall = 1.6
+ki_wall = 0.0
+kd_wall = 0.07
+pid_wall = PID(Kp=kp_wall, Ki=ki_wall, Kd=kd_wall, setpoint=0)
+pid_wall.output_limits = (-1, 1)  # limit output to -1 to 1
+pid_wall.sample_time = 0.02
+
 # SMOOTH_WINDOW = 3
 # left_buf = deque(maxlen=SMOOTH_WINDOW)
 # right_buf = deque(maxlen=SMOOTH_WINDOW)
@@ -242,7 +256,7 @@ arduino.write(b"0,-1,95\n")
 
 # parking
 parking = Parking(
-    parking_speed=20,
+    parking_speed=22,
     arduino=arduino,
     camera_width=CAM_WIDTH,
     camera_height=CAM_HEIGHT,
@@ -290,6 +304,10 @@ def main():
     global encoder_ticks, gyro_angle, prev_encoder_ticks, prev_gyro_angle
     global start_processing, obstacle_wall_pivot, reverse_start_time
     global smoothed_drift_x, smoothed_drift_y
+    
+    current_mode = "wall_follow"
+    normalized_angle = 0.0
+    prev_mode = None
 
     # parking_walls = []
     # parking_walls_count = 0
@@ -347,6 +365,18 @@ def main():
 
     try:
         while True:
+            if current_mode != prev_mode:
+                # Reset only the mode PID
+                if current_mode == "obstacle_follow":
+                    pid_obj.auto_mode = False
+                    pid_obj.set_auto_mode(True, last_output=0)
+                else:
+                    pid_wall.auto_mode = False
+                    pid_wall.set_auto_mode(True, last_output=0)
+
+                # Smooth PID continues → smoothing preserved
+                prev_mode = current_mode
+
             # dont start until start button pressed
             if arduino.in_waiting > 0:
                 line = arduino.readline().decode("utf-8").rstrip()
@@ -423,7 +453,7 @@ def main():
                             tracker.y -= smoothed_drift_y * correction_rate
 
                 # Update visualization
-                visualizer.update_plot(tracker.get_position_history())
+                visualizer.update_plot(tracker.get_position_history(), auto_fit=False, current_angle=gyro_angle)
 
                 # current_intersections = round(abs(gyro_angle) / 90)
                 if abs(x) < start_zone_rect[0] and abs(y) < start_zone_rect[1]:
@@ -439,6 +469,47 @@ def main():
 
             # Capture frame
             frame = picam2.capture_array()
+
+            # POST PROCESSING, Draw filled shapes to mask out unwanted areas in OBS region
+            triangle_height = 48
+            triangle_width  = 100
+
+            # --- Top-left triangle inside OBS region ---
+            pts_left = np.array([
+                [OBS_REGION[0], OBS_REGION[1]],
+                [OBS_REGION[0] + triangle_width, OBS_REGION[1]],
+                [OBS_REGION[0] + (triangle_width // 2), OBS_REGION[1] + triangle_height],
+                [OBS_REGION[0], OBS_REGION[1] + triangle_height],
+            ], np.int32)
+            cv2.fillPoly(frame, [pts_left], (255, 255, 255))
+
+            # --- Top-right triangle inside OBS region ---
+            pts_right = np.array([
+                [OBS_REGION[2], OBS_REGION[1]],  # ← y1 instead of y2
+                [OBS_REGION[2] - triangle_width, OBS_REGION[1]],
+                [OBS_REGION[2] - (triangle_width // 2), OBS_REGION[1] + triangle_height],
+                [OBS_REGION[2], OBS_REGION[1] + triangle_height],
+            ], np.int32)
+            cv2.fillPoly(frame, [pts_right], (255, 255, 255))
+
+            # --- Bottom rectangle inside OBS region ---
+            rect_width  = 300
+            rect_height = 45
+
+            cv2.rectangle(
+                frame,
+                (
+                    OBS_REGION[0] + ((OBS_REGION[2] - OBS_REGION[0]) // 2) - (rect_width // 2),
+                    OBS_REGION[3] - rect_height
+                ),
+                (
+                    OBS_REGION[0] + ((OBS_REGION[2] - OBS_REGION[0]) // 2) + (rect_width // 2),
+                    OBS_REGION[3]
+                ),
+                (255, 255, 255),
+                -1
+            )
+
 
             # Distribute frame to all processing threads (non-blocking)
             frame_copy = frame.copy()
@@ -567,26 +638,19 @@ def main():
                 print("continue")
                 continue
 
-            # Front wall detection (odometry guided turning)
-            if contour_workers.mode == "OBSTACLE" and front_wall_area > 300:
+            # Front wall detection (odometry guided turning), activate this if in OBSTACLE and no obj detected
+            if contour_workers.mode == "OBSTACLE" and front_wall_area > 300 and not ((red_result.contours and red_area > 300) or (green_result.contours and green_area > 300)):
                 print("+" * 50)
+                current_mode = "odometry_wall_follow"
                 if visualizer.direction == "cw":
-                    if (
-                        visualizer.get_boundary_proximity(tracker.x, tracker.y)
-                        # visualizer.get_boundary_vector_proximity(tracker.positions[-4][0], tracker.positions[-4][1], tracker.x, tracker.y)
-                        == "close_outer"
-                    ):
+                    if not visualizer.intersects_middle_rectangle(tracker.x, tracker.y, visualizer.next_x + tracker.x, visualizer.next_y + tracker.y):
                         normalized_angle_offset = -1
                         print("front wall + close to outer boundary CW + left")
                     else:
                         normalized_angle_offset = 1
                         print("front wall + not close to outer boundary CW + right")
                 elif visualizer.direction == "ccw":
-                    if (
-                        visualizer.get_boundary_proximity(tracker.x, tracker.y)
-                        # visualizer.get_boundary_vector_proximity(tracker.positions[-4][0], tracker.positions[-4][1], tracker.x, tracker.y)
-                        == "close_outer"
-                    ):
+                    if not visualizer.intersects_middle_rectangle(tracker.x, tracker.y, visualizer.next_x + tracker.x, visualizer.next_y + tracker.y):
                         normalized_angle_offset = 1
                         print("front wall + close to outer boundary CCW + right")
                     else:
@@ -662,6 +726,7 @@ def main():
                     (green_obj_x == -1 and green_obj_y == -1)
                     and (red_obj_x == -1 and red_obj_y == -1)
                 ):
+                    current_mode = "obstacle_follow"
                     # if object is too close, back off (convert to global coords and compare)
                     if (
                         (red_obj_y + OBS_REGION[1]) > REVERSE_REGION[1]
@@ -748,9 +813,9 @@ def main():
                             DANGER_ZONE_POINTS[0]["y1"],
                             DANGER_ZONE_POINTS[0]["x2"],
                             DANGER_ZONE_POINTS[0]["y2"],
-                            red_obj_x + OBS_REGION[0],
-                            red_obj_y + OBS_REGION[1],
-                        ):
+                            red_obj_x,
+                            red_obj_y,
+                        ) == "RIGHT":
                             direction_turning = "hard_right"
                         else:
                             direction_turning = "soft_right"
@@ -797,25 +862,23 @@ def main():
 
                         obj_error = offset_x / (CAM_WIDTH // 2)  # normalized [-1, 1]
 
-                        if (
-                            point_position(
+                        if point_position(
                                 DANGER_ZONE_POINTS[1]["x1"],
                                 DANGER_ZONE_POINTS[1]["y1"],
                                 DANGER_ZONE_POINTS[1]["x2"],
                                 DANGER_ZONE_POINTS[1]["y2"],
-                                green_obj_x + OBS_REGION[0],
-                                green_obj_y + OBS_REGION[1],
-                            )
-                            == "LEFT"
-                        ):
+                                green_obj_x,
+                                green_obj_y,
+                            ) == "LEFT":
                             direction_turning = "hard_left"
                         else:
                             direction_turning = "soft_left"
 
                     # turn ONLY when obj is detected and within danger-zone
                     if not direction_turning == "":
+                        print(direction_turning)
                         # amplify to make it more responsive
-                        obj_error = -np.clip(obj_error * (7.5 if "hard" in direction_turning else 3), -1, 1)                        
+                        obj_error = -np.clip(obj_error * (7.5 if "hard" in direction_turning else 0.75), -1, 1)                        
 
                         # steer more aggressively when closer to object
                         y_gain = np.interp(
@@ -831,7 +894,7 @@ def main():
                             ],
                             [0, 0.7, 1],
                         )
-                        normalized_angle_offset = pid(obj_error * y_gain)
+                        normalized_angle_offset = pid_obj(obj_error * y_gain)
                         # normalized_angle_offset *= y_gain
                         speed_factor = 1 - (
                             0.3 * y_gain
@@ -894,6 +957,7 @@ def main():
                 #     else True
                 # ))
             ):
+                current_mode = "wall_follow"
                 print(
                     # if x or y coords are not assigned and front area is small
                     "1st:",
@@ -997,16 +1061,25 @@ def main():
                     if contour_workers.mode == "OBSTACLE"
                     else True
                 ):
-                    normalized_angle_offset = pid(error)
+                    normalized_angle_offset = pid_wall(error)
                     print(
                         f"Wall following | Norm: {normalized_angle_offset} | Error: {error}"
                     )
+
+            # -- smoothing logic ---
+            if not current_mode == "odometry_wall_follow":
+                MAX_CHANGE = 0.1
+                delta = normalized_angle_offset - normalized_angle
+                delta = max(min(delta, MAX_CHANGE), -MAX_CHANGE)
+                normalized_angle += delta
+            else:
+                normalized_angle = normalized_angle_offset
 
             # --- Map normalized control to servo angle ---
             angle = int(
                 max(
                     min(
-                        STRAIGHT_CONST + normalized_angle_offset * MAX_OFFSET_DEGREE,
+                        STRAIGHT_CONST + (normalized_angle * MAX_OFFSET_DEGREE),
                         maxRight,
                     ),
                     maxLeft,
@@ -1029,13 +1102,12 @@ def main():
                 # contour_workers.mode == "NO_OBSTACLE"
                 # and
                 stop_flag
-                and (clamp_angle(gyro_angle, threshold=50) % 360 == 0)
+                and (clamp_angle(gyro_angle, threshold=40) % 360 == 0)
                 # and (int(time.time()) - stopTime) > stop_timer
             ):
                 print("Lap completed!")
                 arduino.write(f"-5,-1,{angle}\n".encode())
                 print(angle)
-                parking.process_parking(dir="right")
                 break
 
             if current_lap >= TOTAL_LAPS and not stop_flag:

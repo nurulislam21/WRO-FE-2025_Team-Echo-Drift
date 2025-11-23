@@ -31,14 +31,14 @@ elif USE_CAMERA.lower() == "picam":
     picam2.configure(config)
 
     # Load camera settings if available
-    try:
-        with open("camera_settings.json", "r") as f:
-            import json
-            settings = json.load(f)
-            picam2.set_controls(settings)
-            print("Loaded camera settings from file.")
-    except FileNotFoundError:
-        print("No camera settings file found. Using default settings.")
+    # try:
+    #     with open("camera_settings.json", "r") as f:
+    #         import json
+    #         settings = json.load(f)
+    #         picam2.set_controls(settings)
+    #         print("Loaded camera settings from file.")
+    # except FileNotFoundError:
+    #     print("No camera settings file found. Using default settings.")
 
     picam2.start()
     time.sleep(1)

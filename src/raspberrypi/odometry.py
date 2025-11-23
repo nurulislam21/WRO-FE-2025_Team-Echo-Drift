@@ -38,7 +38,7 @@ class OdometryTracker:
 
         # History tracking
         self.positions: List[Tuple[float, float]] = [(0.0, 0.0)]
-        self.prev_ticks = 0
+        self.prev_ticks = 0        
 
         # open a log file if debug is enabled
         if self.debug:
@@ -176,7 +176,12 @@ class OdometryVisualizer:
         self.middle_x_min = None
         self.middle_x_max = None
         self.middle_y_min = None
-        self.middle_y_max = None        
+        self.middle_y_max = None
+
+        # traces
+        self.current_angle = 0.0
+        self.next_x = 0.0
+        self.next_y = 0.0
 
     def set_dir(self, dir: str):
         """
@@ -188,14 +193,14 @@ class OdometryVisualizer:
         """
         self.direction = dir
         if dir == "cw":
-            self.x_min = -2
-            self.x_max = 2
+            self.x_min = -1.5
+            self.x_max = 1.5
             self.y_min = -3
             self.y_max = 0
 
         elif dir == "ccw":
-            self.x_min = -2
-            self.x_max = 2
+            self.x_min = -1.5
+            self.x_max = 1.5
             self.y_min = 0
             self.y_max = 3
         else:
@@ -228,13 +233,13 @@ class OdometryVisualizer:
             # always set inner boundary to be 1/3 of outer boundary size
             width = self.x_max - self.x_min
             height = self.y_max - self.y_min            
-            margin_x = ((width) / 3) - 0.2
-            margin_y = ((height) / 3) - 0.2
+            margin_x = ((width) / 3)
+            margin_y = ((height) / 3)
             
-            self.inner_x_min = self.x_min + margin_x
-            self.inner_x_max = self.x_max - margin_x
-            self.inner_y_min = self.y_min + margin_y
-            self.inner_y_max = self.y_max - margin_y
+            self.inner_x_min = self.x_min
+            self.inner_x_max = self.x_max
+            self.inner_y_min = self.y_min
+            self.inner_y_max = self.y_max
 
             # Middle boundary (for reference)
             self.middle_x_min = (self.x_min + self.inner_x_min) / 2
@@ -269,58 +274,118 @@ class OdometryVisualizer:
         self.y_max = np.percentile(ys, upper_p)
 
         # Update inner boundary
-        self._update_inner_boundary()    
+        self._update_inner_boundary()
     
-    def intersects_middle_rectangle(self, ax, ay, bx, by):
-        # 1. Check if A or B lies inside the rectangle
-        if (self.middle_x_min <= ax <= self.middle_x_max and self.middle_y_min <= ay <= self.middle_y_max) or \
-        (self.middle_x_min <= bx <= self.middle_x_max and self.middle_y_min <= by <= self.middle_y_max):
+    def on_segment(self, p, q, r):
+        """
+        Given three collinear points p, q, r, checks if point q lies on segment pr.
+        p, q, and r are tuples (x, y).
+        """
+        return (q[0] <= max(p[0], r[0]) and q[0] >= min(p[0], r[0]) and
+                q[1] <= max(p[1], r[1]) and q[1] >= min(p[1], r[1]))
+
+    def orientation(self, p, q, r):
+        """
+        Finds the orientation of an ordered triplet (p, q, r).
+        Returns:
+        0 --> Collinear
+        1 --> Clockwise (CW)
+        2 --> Counterclockwise (CCW)
+        """
+        val = ((q[1] - p[1]) * (r[0] - q[0]) -
+            (q[0] - p[0]) * (r[1] - q[1]))
+        
+        if val == 0:
+            return 0  # Collinear
+        
+        return 1 if val > 0 else 2  # 1 for CW, 2 for CCW
+
+    def do_intersect(self, p1, q1, p2, q2):
+        """
+        Checks if the line segment p1q1 and line segment p2q2 intersect.
+        p1, q1, p2, q2 are tuples (x, y) representing the segment endpoints.
+        """
+        # Find the four orientations needed for the general and special cases
+        o1 = self.orientation(p1, q1, p2)
+        o2 = self.orientation(p1, q1, q2)
+        o3 = self.orientation(p2, q2, p1)
+        o4 = self.orientation(p2, q2, q1)
+
+        # 1. General Case
+        # Segments intersect if all four orientations are different (CW vs CCW)
+        if o1 != o2 and o3 != o4:
             return True
 
-        # Helper: Check line segment intersection
-        def ccw(x1, y1, x2, y2, x3, y3):
-            return (y3 - y1) * (x2 - x1) > (y2 - y1) * (x3 - x1)
+        # 2. Special Cases (Collinear checks)
 
-        def intersect(p1, p2, p3, p4):
-            return (ccw(*p1, *p3, *p4) != ccw(*p2, *p3, *p4)) and \
-                (ccw(*p1, *p2, *p3) != ccw(*p1, *p2, *p4))
+        # p1, q1, and p2 are collinear and p2 lies on segment p1q1
+        if o1 == 0 and self.on_segment(p1, p2, q1):
+            return True
 
-        # 2. Rectangle edges as line segments
+        # p1, q1, and q2 are collinear and q2 lies on segment p1q1
+        if o2 == 0 and self.on_segment(p1, q2, q1):
+            return True
+
+        # p2, q2, and p1 are collinear and p1 lies on segment p2q2
+        if o3 == 0 and self.on_segment(p2, p1, q2):
+            return True
+
+        # p2, q2, and q1 are collinear and q1 lies on segment p2q2
+        if o4 == 0 and self.on_segment(p2, q1, q2):
+            return True
+
+        return False  # Doesn't intersect
+    
+    def intersects_middle_rectangle(self, ax, ay, bx, by):
+        # Ensure boundaries are valid
+        if None in [
+            self.middle_x_min, self.middle_x_max,
+            self.middle_y_min, self.middle_y_max
+        ]:
+            return False
+
+        # If both points are inside → treat as intersecting
+        if (self.middle_x_min <= ax <= self.middle_x_max and
+            self.middle_y_min <= ay <= self.middle_y_max and
+            self.middle_x_min <= bx <= self.middle_x_max and
+            self.middle_y_min <= by <= self.middle_y_max):
+            return True
+
+        p1 = (ax, ay)
+        p2 = (bx, by)
+
         edges = [
-            ((self.middle_x_min, self.middle_y_min), (self.middle_x_max, self.middle_y_min)),  # bottom
-            ((self.middle_x_max, self.middle_y_min), (self.middle_x_max, self.middle_y_max)),  # right
-            ((self.middle_x_max, self.middle_y_max), (self.middle_x_min, self.middle_y_max)),  # top
-            ((self.middle_x_min, self.middle_y_max), (self.middle_x_min, self.middle_y_min)),  # left
+            # bottom
+            ((self.middle_x_min, self.middle_y_min),
+            (self.middle_x_max, self.middle_y_min)),
+
+            # right
+            ((self.middle_x_max, self.middle_y_min),
+            (self.middle_x_max, self.middle_y_max)),
+
+            # top
+            ((self.middle_x_max, self.middle_y_max),
+            (self.middle_x_min, self.middle_y_max)),
+
+            # left
+            ((self.middle_x_min, self.middle_y_max),
+            (self.middle_x_min, self.middle_y_min)),
         ]
 
         for e1, e2 in edges:
-            if intersect((ax, ay), (bx, by), e1, e2):
+            if self.do_intersect(p1, p2, e1, e2):
                 return True
 
         return False
-
-    def get_boundary_vector_proximity(self, prev_x: float, prev_y: float, x: float, y: float) -> str:
-        if self.intersects_middle_rectangle(prev_x, prev_y, x, y):
-            print("intersects middle rectangle")
-            ref_x = (self.middle_x_min + self.middle_x_max) / 2
-            ref_y = (self.middle_y_min + self.middle_y_max) / 2
-            current_dist = math.sqrt((x - ref_x) ** 2 + (y - ref_y) ** 2)
-            prev_dist = math.sqrt((prev_x - ref_x) ** 2 + (prev_y - ref_y) ** 2)
-            if current_dist < prev_dist:
-                return "close_inner"
-            else:
-                return "close_outer"
-        else:
-            return "close_outer"
     
-    def get_boundary_proximity(self, x: float, y: float) -> str:
-        # check if current position is within middle boundary
-        if x >= self.middle_x_min and x <= self.middle_x_max and y >= self.middle_y_min and y <= self.middle_y_max:
-            return "close_inner"
-        else:
-            return "close_outer"
+    # def get_boundary_proximity(self, x: float, y: float) -> str:
+    #     # check if current position is within middle boundary
+    #     if x >= self.middle_x_min and x <= self.middle_x_max and y >= self.middle_y_min and y <= self.middle_y_max:
+    #         return "close_inner"
+    #     else:
+    #         return "close_outer"
 
-    def update_plot(self, positions: List[Tuple[float, float]], auto_fit: bool = False):
+    def update_plot(self, positions: List[Tuple[float, float]], auto_fit: bool = False, current_angle: float = 0.0):
         """
         Update the plot with new position data.
 
@@ -361,6 +426,22 @@ class OdometryVisualizer:
                     label="Path",
                 )
 
+                # Convert to radians
+                self.current_angle = current_angle
+                length = 2.5
+                angle_rad = np.radians(self.current_angle)
+
+                # Compute end point using angle
+                self.next_x = length * np.cos(angle_rad)
+                self.next_y = length * np.sin(angle_rad)
+    
+                self.ax.annotate(
+                    "",
+                    xy=(xs[-1] + self.next_x, ys[-1] + self.next_y),
+                    xytext=(xs[-1], ys[-1]),
+                    arrowprops=dict(arrowstyle="->", color="red", lw=1.5),
+                )
+                
                 # Draw start zone
                 self.ax.add_patch(
                     plt.Rectangle(
@@ -526,7 +607,7 @@ def clamp_angle(totalAngle, threshold=5):
 
 def main():
     """Main function to run odometry tracking simulation."""
-    from odometry_log import od
+    from odometry_log3 import od
 
     # Sample odometry data (ticks, gyro_angle)
     odometry_data = od
@@ -557,7 +638,7 @@ def main():
 
         count = 0
 
-        for ticks, gyro_angle in odometry_data:
+        for ticks, gyro_angle in odometry_data:            
             count += 1  
 
             # Update tracker with new data
@@ -569,13 +650,7 @@ def main():
             lap_samples[lap].append((x, y))
             # x -= offset_x
             # y -= offset_y
-            # print(f"Position: x={x:.3f}m, y={y:.3f}m, θ={math.degrees(theta):.1f}°")
-
-            if count > 81:
-                print(f"ticks: {ticks}, gyro: {gyro_angle}) index: {count}")
-                print(visualizer.get_boundary_vector_proximity(tracker.positions[-2][0], tracker.positions[-2][1], tracker.x, tracker.y))
-                # print(f"heading {visualizer.heading_toward_rectangle(tracker.positions[-2][0], tracker.positions[-2][1], tracker.x, tracker.y)}")
-                # time.sleep(1)
+            # print(f"Position: x={x:.3f}m, y={y:.3f}m, θ={math.degrees(theta):.1f}°")            
 
             if lap > 0:
                 # skip correction for first few samples
@@ -612,10 +687,12 @@ def main():
                 last_time = time.time()
                 lap += 1
                 print(f"Lap {lap} completed.")
+            
             # Update visualization
-            visualizer.update_plot(tracker.get_position_history())
-
-            # time.sleep(0.01)
+            visualizer.update_plot(tracker.get_position_history(), auto_fit=False, current_angle=gyro_angle)
+            print("intersect" if visualizer.intersects_middle_rectangle(tracker.x, tracker.y, visualizer.next_x + tracker.x, visualizer.next_y + tracker.y) else "outside")
+            if visualizer.intersects_middle_rectangle(tracker.x, tracker.y, visualizer.next_x + tracker.x, visualizer.next_y + tracker.y):
+                time.sleep(1)         
 
         print("\nSimulation complete!")
         print(f"Final position: x={tracker.x:.3f}m, y={tracker.y:.3f}m")
