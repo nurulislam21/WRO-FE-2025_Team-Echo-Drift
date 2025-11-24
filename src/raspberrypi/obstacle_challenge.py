@@ -537,6 +537,13 @@ def main():
             front_wall_area = front_wall_result.area
 
 
+            # no false detection until parked out
+            if not parking.has_parked_out:
+                red_result.contours = []
+                red_area = 0
+                green_result.contours = []
+                green_area = 0
+
             if front_wall_area > 300:
                 # draw a mask on top middle of front wall region to block out unwanted areas
                 rect_width  = 400
@@ -609,6 +616,7 @@ def main():
                     "ccw" if parking.parking_lot_side == "left" else "cw"
                 )
                 last_lap_time = time.time()
+                contour_workers.clear_all_queues()
                 continue
 
             # --- Reversing logic ---

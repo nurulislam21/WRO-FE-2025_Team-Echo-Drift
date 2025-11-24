@@ -113,6 +113,42 @@ class ContourWorkers:
         self.front_wall_result = ContourResult()
         self.parking_lot_result = ContourResult()
 
+
+    def clear_all_queues(self):
+        """Clear all frame and result queues"""
+        queues_to_clear = [
+            # Frame queues
+            self.frame_queue_left,
+            self.frame_queue_right,
+            self.frame_queue_orange,
+            self.frame_queue_blue,
+            self.frame_queue_green,
+            self.frame_queue_red,
+            self.frame_queue_reverse,
+            self.frame_queue_front_wall,
+            self.frame_queue_parking_lot,
+            # Result queues
+            self.result_queue_left,
+            self.result_queue_right,
+            self.result_queue_orange,
+            self.result_queue_blue,
+            self.result_queue_green,
+            self.result_queue_red,
+            self.result_queue_reverse,
+            self.result_queue_front_wall,
+            self.result_queue_parking_lot,
+        ]
+        
+        for queue in queues_to_clear:
+            try:
+                while not queue.empty():
+                    queue.get_nowait()
+                    queue.task_done()
+            except Empty:
+                pass
+            except Exception as e:
+                print(f"Error clearing queue: {e}")
+
     def put_frames_in_queues(self, frame_copy):
         try:
             self.frame_queue_left.put_nowait(frame_copy)
