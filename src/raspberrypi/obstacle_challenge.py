@@ -225,9 +225,6 @@ pid_wall = PID(Kp=kp_wall, Ki=ki_wall, Kd=kd_wall, setpoint=0)
 pid_wall.output_limits = (-1, 1)  # limit output to -1 to 1
 pid_wall.sample_time = 0.02
 
-# SMOOTH_WINDOW = 3
-# left_buf = deque(maxlen=SMOOTH_WINDOW)
-# right_buf = deque(maxlen=SMOOTH_WINDOW)
 
 # Start/reverse/Stopping logic
 speed = 0
@@ -243,11 +240,6 @@ last_reverse_end_time = 0
 
 start_processing = False
 stop_flag = False
-
-# Intersection crossing
-# current_intersections = 0
-# intersection_crossing_start = 0
-# intersection_detected = False
 
 # Serial communication
 arduino = serial.Serial(port="/dev/ttyUSB0", baudrate=115200, dsrdtr=True)
@@ -312,10 +304,6 @@ def main():
     current_mode = "wall_follow"
     normalized_angle = 0.0
     prev_mode = "wall_follow"
-
-    # parking_walls = []
-    # parking_walls_count = 0
-    # parking_wall_pivot = (None, None)
 
     # obstacle position
     red_obj_x, red_obj_y = None, None
@@ -411,38 +399,7 @@ def main():
 
                 if odometry_lap_samples.get(current_lap) is None:
                     odometry_lap_samples[current_lap] = []
-                odometry_lap_samples[current_lap].append((x, y))
-
-                # Drift correction using previous lap data
-                # if current_lap > 0:
-                #     # skip correction for first few samples
-                #     if len(odometry_lap_samples[current_lap]) > 6:
-                #         # get closest point to (x, y) from previous lap, because robot starts from a different position
-                #         prev_lap_points = odometry_lap_samples[current_lap - 1]
-                #         closest_point = min(
-                #             prev_lap_points,
-                #             key=lambda p: math.sqrt((p[0] - x) ** 2 + (p[1] - y) ** 2),
-                #         )
-                #         # Raw drift measurement
-                #         new_drift_x = x - closest_point[0]
-                #         new_drift_y = y - closest_point[1]
-                #         drift_mag = math.sqrt(new_drift_x**2 + new_drift_y**2)
-                #         if drift_mag < MAX_DRIFT_THRESHOLD:
-
-                #             # Smoothed drift (exponential moving average)
-                #             smoothed_drift_x = (
-                #                 DRIFT_ALPHA * new_drift_x
-                #                 + (1 - DRIFT_ALPHA) * smoothed_drift_x
-                #             )
-                #             smoothed_drift_y = (
-                #                 DRIFT_ALPHA * new_drift_y
-                #                 + (1 - DRIFT_ALPHA) * smoothed_drift_y
-                #             )
-
-                #             # Apply partial correction
-                #             correction_rate = 0.25
-                #             tracker.x -= smoothed_drift_x * correction_rate
-                #             tracker.y -= smoothed_drift_y * correction_rate
+                odometry_lap_samples[current_lap].append((x, y))               
 
                 # Update visualization
                 visualizer.update_plot(tracker.get_position_history(), auto_fit=False, current_angle=gyro_angle + 180)
@@ -696,30 +653,6 @@ def main():
                     print("continue")
                     continue
 
-                    #     show_front_wall = True
-                    # else:
-                    #     show_front_wall = False
-                # wall following logic
-
-            # --- Parking logic ---
-            # if contour_workers.parking_mode:
-            #     angle = parking.process_parking(
-            #             parking_result=parking_result,
-            #             pid=pid,
-            #             left_result=left_result,
-            #             right_result=right_result,
-            #         )
-            #     if DEBUG and cv2.waitKey(1) & 0xFF == ord("q"):
-            #         break
-
-            #     continue
-
-            # if parking_walls_count == 2:
-            #     obstacle_wall_pivot = parking_wall_pivot
-            #     if DEBUG and cv2.waitKey(1) & 0xFF == ord("q"):
-            #         break
-            #     continue
-
             # --- Obstacle avoidance ---
             elif MODE == "OBSTACLE" and (
                 (red_result.contours and red_area > 300)
@@ -728,9 +661,6 @@ def main():
                 # get object coordinates
                 green_obj_x, green_obj_y = get_max_y_coord(green_result.contours)
                 red_obj_x, red_obj_y = get_max_y_coord(red_result.contours)
-
-                # red_obj_x, _ = get_overall_centroid(red_result.contours)
-                # green_obj_x, _ = get_overall_centroid(green_result.contours)
 
                 # print(f"Raw Green: {green_obj_x}, {green_obj_y} | Raw Red: {red_obj_x}, {red_obj_y}")
 
@@ -780,29 +710,8 @@ def main():
                     if (
                         red_obj_y
                         > green_obj_y
-                        # and point_position(
-                        #     DANGER_ZONE_POINTS[0]["x1"],
-                        #     DANGER_ZONE_POINTS[0]["y1"],
-                        #     DANGER_ZONE_POINTS[0]["x2"],
-                        #     DANGER_ZONE_POINTS[0]["y2"],
-                        #     red_obj_x + OBS_REGION[0],
-                        #     red_obj_y + OBS_REGION[1],
-                        # )
-                        # == "RIGHT"
                     ):
-                        print("Red")
-
-                        # if front_wall_area > 350:
-                        #     print("Front wall is priority, ignoring side walls")
-                        #     r_wall_x = (
-                        #         FRONT_WALL_REGION[0]
-                        #         + (FRONT_WALL_REGION[2] - FRONT_WALL_REGION[0]) // 2
-                        #     )
-                        #     r_wall_y = (
-                        #         FRONT_WALL_REGION[1]
-                        #         + (FRONT_WALL_REGION[3] - FRONT_WALL_REGION[1]) // 2
-                        #     )
-                        # else:
+                        print("Red")                        
                         r_wall_x, _ = get_overall_centroid(right_result.contours)
 
                         if r_wall_x is None:
@@ -846,17 +755,6 @@ def main():
                     elif green_obj_y > red_obj_y:
                         print("Green")
 
-                        # if front_wall_area > 350:
-                        #     print("Front wall is priority, ignoring side walls")
-                        #     l_wall_x = (
-                        #         FRONT_WALL_REGION[0]
-                        #         + (FRONT_WALL_REGION[2] - FRONT_WALL_REGION[0]) // 2
-                        #     )
-                        #     l_wall_y = (
-                        #         FRONT_WALL_REGION[1]
-                        #         + (FRONT_WALL_REGION[3] - FRONT_WALL_REGION[1]) // 2
-                        #     )
-                        # else:
                         l_wall_x, l_wall_y = get_overall_centroid(left_result.contours)
 
                         if l_wall_x is None:
@@ -935,115 +833,9 @@ def main():
                     and red_obj_y is None
                     and green_obj_y is None
                 )
-                and front_wall_area < 300
-                #     or (
-                #         # or if both obstacles are outside the danger zone
-                #         (
-                #             (
-                #                 red_obj_x is not None
-                #                 and red_obj_y is not None
-                #                 and red_obj_x != -1
-                #                 and red_obj_y != -1
-                #                 and point_position(
-                #                     DANGER_ZONE_POINTS[0]["x1"],
-                #                     DANGER_ZONE_POINTS[0]["y1"],
-                #                     DANGER_ZONE_POINTS[0]["x2"],
-                #                     DANGER_ZONE_POINTS[0]["y2"],
-                #                     red_obj_x + OBS_REGION[0],
-                #                     red_obj_y + OBS_REGION[1],
-                #                 )
-                #                 == "LEFT"
-                #             )
-                #             or (
-                #                 green_obj_x is not None
-                #                 and green_obj_y is not None
-                #                 and green_obj_x != -1
-                #                 and green_obj_y != -1
-                #                 and point_position(
-                #                     DANGER_ZONE_POINTS[1]["x1"],
-                #                     DANGER_ZONE_POINTS[1]["y1"],
-                #                     DANGER_ZONE_POINTS[1]["x2"],
-                #                     DANGER_ZONE_POINTS[1]["y2"],
-                #                     green_obj_x + OBS_REGION[0],
-                #                     green_obj_y + OBS_REGION[1],
-                #                 )
-                #                 == "RIGHT"
-                #             )
-                #         )
-                #     )
-                # )
-                # and (
-                #     # make sure front wall is not too close in obstacle mode
-                #     front_wall_area < 300
-                #     if MODE == "OBSTACLE"
-                #     else True
-                # ))
+                and front_wall_area < 300               
             ):
                 current_mode = "wall_follow"
-                print(
-                    # if x or y coords are not assigned and front area is small
-                    "1st:",
-                    bool(
-                        (
-                            (
-                                red_obj_x is None
-                                and green_obj_x is None
-                                and red_obj_y is None
-                                and green_obj_y is None
-                            )
-                            and front_wall_area < 300
-                        )
-                    ),
-                )
-                print(
-                    # if both obstacles are outside the danger zone
-                    "2nd: 1",
-                    bool(
-                        (
-                            red_obj_x is not None
-                            and red_obj_y is not None
-                            and red_obj_x != -1
-                            and red_obj_y != -1
-                            and point_position(
-                                DANGER_ZONE_POINTS[0]["x1"],
-                                DANGER_ZONE_POINTS[0]["y1"],
-                                DANGER_ZONE_POINTS[0]["x2"],
-                                DANGER_ZONE_POINTS[0]["y2"],
-                                red_obj_x + OBS_REGION[0],
-                                red_obj_y + OBS_REGION[1],
-                            )
-                            == "LEFT"
-                        )
-                    ),
-                )
-
-                print(red_obj_x, red_obj_y)
-
-                print(
-                    # if both obstacles are outside the danger zone
-                    "2nd: 2",
-                    bool(
-                        (
-                            green_obj_x is not None
-                            and green_obj_y is not None
-                            and green_obj_x != -1
-                            and green_obj_y != -1
-                            and point_position(
-                                DANGER_ZONE_POINTS[1]["x1"],
-                                DANGER_ZONE_POINTS[1]["y1"],
-                                DANGER_ZONE_POINTS[1]["x2"],
-                                DANGER_ZONE_POINTS[1]["y2"],
-                                green_obj_x + OBS_REGION[0],
-                                green_obj_y + OBS_REGION[1],
-                            )
-                            == "RIGHT"
-                        )
-                    ),
-                )
-
-                print(green_obj_x, green_obj_y)
-                print(red_obj_x, red_obj_y)
-
                 obstacle_wall_pivot = (None, None)
                 # PID controller
                 # left_area_normalized = left_area / ((LEFT_REGION[2] - LEFT_REGION[0]) * (LEFT_REGION[3] - LEFT_REGION[1]))
@@ -1087,22 +879,8 @@ def main():
                     print(
                         f"Wall following | Norm: {normalized_angle_offset} | Error: {error}"
                     )
-
-            # -- smoothing logic ---
-            # trigger if in OBSTACLE mode and if switching between obstacle and wall follow
-            # or if smoothing time not yet elapsed
-            # and not in odometry wall follow
-            # if (MODE == "OBSTACLE" and not current_mode == "odometry_wall_follow") and ((red_obj_x != -1 or green_obj_x != -1) or (smoothing_starts + smoothing_time > time.time())):
-            # MAX_CHANGE = 0.3
-            # delta = normalized_angle_offset - normalized_angle
-            # delta = max(min(delta, MAX_CHANGE), -MAX_CHANGE)
-            # normalized_angle += delta
-            # print(f"Smoothing applied. Delta: {delta}")
-            # smoothing_starts = time.time()
-            # else:
-            normalized_angle = normalized_angle_offset
             
-
+            normalized_angle = normalized_angle_offset        
             if current_mode != prev_mode and MODE == "OBSTACLE":
                 # Reset only the mode PID
                 if current_mode == "obstacle_follow":
