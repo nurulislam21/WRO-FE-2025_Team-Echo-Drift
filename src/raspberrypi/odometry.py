@@ -183,6 +183,12 @@ class OdometryVisualizer:
         self.next_x = 0.0
         self.next_y = 0.0
 
+        # obj disable region
+        self.obj_disable_region_x_min = None
+        self.obj_disable_region_x_max = None
+        self.obj_disable_region_y_min = None
+        self.obj_disable_region_y_max = None
+
     def set_dir(self, dir: str):
         """
         Set direction for predefined boundaries.
@@ -247,6 +253,18 @@ class OdometryVisualizer:
             self.middle_x_max = (self.x_max + self.inner_x_max) / 2
             self.middle_y_min = (self.y_min + self.inner_y_min) / 2
             self.middle_y_max = (self.y_max + self.inner_y_max) / 2
+
+            # Obj disable region (for reference)
+            if self.direction == "cw":
+                self.obj_disable_region_x_min = self.inner_x_max
+                self.obj_disable_region_x_max = self.x_max
+                self.obj_disable_region_y_min = self.inner_y_max
+                self.obj_disable_region_y_max = self.y_max
+            elif self.direction == "ccw":
+                self.obj_disable_region_x_min = self.inner_x_max
+                self.obj_disable_region_x_max = self.x_max
+                self.obj_disable_region_y_min = self.y_min
+                self.obj_disable_region_y_max = self.inner_y_min
 
 
     def compute_best_fit_boundaries(
@@ -385,6 +403,46 @@ class OdometryVisualizer:
     #         return "close_inner"
     #     else:
     #         return "close_outer"
+
+    def is_inside_start_zone(self, x: float, y: float) -> bool:
+        """
+        Check if the given position is inside the start zone.
+
+        Args:
+            x: X coordinate
+            y: Y coordinate
+        Returns:
+            True if inside start zone, False otherwise
+        """
+        return (
+            abs(x) <= self.start_zone_rect_x
+            and abs(y) <= self.start_zone_rect_y
+        )
+    
+    def is_inside_obj_disable_region(self, x: float, y: float) -> bool:
+        """
+        Check if the given position is inside the object disable region.
+
+        Args:
+            x: X coordinate
+            y: Y coordinate
+        Returns:
+            True if inside object disable region, False otherwise
+        """        
+        if all(
+            v is not None
+            for v in [
+                self.obj_disable_region_x_min,
+                self.obj_disable_region_x_max,
+                self.obj_disable_region_y_min,
+                self.obj_disable_region_y_max,
+            ]
+        ):
+            return (
+                self.obj_disable_region_x_min <= x <= self.obj_disable_region_x_max
+                and self.obj_disable_region_y_min <= y <= self.obj_disable_region_y_max
+            )
+        return False
 
     def update_plot(self, positions: List[Tuple[float, float]], auto_fit: bool = False, current_angle: float = 0.0):
         """
@@ -575,6 +633,26 @@ class OdometryVisualizer:
                         linewidth=1,
                         label="Middle Boundary",
                     )
+                
+                # Draw object disable region (red shaded) if defined
+                if all(
+                    v is not None
+                    for v in [
+                        self.obj_disable_region_x_min,
+                        self.obj_disable_region_x_max,
+                        self.obj_disable_region_y_min,
+                        self.obj_disable_region_y_max,
+                    ]
+                ):
+                    self.ax.fill_between(
+                        [self.obj_disable_region_x_min, self.obj_disable_region_x_max],
+                        self.obj_disable_region_y_min,
+                        self.obj_disable_region_y_max,
+                        color="red",
+                        alpha=0.3,
+                        label="Object Disable Region",
+                    )
+
 
                 self.ax.set_xlabel("X (m)")
                 self.ax.set_ylabel("Y (m)")
@@ -583,9 +661,10 @@ class OdometryVisualizer:
                 )
                 self.ax.axis("equal")
                 self.ax.grid(True, alpha=0.3)
-                self.ax.legend(loc="upper right", fontsize=8)
-
+                self.ax.legend(loc="upper right", fontsize=8)                
                 plt.pause(0.01)
+
+
 
     def close(self):
         if self.debug:
@@ -688,12 +767,16 @@ def main():
                 last_time = time.time()
                 lap += 1
                 print(f"Lap {lap} completed.")
-            
+
+            if visualizer.is_inside_obj_disable_region(x, y):
+                print("Inside object disable region!")
+
             # Update visualization
             visualizer.update_plot(tracker.get_position_history(), auto_fit=False, current_angle=gyro_angle)
             print("intersect" if visualizer.intersects_middle_rectangle(tracker.x, tracker.y, visualizer.next_x + tracker.x, visualizer.next_y + tracker.y) else "outside")
             if visualizer.intersects_middle_rectangle(tracker.x, tracker.y, visualizer.next_x + tracker.x, visualizer.next_y + tracker.y):
-                time.sleep(1)         
+                # time.sleep(1)
+                ...
 
         print("\nSimulation complete!")
         print(f"Final position: x={tracker.x:.3f}m, y={tracker.y:.3f}m")
