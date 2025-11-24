@@ -43,7 +43,7 @@ MAX_SPEED = 50
 MIN_SPEED = 40
 
 # Intersections
-TOTAL_LAPS = 3
+TOTAL_LAPS = 1
 
 # Region of Interest coordinates
 LEFT_REGION = (
@@ -304,6 +304,9 @@ def main():
     global encoder_ticks, gyro_angle, prev_encoder_ticks, prev_gyro_angle
     global start_processing, obstacle_wall_pivot, reverse_start_time
     global smoothed_drift_x, smoothed_drift_y
+
+    # parking status
+    u_turned = False
 
     # steering smoothing time
     smoothing_time = 0.3  # seconds
@@ -641,13 +644,37 @@ def main():
                 contour_workers.clear_all_queues()
                 continue 
 
+            if u_turned:
+                if DEBUG and cv2.waitKey(1) & 0xFF == ord("q"):
+                    break
+                error = left_area - 5000
+                angle_offset = pid_wall(-error)
+                angle = int(
+                    max(
+                        min(
+                            STRAIGHT_CONST + (normalized_angle * MAX_OFFSET_DEGREE),
+                            maxRight,
+                        ),
+                        maxLeft,
+                    )
+                )
+                arduino.write(f"{MIN_SPEED},-1,{angle}\n".encode())
+                continue
+
             # ---- Parking maneuver logic ----
-            if contour_workers.parking_mode:
-                arduino.write(f"{MIN_SPEED},-1,{65}\n".encode())
+            if contour_workers.parking_mode and visualizer.is_inside_obj_disable_region(tracker.x, tracker.y):                
+                if DEBUG and cv2.waitKey(1) & 0xFF == ord("q"):
+                    break
                 time.sleep(0.1)
-                # if clamp_angle(gyro_angle, threshold=30) == 900:
-                #     arduino.write(f"{MIN_SPEED},-1,{95}\n".encode())
-                
+                if clamp_angle(gyro_angle, threshold=25) == 180:
+                    print("STOP - " * 50)
+                    arduino.write(b"0,-1,95\n")
+                    u_turned = True
+                    pid_wall.auto_mode = False
+                    pid_wall.set_auto_mode(True, last_output=0)
+                else:
+                    arduino.write(f"{MIN_SPEED},-1,{160}\n".encode())
+                    # arduino.write(f"{MIN_SPEED},-1,{95}\n".encode())
                 continue
 
 
@@ -1178,7 +1205,7 @@ def main():
                     ),
                     maxLeft,
                 )
-            )            
+            ) 
 
             # map speed with angle
             speed = speed_factor * np.interp(

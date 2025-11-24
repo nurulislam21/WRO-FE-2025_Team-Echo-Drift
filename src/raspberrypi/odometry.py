@@ -256,10 +256,10 @@ class OdometryVisualizer:
 
             # Obj disable region (for reference)
             if self.direction == "cw":
-                self.obj_disable_region_x_min = self.inner_x_max
-                self.obj_disable_region_x_max = self.x_max
-                self.obj_disable_region_y_min = self.inner_y_max
-                self.obj_disable_region_y_max = self.y_max
+                self.obj_disable_region_x_min = self.x_min - 0.3
+                self.obj_disable_region_x_max = self.inner_x_min + 0.3
+                self.obj_disable_region_y_min = self.inner_y_max - 0.3
+                self.obj_disable_region_y_max = self.y_max + 0.3
             elif self.direction == "ccw":
                 self.obj_disable_region_x_min = self.inner_x_max
                 self.obj_disable_region_x_max = self.x_max
