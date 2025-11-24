@@ -239,7 +239,7 @@ class ContourWorkers:
                     self.UPPER_BLACK,
                     self.LEFT_REGION,
                     direction="left",
-                    consider_area=800,
+                    consider_area=400,
                     method=self.color_ranges["BLACK_COLOR_SPACE"],
                 )
                 black_area, _ = max_contour_area(contours)
@@ -289,7 +289,7 @@ class ContourWorkers:
                     self.UPPER_BLACK,
                     self.RIGHT_REGION,
                     direction="right",
-                    consider_area=800,
+                    consider_area=400,
                     method=self.color_ranges["BLACK_COLOR_SPACE"],
                 )
                 black_area, _ = max_contour_area(contours)
