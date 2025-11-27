@@ -135,11 +135,12 @@ The WRO Future Engineers 2025 competition is divided into **two progressive roun
 
 ## Our Robot
 ### Robot Overview  
-**Echo Drift** brings a **next-generation autonomous EV** to WRO 2025, built for speed, accuracy, and adaptability.
+**Echo Drift** brings a **Vision guided Robot** to WRO 2025, built for speed, accuracy, and adaptability.
   
 - Precise track navigation  
 - Real-time obstacle avoidance  
 - Controlled drift manoeuvres
+- Odometry analysis from gyro and encoder
 
 🛠️ 3D-printed chassis | 🔌 Smart sensors & drivers | 🧠 Vision & PID control
 
@@ -149,7 +150,7 @@ The WRO Future Engineers 2025 competition is divided into **two progressive roun
 
 | Parameter | Value |
 |-----------|-------|
-| *Dimensions* | 20 cm (L) × 11 cm (W) × 18 cm (H) |
+| *Dimensions* | 20 cm (L) × 11 cm (W) × 25 cm (H) |
 | *Weight* | ~ 0.7 kg |
 | *Chassis* | Modular 3D-printed PLA with reinforced mounts |
 | *Motors* | N20 motor  |
@@ -194,7 +195,7 @@ The WRO Future Engineers 2025 competition is divided into **two progressive roun
 | ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | *Hardware*             | - PLA + Aluminum Hybrid Chassis  <br> - 1× DC Geared Motors (12V, 600RPM, 1.2Nm)  <br> - High-Torque Servo (15kg·cm)  <br> - 65mm Rubberized Wheels                   | - Rigid but lightweight frame ensures stability and durability. <br> - Motor torque chosen with ~30% safety margin for acceleration under load. <br> - Servo provides precise steering with quick response. <br> - Wheel diameter selected for a balance between speed and traction.             |
 | *Power*                | - 3S LiPo (11.1V, 2200mAh)  <br> - Power Distribution Board (12V, 5V outputs)  <br> - XT60 Connectors                                                    | - LiPo selected for high discharge rate, lightweight, and compact size. <br> - Separate regulated lines prevent voltage drop issues. <br> - XT60 provides short-circuit and overload safety.                                                                                              |
-| *Perception*           | - Camera <br> - Wheel                                             | - Camera handles *lane detection and vision-based markers*. <br> - IMU improves orientation and stability on turns. <br> - Encoders provide real-time speed & distance for closed-loop control.                              |
+| *Perception*           | - Camera <br> - Gyro <br> - Encoder                                             | - Camera handles *lane detection and vision-based markers*. <br> - IMU improves orientation and stability on turns. <br> - Encoders provide real-time speed & distance for closed-loop control.                              |
 | *Control & Processing* | - Raspberry Pi 5 (Python + OpenCV)  <br> - Arduino Nano (C++)  <br> - UART Serial Link                                                                                | - Pi processes camera input & makes high-level decisions. <br> - Arduino handles *PWM signals, interrupts, and motor control* with real-time precision. <br> - UART ensures fast, low-latency communication between subsystems.                                                               |
 | *Decision*             | - OpenCV Line Detection  <br> - Sensor Fusion (Camera)  <br> - PID Steering Control  <br> - Encoder-based Speed Feedback  <br> - Emergency Stop Failsafe | - Lane tracking optimized with *real-time vision algorithms*. <br> - Sensor fusion improves obstacle avoidance accuracy. <br> - PID ensures smooth steering corrections. <br> - Encoders maintain consistent velocity. <br> - Safety protocol: robot halts when conflicting data is detected. |
 | *Actuation*            | -  Motor Driver   <br> - PWM Servo Driver                                                                                                      | - H-Bridge supplies bidirectional control for drive motors. <br> - Servo driver ensures precise angle control. <br> - Final output: *smooth differential drive with adaptive steering*.                                                                                                       |
@@ -250,7 +251,7 @@ Mobility management defines how the robot moves, steers, and maintains stability
 #### Engineering Principle
 Torque Required = Wheel Radius × Force (Load + Friction)
 
--Our calculation showed motor Required torque ≈ **0.9 Nm**  
+- Our calculation showed motor Required torque ≈ **0.9 Nm**  
 - Selected N20 motors rated ≈ **1.2 Nm** → safe margin  
 - Speed doubles from ~1.0 m/s (300 RPM) to ~2.0 m/s (600 RPM) on 45 mm wheels.
 
@@ -276,7 +277,13 @@ The hardware design balances **mechanical precision** with **reliable electronic
   
 - **Chassis:** Fully 3D-printed (SolidWorks STL); lightweight yet strong
 <img alt="SolidWorks Design" width="500" style="display:inline-block; vertical-align: top;" src="https://github.com/user-attachments/assets/2654091d-9e7f-4d39-88c8-5cd7c34ee622" />
-<img src="v-photos/isometric_view.jpg" alt="Vehicle Side View" width="500" style="display:inline-block; vertical-align: top;"/> 
+<img src="v-photos/isometric_view.jpg" alt="Vehicle Side View" width="500" style="display:inline-block; vertical-align: top;"/>
+
+- **ND filter for camera**: We later mounted an ND filter in front of the camera to maintain consistent lighting in bright environments. By tuning the ND filter, we were able to reduce glare and stabilize exposure, ensuring more reliable image processing.
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/288ff47d-43f7-463d-a155-2b2da8bb494a" width="300px" />
+  <img src="https://github.com/user-attachments/assets/03925aca-f821-4219-8d19-d27f0be80add" width="300px" />
+</p>
 
 
 ---
@@ -326,14 +333,19 @@ git clone https://github.com/nurulislam21/WRO-FE-2025_Team-Echo-Drift/
 cd WRO-FE-2025_Team-Echo-Drift/src
 # install the dependencies
 pip install -r requirements.txt
+
 # run the program
-python raspberrypi/main.py --debug
+# for open challenge
+python raspberrypi/open_challenge.py --debug
+
+# for obstacle challenge
+python raspberrypi/obstacle_challenge.py --debug
 
 # for starting the program on startup, register it as a service or a crontab
 
 ```
 
-We have divided the whole into 6 segments, each segment runs a seperate image processing thread.
+We have divided the whole frame into 6 segments, each segment runs a seperate image processing thread.
 
 <img width="500" height="736" alt="image" src="v-photos/ROI-POV.png" />
 
@@ -406,7 +418,7 @@ UPPER_MAGENTA = np.array([170, 121, 145])
 
 <br>
 
-Then we made a class called `ContourWorkers.py` in [contour_workers.py](https://github.com/nurulislam21/WRO-FE-2025_Team-Echo-Drift/blob/main/src/raspberrypi/contour_workers.py), this class is used to get contours based on the passed color ranges. ContourWorker starts 8 seperate thread for 8 regions, and processes them individually. Thus we are able to keep a decent FPS (around 25) while our bot is on the go. We are using `Queue` with size of 2 to make sure our frames are queued and passed to the thread and processed accordingly:
+Then we made a class called `ContourWorkers.py` in [contour_workers.py](https://github.com/nurulislam21/WRO-FE-2025_Team-Echo-Drift/blob/main/src/raspberrypi/contour_workers.py), this class is used to get contours based on the passed color ranges. ContourWorker starts 6 seperate thread for 6 regions, and processes them individually. Thus we are able to keep a decent FPS (around 25) while our bot is on the go. We are using `Queue` with size of 2 to make sure our frames are queued and passed to the thread and processed accordingly:
 
 ```py
 # queues
@@ -420,7 +432,7 @@ self.frame_queue_green = Queue(maxsize=2)
 
 <br>
 
-After that, we were facing an issue for motion blur due to speed. We've resolved this issue by setting explicit `Exposure rate` and `Analogue gain` in our camera configuration:
+After that, we were facing an issue for motion blur due to speed. We've resolved this issue by setting explicit `Exposure rate` and `Analogue gain`, and disabling `Auto Exposure` & `Auto white balance` in our camera configuration:
 
 <img width="560" alt="image" src="https://github.com/user-attachments/assets/d37004e0-7c14-49ed-90fa-8d76a48db845" />
 
@@ -440,20 +452,17 @@ picam2.set_controls(
 
 <br>
 
-After the program is executed, we start 8 threads, and inside while loop, we are collecting the contour result in each iteration:
+After the program is executed, we start 6 threads, and inside while loop, we are collecting the contour result in each iteration:
 
 ```py
 # Retrieve all results from queues (non-blocking)
 (
     left_result,
     right_result,
-    orange_result,
-    blue_result,
     green_result,
     red_result,
     reverse_result,
     front_wall_result,
-    parking_result,
 ) = contour_workers.collect_results()
 ```
 
@@ -488,22 +497,43 @@ normalized_angle_offset = pid(error)
 
 <br>
 
-For Lap detection, we are using odometry (getting xy coords from encoders and gyro)
+For Lap detection & steering in tight spaces, we are using odometry (getting xy coords from encoders and gyro)
 
 
 ![odometry](https://github.com/user-attachments/assets/b58366ba-ec3c-489a-a64e-3c3e39929d62)
 
+**Lap detection strategy**: We track an imaginary inner and outer rectangle using odometry. A starting-region rectangle marks the lap point. When the robot re-enters this region after a time threshold, a lap is counted. After three laps, the robot stops.
+
+<img width="408" height="346" alt="image" src="https://github.com/user-attachments/assets/1f6d235b-3bbf-4541-ba4a-409be4a49257" />
+
+**Tight-Space cornering Strategy**: In narrow corners, visual navigation alone is insufficient because the black wall directly ahead blocks reliable image-based guidance. To handle this, we incorporate odometry to estimate the robot’s position relative to the outer and inner boundaries.
+
+For clockwise laps, the robot turns right when it approaches the outer boundary, and left when it gets too close to the inner boundary. For counterclockwise laps, the logic is reversed. This ensures smooth cornering even in visually challenging tight spaces.
+
+<img width="346" height="247" alt="image" src="https://github.com/user-attachments/assets/f4b9115d-00ec-4813-bb9b-b50e2d9b4e70" />
+
+We implemented the odometry system in a dedicated Python class. The complete implementation — including position tracking, orientation updates, and boundary detection — can be found here:  
+**[odometry.py](https://github.com/nurulislam21/WRO-FE-2025_Team-Echo-Drift/blob/main/src/raspberrypi/odometry.py)**
+
 
 To draw this odometry, we've collected some data of encoder ticks and gyro angle by running our bot on the track few times, and made `csv` files.
-For analyzing the values, we've used [MATLAB](https://www.mathworks.com/) 
+For analyzing the values, we've used [MATLAB](https://www.mathworks.com/)
 
 
 <img width="1440" height="787" alt="image" src="https://github.com/user-attachments/assets/126efcdc-e461-494a-8e94-372904fda5ec" />
 
+The csv file format was:
+| **ticks** | **angle** |
+|----------|-------------|
+| Encoder ticks | Gyro angle |
+| ... | ... |
 
-Then we've discovered that, the bot was drifting away, due to machanical error, after that we have used [Moving Average](https://en.wikipedia.org/wiki/Moving_average) realtime with the previous lap data, and hence 
+
+Then we've discovered that, the bot was drifting away, due to mechanical error, after that we have used [Moving Average](https://en.wikipedia.org/wiki/Moving_average) realtime with the previous lap data, and hence 
 calculated the drift of xy coordinates. After that, we substracted these values to omit the drift.
 
+Matlab code can be found here:
+**[src/data_analysis](https://github.com/nurulislam21/WRO-FE-2025_Team-Echo-Drift/tree/main/src/data_analysis)**
 
 <br>
 
