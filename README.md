@@ -40,7 +40,7 @@ Explore the repository to learn more about our system design, documentation, and
 
 We’re three young innovators from across Bangladesh, brought together by our love for robotics and tech. We first met as solo competitors sharing ideas, dreams, and soon a vision. That’s how our team was born.
 
-<!-- Nurul Islam Noman -->
+<!-- Noman -->
 <table>
   <tr>
     <td>
