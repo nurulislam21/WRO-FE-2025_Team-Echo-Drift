@@ -44,7 +44,7 @@ We’re three young innovators from across Bangladesh, brought together by our l
 <table>
   <tr>
     <td>
-<h2> Nurul Islam Noman - Mechanical Engineering </h2>
+<h2> Noman - Mechanical Engineering </h2>
 
 Specialized in Mechanical Design with experience in SolidWorks, Fusion 360, for 3D modeling. Strong background in robotics and embedded systems, 
 supported by hands-on R&D work. Experience in robotics and embedded systems supports a well-rounded engineering approach, enabling the design of precise, reliable, and integrated mechanical solutions.
